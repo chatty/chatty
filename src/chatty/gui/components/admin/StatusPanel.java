@@ -42,6 +42,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -99,6 +100,8 @@ public class StatusPanel extends JPanel {
     private String statusLoadError;
     private String statusPutResult;
     private long lastPutResult = -1;
+    private ChannelStatus channelStatusToCheck;
+    private boolean updateStatusAfterLoad = false;
     
     public StatusPanel(AdminDialog parent, MainGui main, TwitchApi api) {
         
@@ -244,7 +247,9 @@ public class StatusPanel extends JPanel {
                     if (currentChannel != null && !currentChannel.isEmpty()) {
                         loadingStatus = true;
                         setLoading(true);
-                        main.putChannelInfo(ChannelStatus.createPut(currentChannel, status.getText(), currentStreamCategory, currentStreamTags));
+                        ChannelStatus putStatus = ChannelStatus.createPut(currentChannel, status.getText(), currentStreamCategory, currentStreamTags);
+                        channelStatusToCheck = putStatus;
+                        main.putChannelInfo(putStatus);
                         addCurrentToHistory();
                     }
                 } else if (e.getSource() == reloadButton) {
@@ -418,11 +423,29 @@ public class StatusPanel extends JPanel {
     
     public void channelStatusReceived(ChannelStatus channelStatus, TwitchApi.RequestResultCode result) {
         if (channelStatus.channelLogin.equals(currentChannel)) {
+            if (channelStatusToCheck != null) {
+                String difference = channelStatusToCheck.getStatusDifference(channelStatus);
+                if (!difference.isEmpty()) {
+                    JOptionPane.showMessageDialog(this,
+                            String.format("Stream Status may not have been updated, "
+                                    + "possibly due to an invalid title (e.g. swear words) or tags (setting no tags at all may not work). "
+                                    + "You can use the reload button to load the current Status, overwriting what you changed.\n\n"
+                                    + "Not updated: %s\n\n"
+                                    + "[Current Status]\n"
+                                    + "Title: '%s'\n"
+                                    + "Category: '%s'\n"
+                                    + "Tags: %s", difference, channelStatus.title, channelStatus.category, channelStatus.tags),
+                            "Update failed", JOptionPane.WARNING_MESSAGE);
+                }
+                channelStatusToCheck = null;
+            }
             if (result == TwitchApi.RequestResultCode.SUCCESS) {
-                status.setText(channelStatus.title);
-                currentStreamCategory = channelStatus.category;
-                game.setText(channelStatus.category.name);
-                setTags(channelStatus.tags);
+                if (updateStatusAfterLoad) {
+                    status.setText(channelStatus.title);
+                    currentStreamCategory = channelStatus.category;
+                    game.setText(channelStatus.category.name);
+                    setTags(channelStatus.tags);
+                }
             }
             else {
                 infoLastLoaded = -1;
@@ -432,6 +455,7 @@ public class StatusPanel extends JPanel {
                     statusLoadError = "";
                 }
             }
+            updateStatusAfterLoad = false;
             loadingStatus = false;
             checkLoadingDone();
         }
@@ -447,6 +471,7 @@ public class StatusPanel extends JPanel {
     public void setPutResult(TwitchApi.RequestResultCode result, String error) {
         if (result == TwitchApi.RequestResultCode.SUCCESS) {
             statusPutResult = Language.getString("admin.infoUpdated");
+            checkChannelStatus();
         } else {
             if (result == TwitchApi.RequestResultCode.ACCESS_DENIED) {
                 statusPutResult = "Update: Access denied/Failed";
@@ -494,9 +519,16 @@ public class StatusPanel extends JPanel {
     private void getChannelInfo() {
         loadingStatus = true;
         statusLoadError = null;
+        updateStatusAfterLoad = true;
         
         setLoading(true);
         api.getChannelStatus(currentChannel);
+    }
+    
+    private void checkChannelStatus() {
+        if (channelStatusToCheck != null) {
+            api.getChannelStatus(currentChannel);
+        }
     }
     
     private void checkLoadingDone() {

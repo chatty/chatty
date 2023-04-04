@@ -125,6 +125,28 @@ public class ChannelStatus {
         );
     }
     
+    public boolean sameStatus(ChannelStatus other) {
+        String thisTitle = StringUtil.trim(title);
+        String otherTitle = StringUtil.trim(other.title);
+        return Objects.equals(thisTitle, otherTitle) && Objects.equals(category, other.category) && Objects.equals(tags, other.tags);
+    }
+    
+    public String getStatusDifference(ChannelStatus other) {
+        String thisTitle = StringUtil.trim(title);
+        String otherTitle = StringUtil.trim(other.title);
+        String difference = "";
+        if (!Objects.equals(thisTitle, otherTitle)) {
+            difference = StringUtil.append(difference, ", ", "title");
+        }
+        if (!Objects.equals(category, other.category)) {
+            difference = StringUtil.append(difference, ", ", "category");
+        }
+        if (!Objects.equals(tags, other.tags)) {
+            difference = StringUtil.append(difference, ", ", "tags");
+        }
+        return difference;
+    }
+    
     public static class StreamTag implements Comparable<StreamTag> {
         
         public static final StreamTag EMPTY = new StreamTag("");
