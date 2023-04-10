@@ -82,7 +82,7 @@ public class Commands {
     public boolean performCommand(String commandName, Room room, Parameters parameters) {
         Command c = getCommand(commandName);
         if (c != null) {
-            c.performAction(room, parameters);
+            c.performAction(room, parameters, commandName);
             return true;
         }
         return false;
@@ -129,14 +129,14 @@ public class Commands {
                 StringUtil.aEmptyb(StringUtil.join(aliases, ", ", o -> "/"+o), "", " (Alias: %s)"));
         }
         
-        public void performAction(Room room, Parameters parameters) {
+        public void performAction(Room room, Parameters parameters, String enteredCommandName) {
             if (edt && !SwingUtilities.isEventDispatchThread()) {
                 SwingUtilities.invokeLater(() -> {
-                    action.accept(new CommandParameters(room, parameters, this));
+                    action.accept(new CommandParameters(room, parameters, this, enteredCommandName));
                 });
             }
             else {
-                action.accept(new CommandParameters(room, parameters, this));
+                action.accept(new CommandParameters(room, parameters, this, enteredCommandName));
             }
         }
         
@@ -147,15 +147,24 @@ public class Commands {
         private final Room room;
         private final Parameters parameters;
         private final Command command;
+        private final String enteredCommandName;
         
-        public CommandParameters(Room room, Parameters parameters, Command command) {
+        public CommandParameters(Room room,
+                                 Parameters parameters,
+                                 Command command,
+                                 String enteredCommandName) {
             this.room = room;
             this.parameters = parameters;
             this.command = command;
+            this.enteredCommandName = enteredCommandName;
         }
         
         public Command getCommand() {
             return command;
+        }
+        
+        public String getEnteredCommandName() {
+            return enteredCommandName;
         }
         
         public Room getRoom() {

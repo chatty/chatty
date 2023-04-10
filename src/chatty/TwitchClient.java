@@ -1043,7 +1043,8 @@ public class TwitchClient {
      * @param text The text to send (not null)
      * @param atUsername The username to address (not null)
      * @param atMsgId The msg-id to use as reply thread parent (not null)
-     * @param atMsg The parent msg text (may be null)
+     * @param atMsg The parent msg text (may be null, if responding to the
+     * parent id of a thread, not as a first response)
      */
     private void sendReply(String channel, String text, String atUsername, String atMsgId, String atMsg) {
         MsgTags tags = MsgTags.create("reply-parent-msg-id", atMsgId);
@@ -1244,12 +1245,22 @@ public class TwitchClient {
                     String atMsgId = p.getParameters().get("msg-id");
                     String atMsg = p.getParameters().get("msg");
                     String msg = p.getArgs();
+                    if (p.getEnteredCommandName().equalsIgnoreCase("msgreplythread")) {
+                        String parentMsgId = ReplyManager.getParentMsgId(atMsgId);
+                        if (parentMsgId != null) {
+                            // Overwrite result with parent msg-id if available
+                            // Msg should be null for this, since the selected.text
+                            // isn't the parent text
+                            atMsgId = parentMsgId;
+                            atMsg = null;
+                        }
+                    }
                     sendReply(p.getChannel(), msg, atUsername, atMsgId, atMsg);
             }
             else {
                 g.printLine("Invalid reply parameters");
             }
-        });
+        }, "msgreplythread");
         commands.add("w", p -> {
             if (rejectTimedMessage("w", p.getRoom(), p.getParameters())) {
                 return;
