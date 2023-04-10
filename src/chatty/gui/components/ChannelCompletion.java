@@ -234,7 +234,7 @@ public class ChannelCompletion implements AutoCompletionServer {
             return getCompletionItemsEmoji(search);
         }
         if (!emotePrefix.isEmpty() && prefix.endsWith(emotePrefix)) {
-            return getCompletionItemsEmotes(search, emotePrefix);
+            return sortFavoritesFirst(getCompletionItemsEmotes(search, emotePrefix));
         }
 
         // Then check settings
@@ -242,13 +242,13 @@ public class ChannelCompletion implements AutoCompletionServer {
             return getCompletionItemsNames(search, preferUsernames);
         }
         if (setting.equals("emotes")) {
-            return getCompletionItemsEmotes(search, "");
+            return sortFavoritesFirst(getCompletionItemsEmotes(search, ""));
         }
         if (setting.equals("custom")) {
             return AutoCompletionServer.CompletionItems.createFromStrings(getCustomCompletionItems(searchCase), "");
         }
         AutoCompletionServer.CompletionItems names = getCompletionItemsNames(search, preferUsernames);
-        AutoCompletionServer.CompletionItems emotes = getCompletionItemsEmotes(search, "");
+        AutoCompletionServer.CompletionItems emotes = sortFavoritesFirst(getCompletionItemsEmotes(search, ""));
         if (setting.equals("both")) {
             names.append(emotes);
             return names;
@@ -342,10 +342,11 @@ public class ChannelCompletion implements AutoCompletionServer {
         }
     };
     
-    private void sortFavoritesFirst(CompletionItems items) {
+    private CompletionItems sortFavoritesFirst(CompletionItems items) {
         if (settings().getBoolean("completionFavEmotesFirst")) {
             Collections.sort(items.items, SORT_FAV_EMOTES_FIRST);
         }
+        return items;
     }
 
     private List<String> getCustomCompletionItems(String search) {
