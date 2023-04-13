@@ -2718,24 +2718,37 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         
         Set<String> accessToSets = user.isLocalUser() ? main.emoticons.getLocalEmotesets() : null;
         findEmoticons(user, main.emoticons.getCustomEmotes(), text, ranges, rangesStyle, accessToSets);
+        
+        //-------
+        // Emoji
+        //-------
         if (Debugging.isEnabled("emoji2") || EmojiUtil.mightContainEmoji(text)) {
             findEmoticons(user, main.emoticons.getEmoji(), text, ranges, rangesStyle);
         }
         
+        //---------------
+        // Twitch Emotes
+        //---------------
+        // Incoming messages
         if (tagEmotes != null) {
             // Add emotes from tags
             Map<String, Emoticon> emoticonsById = main.emoticons.getEmoticonsById();
             addTwitchTagsEmoticons(user, emoticonsById, text, ranges, rangesStyle, tagEmotes);
         }
         
+        // Sent messages
         if (user.isLocalUser()) {
             findEmoticons(main.emoticons.getUsableGlobalTwitchEmotes(), text, ranges, rangesStyle);
+            findEmoticons(main.emoticons.getUsableFollowerEmotes(channel.getStreamName()), text, ranges, rangesStyle);
             findEmoticons(main.emoticons.getSmilies(), text, ranges, rangesStyle);
         }
         
-        // Channel based (may also have a emoteset restriction)
-        HashSet<Emoticon> channelEmotes = main.emoticons.getEmoticonsByStream(user.getStream());
-        findEmoticons(user, channelEmotes, text, ranges, rangesStyle, main.emoticons.getAllLocalEmotesets());
+        //-------------
+        // Third-party
+        //-------------
+        // By stream emotes first so they can overwrite third-party global emotes
+        Set<Emoticon> channelEmotes = main.emoticons.getEmoticonsByStream(user.getStream());
+        findEmoticons(channelEmotes, text, ranges, rangesStyle);
         
         // All-channels emotes
         if (user.isLocalUser()) {
@@ -2743,6 +2756,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         }
         else {
             if (tagEmotes == null) {
+                // Not sure that this should even occur
                 Set<Emoticon> emoticons = main.emoticons.getGlobalTwitchEmotes();
                 findEmoticons(emoticons, text, ranges, rangesStyle);
             }
@@ -2750,6 +2764,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             findEmoticons(emoticons, text, ranges, rangesStyle);
         }
         
+        //---------
+        // Special
+        //---------
         // Special Combined Emotes
         CombinedEmotesInfo cei = ChattyMisc.getCombinedEmotesInfo();
         if (!cei.isEmpty()) {

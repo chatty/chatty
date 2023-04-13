@@ -261,6 +261,7 @@ public class ChannelCompletion implements AutoCompletionServer {
     private AutoCompletionServer.CompletionItems getCompletionItemsEmotes(String search, String prefix) {
         Collection<Emoticon> allEmotes = new LinkedList<>();
         allEmotes.addAll(main.emoticons.getUsableGlobalTwitchEmotes());
+        allEmotes.addAll(main.emoticons.getUsableFollowerEmotes(channel.getStreamName()));
         allEmotes.addAll(main.emoticons.getUsableEmotesByStream(channel.getStreamName()));
         allEmotes.addAll(main.emoticons.getUsableGlobalOtherEmotes());
         List<Emoticon> result = filterCompletionItems(allEmotes, search, SORT_EMOTES_BY_NAME, item -> {

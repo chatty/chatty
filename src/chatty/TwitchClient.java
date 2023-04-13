@@ -2480,8 +2480,8 @@ public class TwitchClient {
         return c.getSpecialUser();
     }
     
-    public Set<String> getEmotesets() {
-        return emotesetManager.getEmotesets();
+    public Set<String> getEmotesetsByChannel(String channel) {
+        return emotesetManager.getEmotesetsByChannel(channel);
     }
     
     private void commandFFZ(String channel) {
@@ -2784,14 +2784,6 @@ public class TwitchClient {
         @Override
         public void receivedEmoticons(EmoticonUpdate update) {
             g.updateEmoticons(update);
-            
-            // After adding emotes, update sets
-            if (update.source == EmoticonUpdate.Source.USER_EMOTES
-                    && update.setsAdded != null) {
-                // setsAdded contains all sets (for USER_EMOTES)
-                // This may also update EmoteDialog etc.
-                emotesetManager.setUserEmotesets(update.setsAdded);
-            }
             
             // Other stuff
             if (refreshRequests.contains("emoticons")) {

@@ -15,7 +15,7 @@ import java.util.Set;
 public class EmoticonUpdate {
     
     public enum Source {
-        USER_EMOTES, OTHER, HELIX_CHANNEL, HELIX_SETS
+        OTHER, HELIX_CHANNEL, HELIX_SETS
     }
     
     public final Source source;

@@ -1,9 +1,8 @@
 
 package chatty.util.api;
 
+import chatty.Helper;
 import chatty.gui.MainGui;
-import chatty.gui.components.eventlog.EventLog;
-import chatty.util.StringUtil;
 import chatty.util.settings.Settings;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,11 +18,9 @@ public class EmotesetManager {
     
     private final TwitchApi api;
     private final MainGui g;
-    private final Settings settings;
     
     private final Map<String, Set<String>> ircEmotesets = new HashMap<>();
     private final Set<String> latestIrcEmotesets = new HashSet<>();
-    private final Set<String> userEmotesets = new HashSet<>();
     
     /**
      * Emotesets both from the API and latest from IRC. May not contain follower
@@ -31,19 +28,9 @@ public class EmotesetManager {
      */
     private final Set<String> emotesets = new HashSet<>();
     
-    /**
-     * Emotestes both from the API and all channels from IRC. May contain sets
-     * that the user has no longer access to, since not all channels will have
-     * up-to-date emotestes.
-     */
-    private final Set<String> allEmotesets = new HashSet<>();
-    
-    private boolean userEmotesRequested = false;
-    
     public EmotesetManager(TwitchApi api, MainGui g, Settings settings) {
         this.api = api;
         this.g = g;
-        this.settings = settings;
     }
     
     /**
@@ -70,9 +57,8 @@ public class EmotesetManager {
              * Only check length, since emotesets may cycle through, without
              * anything actually having really changed. This is a Twitch Chat bug.
              */
-            if ((prevSets != null && prevSets.size() != newSets.size()) || !userEmotesRequested) {
+            if (prevSets == null || prevSets.size() != newSets.size()) {
                 changed = true;
-                userEmotesRequested = true;
             }
             if (prevSets == null) {
                 ircEmotesets.put(channel, new HashSet<>());
@@ -81,60 +67,17 @@ public class EmotesetManager {
             ircEmotesets.get(channel).addAll(newSets);
         }
         if (changed) {
-            // Formerly requesting user emotes from API
+            g.updateEmotesDialog(Helper.toStream(channel), newSets);
+            g.updateEmoteNames(newSets);
         }
-        // Filter out emotesets in the new format for now
-        newSets.removeIf(s -> s.contains("-"));
         api.getEmotesBySets(newSets);
-        updateEmotesets();
-    }
-    
-    public void setUserEmotesets(Set<String> newEmotesets) {
-        synchronized(this) {
-            userEmotesets.clear();
-            userEmotesets.addAll(newEmotesets);
-        }
-        updateEmotesets();
-    }
-    
-    /**
-     * Update the emotesets for the local user and update stuff if necessary.
-     */
-    private void updateEmotesets() {
-        boolean changed = false;
-        Set<String> latest = new HashSet<>();
-        Set<String> all = new HashSet<>();
-        synchronized(this) {
-            latest.addAll(userEmotesets);
-            latest.addAll(latestIrcEmotesets);
-            
-            // Both IRC and GetUserEmotes sets as long as both don't contain all
-            all.addAll(userEmotesets);
-            // Add all emotesets from all channels
-            for (Set<String> sets : ircEmotesets.values()) {
-                all.addAll(sets);
-            }
-            
-            // Check if changed
-            if (!emotesets.equals(latest) || !allEmotesets.equals(all)) {
-                changed = true;
-            }
-            
-            // Update combined
-            emotesets.clear();
-            emotesets.addAll(latest);
-            
-            allEmotesets.clear();
-            allEmotesets.addAll(all);
-        }
-        if (changed) {
-            g.updateEmotesDialog(latest);
-            g.updateEmoteNames(latest, all);
-        }
     }
 
-    public synchronized Set<String> getEmotesets() {
-        return new HashSet<>(emotesets);
+    public synchronized Set<String> getEmotesetsByChannel(String channel) {
+        if (!ircEmotesets.containsKey(channel)) {
+            return new HashSet<>();
+        }
+        return new HashSet<>(ircEmotesets.get(channel));
     }
     
 }
