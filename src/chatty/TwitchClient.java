@@ -306,7 +306,7 @@ public class TwitchClient {
         
         pubsub = new chatty.util.api.pubsub.Manager(
                 settings.getString("pubsub"), pubsubListener, api);
-        eventSub = new EventSubManager("wss://eventsub-beta.wss.twitch.tv/ws", new EventSubResults(), api);
+        eventSub = new EventSubManager("wss://eventsub.wss.twitch.tv/ws", new EventSubResults(), api);
 //        eventSub = new EventSubManager("ws://localhost:8080/eventsub", new EventSubResults(), api);
         
         frankerFaceZ = new FrankerFaceZ(new EmoticonsListener(), settings, api);
