@@ -29,6 +29,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
+import javax.swing.text.JTextComponent;
 
 /**
  * A single channel window, combining styled text pane, userlist and input box.
@@ -110,7 +111,7 @@ public final class Channel extends JPanel {
         // Remove PAGEUP/DOWN so it can scroll chat (as before JTextArea)
         input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0), "-");
         input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0), "-");
-        GuiUtil.installLengthLimitDocumentFilter(input, 500, false);
+        installLimits(input);
         TextSelectionMenu.install(input);
 
         // Add components
@@ -127,9 +128,16 @@ public final class Channel extends JPanel {
         ChannelEditBox result = new ChannelEditBox();
         result.setCompletionServer(new ChannelCompletion(this, main, result, users));
         result.setCompletionEnabled(main.getSettings().getBoolean("completionEnabled"));
-        GuiUtil.installLengthLimitDocumentFilter(result, 500, false);
+        installLimits(result);
         TextSelectionMenu.install(result);
         return result;
+    }
+    
+    private static void installLimits(JTextComponent comp) {
+        GuiUtil.installLengthLimitDocumentFilter(comp, 500, false,
+                // Might not be all commands that can send messages, but should be fine
+                "^/(say|me|msg|msgreply|msgreplythread) ", 504,
+                "^/", 100*1000);
     }
     
     public DockChannelContainer getDockContent() {

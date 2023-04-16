@@ -6,6 +6,7 @@ import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.laf.LaF;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
+import chatty.util.Pair;
 import chatty.util.ProcessManager;
 import chatty.util.StringUtil;
 import chatty.util.commands.CustomCommand;
@@ -48,6 +49,7 @@ import java.util.StringTokenizer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -681,19 +683,48 @@ public class GuiUtil {
      * Note that this replaces an already set DocumentFilter.
      * 
      * @param comp The JTextComponent, using AbstractDocument
-     * @param limit The character limit
+     * @param defaultLimit The character limit (a limit <= 0 means no limit)
      * @param allowNewlines false to filter linebreak characters
+     * @param limitArray Optional additional limits, that overwrite the default
+     * limit, can be specified as key/value pairs. The key (String) must be a
+     * regex that if it matches causes the value (Integer) to be used as limit.
+     * When several additional limits are provided, the first one that matches
+     * is used. For example, when the first letter in the text component is a
+     * "/" use the limit 5000: {@code ...(comp, 500, false, "^/", 5000)}
      */
-    public static void installLengthLimitDocumentFilter(JTextComponent comp, int limit, boolean allowNewlines) {
-        if (limit < 0) {
-            throw new IllegalArgumentException("Invalid limit < 0");
+    public static void installLengthLimitDocumentFilter(JTextComponent comp, int defaultLimit, boolean allowNewlines, Object... limitArray) {
+        List<Pair<Pattern, Integer>> limits = new ArrayList<>();
+        for (int i = 0; i + 1 < limitArray.length; i += 2) {
+            Object patternObject = limitArray[i];
+            Object limitObject = limitArray[i+1];
+            Pattern pattern = null;
+            int limit = -1;
+            if (patternObject instanceof String) {
+                pattern = Pattern.compile((String) patternObject);
+            }
+            if (limitObject instanceof Integer) {
+                limit = (Integer) limitObject;
+            }
+            limits.add(new Pair<>(pattern, limit));
         }
+        
         DocumentFilter filter = new DocumentFilter() {
             
             @Override
             public void replace(DocumentFilter.FilterBypass fb, int offset,
                     int delLength, String text, AttributeSet attrs) throws BadLocationException {
-                if (text == null || text.isEmpty()) {
+                String fullText = fb.getDocument().getText(0, offset)
+                        + text
+                        + fb.getDocument().getText(offset + delLength, fb.getDocument().getLength() - offset - delLength);
+                int limit = defaultLimit;
+                for (Pair<Pattern, Integer> limitEntry : limits) {
+                    if (limitEntry.key != null
+                            && limitEntry.key.matcher(fullText).find()) {
+                        limit = limitEntry.value;
+                        break;
+                    }
+                }
+                if (text == null || text.isEmpty() || limit <= 0) {
                     super.replace(fb, offset, delLength, text, attrs);
                 } else {
                     int currentLength = fb.getDocument().getLength();
