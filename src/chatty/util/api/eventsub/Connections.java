@@ -317,7 +317,7 @@ public class Connections {
         if (msg.type.equals("session_welcome")) {
             SessionPayload session = (SessionPayload) msg.data;
             c.setSessionId(session.id);
-            c.setConnectionTimeout(session.keepAliveTimeout);
+            c.setConnectionTimeout(session.keepAliveTimeout + 4);
             if (c.getReplacedConnection() != null) {
                 disconnect(c.getReplacedConnection());
             }
