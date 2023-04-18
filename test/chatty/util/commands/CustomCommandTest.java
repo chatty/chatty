@@ -422,6 +422,10 @@ public class CustomCommandTest {
                 + "            {\"title\":\"book3\", \"author\":\"author2\", \"tags\":[\"tag1\", \"tag3\"]},\n"
                 + "            {\"title\":\"book4\", \"author\":\"author2\"}\n"
                 + "        ],\n"
+                + "        \"authors\":{\n"
+                + "            \"author1\":{\"name\":\"name1\", \"age\":24},\n"
+                + "            \"author2\":{\"name\":\"name2\", \"age\":62}\n"
+                + "        },\n"
                 + "        \"numBooks\": 4,\n"
                 + "        \"numAuthors\": 2\n"
                 + "    }";
@@ -436,6 +440,9 @@ public class CustomCommandTest {
                 "$json($(j),$j(books[filter:author=author2][combine:tags][join]))", "tag1, tag1, tag3",
                 "$json($(j),$j(books[filter:author=author2][combine:tags][unique][join]))", "tag1, tag3",
                 "$json($(j),$j(books[collect:author][join:/]))", "author1/author2/author2/author2",
+                "$json($(j),$j(books[collect:author][join:'[]']))", "author1[]author2[]author2[]author2",
+                "$json($(j),$j(books[collect:author][join:'['']']))", "author1[']author2[']author2[']author2",
+                "$json($(j),$j(books[collect:author][join:'''[]''']))", "author1'[]'author2'[]'author2'[]'author2",
                 "$json($(j),$j(books[filter:tags=.*tag2.*][collect:author][join]))", "author1",
                 // Combine filters on each individual array item
                 "$json($(j),$j(books[combine:tags='.*[0-2]'][join]))", "tag1, tag2, tag1, tag1",
@@ -455,10 +462,19 @@ public class CustomCommandTest {
                 "$json(,$j())", null,
                 "$json($(j),$j([]))", null,
                 
-                // Invalid path
+                // Invalid path (regex parsing error)
                 "$json($(j),$j(books[collect:author=[a-z0-9]+][size]))", null,
-                // Same path, but with ' '
-                "$json($(j),$j(books[collect:author='[a-z0-9]+'][size]))", "4"
+                // Same path, but regex quoted with ' '
+                "$json($(j),$j(books[collect:author='[a-z0-9]+'][size]))", "4",
+                
+                // Collect from object
+                "$json($(j),$j(authors[collect:name][sort][join]))", "name1, name2",
+                "$json($(j),$j(authors,,each:$j(name),$j([sort][join])))", "name1, name2",
+                "$json($(j),$j(authors,,each:$(key) $j(name),$j([sort][join])))", "author1 name1, author2 name2",
+                "$json($(j),$j(books,,each:$(index) $j(title),$j([sort][join])))", "0 book1, 1 book2, 2 book3, 3 book4",
+                "$json($(j),$j(books,,each:$(index) $j(title),$j([join])))", "0 book1, 1 book2, 2 book3, 3 book4",
+                // Sort for array from object, since it may not always have the same order
+                "$json($(j),$j(authors,,each:$(key),$j([sort][join])))", "author1, author2"
         );
         
         // Construct the path using replacements

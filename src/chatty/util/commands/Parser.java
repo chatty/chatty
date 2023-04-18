@@ -1,6 +1,7 @@
 
 package chatty.util.commands;
 
+import chatty.util.Pair;
 import chatty.util.SyntaxHighlighter;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -605,8 +606,16 @@ public class Parser {
         if (accept(",")) {
             def = param();
         }
+        List<Pair<Item, Boolean>> subItems = new ArrayList<>();
+        while (accept(",")) {
+            boolean each = false;
+            if (reader.accept("each:")) {
+                each = true;
+            }
+            subItems.add(new Pair<>(param(), each));
+        }
         expect(")");
-        return new JsonPathItem(path, def, isRequired);
+        return new JsonPathItem(path, def, subItems, isRequired);
     }
     
     private Item quote(boolean isRequired) throws ParseException {

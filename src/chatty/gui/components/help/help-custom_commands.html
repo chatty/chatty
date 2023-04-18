@@ -678,7 +678,7 @@
         
         <dt><a name="func-json"><code>$json(&lt;input&gt;,&lt;output&gt;)</code></a></dt>
         <dd>Parse the JSON in <code>&lt;input&gt;</code> and use in <code>&lt;output&gt;</code>,
-            where <code>$j(&lt;path&gt;,[default])</code> can be used to access specific values.
+            where <code>$j(&lt;path&gt;,[default],[sub],...)</code> can be used to access specific values.
             The JSON input could e.g. come from the <code>$request()</code>
             function.</dd>
         <dd>If the path isn't formatted correctly or the JSON is invalid the
@@ -695,22 +695,34 @@
             <ul>
                 <li><code>last</code> for the last entry of an array</li>
                 <li><code>size</code> to return the number of elements</li>
+                <li><code>sort</code> to sort an array (mainly works for strings)</li>
                 <li><code>filter:&lt;path&gt;[=regex]</code> to select only
-                    certain array items based on whether a path exists or if a
+                    certain array items/object values based on whether a path exists or if a
                     regex is provided the value of the path</li>
                 <li><code>collect:&lt;path&gt;[=regex]</code> iterates over an
-                    array and for each element resolves the path and combines
+                    array/object values and for each element resolves the path and combines
                     the resulting values into an array</li>
                 <li><code>combine:&lt;path&gt;[=regex]</code> iterates over an
-                    array and for each element resolves the path and for each
+                    array/object values and for each element resolves the path and for each
                     resulting value that is an array adds all of the array
                     values into a single result array</li>
                 <li><code>unique</code> removes duplicate elements from an array</li>
                 <li><code>join[:delimiter]</code> turns an array into a string
                     by joining all elements together using the given delimiter
                     (or "<code>, </code>" if none is provided)</li>
+                <li><em>Note:</em> The regex and delimiter can be quoted using
+                    <code>'</code> (for example <code>[collect:abc='[a-z]+']</code>
+                    so that the <code>]</code> in the regex doesn't get mistaken
+                    as the end of the regex). To use a <code>'</code> in a quoted
+                    section you have to double it <code>''</code>.</li>
             </ul></dd>
-        <dd><em>Examples</em> with the following JSON as input:
+            <dd>The optional <code>[sub]</code> values can contain additional <code>$j()</code>
+                replacements, which are applied to the result of the path or previous <code>[sub]</code>
+                parameter. If prefixed with <code>each:</code> it will be applied
+                to each element on an array/object and the result collected into
+                an array (for objects the <code>$(key)</code> replacement and
+                for arrays the <code>$(index)</code> replacement is available).</dd>
+        <dd><br /><em>Examples</em> with the following JSON as input:
             <pre>
     {
         "books":[
@@ -719,6 +731,10 @@
             {"title":"book3", "author":"author2", "tags":["tag1", "tag3"]},
             {"title":"book4", "author":"author2"}
         ],
+        "authors":{
+            "author1":{"name":"name1", "age":24},
+            "author2":{"name":"name2", "age":62}
+        },
         "numBooks": 4,
         "numAuthors": 2
     }</pre>
@@ -751,6 +767,25 @@
                 
                 <dt><code>$json($get(var,j),Tags of author2: $j(books[filter:author=author2][combine:tags][unique][join]))</code></dt>
                 <dd><code>Tags of author2: tag1, tag3</code></dd>
+                
+                <dt><code>$json($get(var,j),$j(authors[collect:name][sort][join]))</code></dt>
+                <dd><code>name1, name2</code></dd>
+                
+                <dt><code>$json($get(var,j),$j(authors,,each:$(key): $j(name) \(age $j(age)\),$j([sort][join])))</code></dt>
+                <dd><code>author1: name1 (age 24), author2: name2 (age 62)</code></dd>
+                <dd>The <code>[sub]</code> parameters of <code>$j()</code> are used here:
+                    <pre>
+$j(
+    // Path to "authors" JSON object
+    authors,
+    // Skip the optional "[default]" parameter
+    ,
+    // Apply to each entry of "authors" and collect result in an array
+    each:$(key): $j(name) \(age $j(age)\),
+    // Sort and join array created from previous parameter
+    $j([sort][join])
+)</pre>
+                </dd>
             </dl>
             You can test these examples yourself if you store the JSON in the
             variable "j" using the command <code>/set var j copyJSONfromabove</code>

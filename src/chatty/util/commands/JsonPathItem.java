@@ -1,11 +1,15 @@
 
 package chatty.util.commands;
 
+import chatty.util.Pair;
 import chatty.util.StringUtil;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -25,24 +29,31 @@ class JsonPathItem implements Item {
     private final boolean isRequired;
     private final Item path;
     private final Item def;
+    private final List<Pair<Item, Boolean>> subItems;
     
-    public JsonPathItem(Item path, Item def, boolean isRequired) {
+    public JsonPathItem(Item path, Item def, List<Pair<Item, Boolean>> subItems, boolean isRequired) {
         this.path = path;
         this.def = def;
+        this.subItems = subItems;
         this.isRequired = isRequired;
     }
     
     @Override
     public String replace(Parameters parameters) {
+        // Get path
         String value = path.replace(parameters);
         if (!Item.checkReq(isRequired, value)) {
             return null;
         }
+        
+        // JSON to use
         Object data = parameters.getObject("json");
         if (data == null) {
             LOGGER.warning("No JSON object");
             return null;
         }
+        
+        // Resolve result
         Object result;
         try {
             result = new Parser(value).parse().resolve(data);
@@ -51,6 +62,45 @@ class JsonPathItem implements Item {
             String msg = CustomCommand.makeErrorMessage(ex.getLocalizedMessage(), ex.getErrorOffset(), value, false);
             LOGGER.warning("Error parsing $j(): "+msg);
             return null;
+        }
+        
+        // Sub results
+        for (Pair<Item, Boolean> subItemData : subItems) {
+            Parameters modifiedParameters = parameters.copy();
+            Item subItem = subItemData.key;
+            boolean each = subItemData.value;
+            if (each) {
+                // Apply to each object/array item
+                JSONArray arrayResult = new JSONArray();
+                if (result instanceof JSONObject) {
+                    JSONObject map = (JSONObject) result;
+                    for (Object key : map.keySet()) {
+                        modifiedParameters.put("key", String.valueOf(key));
+                        modifiedParameters.putObject("json", map.get(key));
+                        String itemResult = subItem.replace(modifiedParameters);
+                        if (itemResult == null) {
+                            return null;
+                        }
+                        arrayResult.add(itemResult);
+                    }
+                } else if (result instanceof JSONArray) {
+                    JSONArray array = (JSONArray) result;
+                    for (int i = 0; i < array.size(); i++) {
+                        modifiedParameters.put("index", String.valueOf(i));
+                        modifiedParameters.putObject("json", array.get(i));
+                        String itemResult = subItem.replace(modifiedParameters);
+                        if (itemResult == null) {
+                            return null;
+                        }
+                        arrayResult.add(itemResult);
+                    }
+                }
+                result = arrayResult;
+            }
+            else {
+                modifiedParameters.putObject("json", result);
+                result = subItem.replace(modifiedParameters);
+            }
         }
         
         String resultText = result == null ? "" : String.valueOf(result);
@@ -70,14 +120,24 @@ class JsonPathItem implements Item {
 
     @Override
     public Set<String> getIdentifiersWithPrefix(String prefix) {
-        return Item.getIdentifiersWithPrefix(prefix, path, def);
+        Set<String> result = new HashSet<>();
+        for (Pair<Item, Boolean> item : subItems) {
+            result.addAll(Item.getIdentifiersWithPrefix(prefix, item.key));
+        }
+        result.addAll(Item.getIdentifiersWithPrefix(prefix, path, def));
+        return result;
     }
     
     @Override
     public Set<String> getRequiredIdentifiers() {
-        return Item.getRequiredIdentifiers(isRequired, path, def);
+        Set<String> result = new HashSet<>();
+        for (Pair<Item, Boolean> item : subItems) {
+            result.addAll(Item.getRequiredIdentifiers(isRequired, item.key));
+        }
+        result.addAll(Item.getRequiredIdentifiers(isRequired, path, def));
+        return result;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -96,15 +156,19 @@ class JsonPathItem implements Item {
         if (!Objects.equals(this.path, other.path)) {
             return false;
         }
-        return Objects.equals(this.def, other.def);
+        if (!Objects.equals(this.def, other.def)) {
+            return false;
+        }
+        return Objects.equals(this.subItems, other.subItems);
     }
-    
+
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 37 * hash + (this.isRequired ? 1 : 0);
-        hash = 37 * hash + Objects.hashCode(this.path);
-        hash = 37 * hash + Objects.hashCode(this.def);
+        int hash = 5;
+        hash = 11 * hash + (this.isRequired ? 1 : 0);
+        hash = 11 * hash + Objects.hashCode(this.path);
+        hash = 11 * hash + Objects.hashCode(this.def);
+        hash = 11 * hash + Objects.hashCode(this.subItems);
         return hash;
     }
     
@@ -241,6 +305,19 @@ class JsonPathItem implements Item {
                         return result;
                     }
                     break;
+                case "sort":
+                    if (data instanceof JSONArray) {
+                        JSONArray result = new JSONArray();
+                        result.addAll((JSONArray) data);
+                        try {
+                            Collections.sort(result);
+                        }
+                        catch (Exception ex) {
+                            // Error sorting array, e.g. not Comparable
+                            return null;
+                        }
+                        return result;
+                    }
             }
             return null;
         }
@@ -284,32 +361,45 @@ class JsonPathItem implements Item {
                 JSONArray array = (JSONArray) data;
                 JSONArray result = new JSONArray();
                 for (Object o : array) {
-                    Object value = path.resolve(o);
-                    if (value != null && (search == null || search.matcher(String.valueOf(value)).matches())) {
-                        switch (type) {
-                            case "filter":
-                                result.add(o);
-                                break;
-                            case "collect":
-                                result.add(value);
-                                break;
-                        }
-                    }
-                    if (type.equals("combine") && value instanceof JSONArray) {
-                        if (value instanceof JSONArray) {
-                            for (Object item : (JSONArray) value) {
-                                // Check each item in the array instead of the
-                                // value overall
-                                if (item != null && (search == null || search.matcher(String.valueOf(item)).matches())) {
-                                    result.add(item);
-                                }
-                            }
-                        }
-                    }
+                    makeResult(o, result);
+                }
+                return result;
+            }
+            else if (data instanceof JSONObject) {
+                JSONObject object = (JSONObject) data;
+                JSONArray result = new JSONArray();
+                for (Object key : object.keySet()) {
+                    Object o = object.get(key);
+                    makeResult(o, result);
                 }
                 return result;
             }
             return null;
+        }
+        
+        private void makeResult(Object o, JSONArray result) {
+            Object value = path.resolve(o);
+            if (value != null && (search == null || search.matcher(String.valueOf(value)).matches())) {
+                switch (type) {
+                    case "filter":
+                        result.add(o);
+                        break;
+                    case "collect":
+                        result.add(value);
+                        break;
+                }
+            }
+            if (type.equals("combine") && value instanceof JSONArray) {
+                if (value instanceof JSONArray) {
+                    for (Object item : (JSONArray) value) {
+                        // Check each item in the array instead of the
+                        // value overall
+                        if (item != null && (search == null || search.matcher(String.valueOf(item)).matches())) {
+                            result.add(item);
+                        }
+                    }
+                }
+            }
         }
         
     }
@@ -361,6 +451,7 @@ class JsonPathItem implements Item {
                             break;
                         case "unique":
                         case "size":
+                        case "sort":
                             result =  new FuncItem(name);
                             break;
                         case "filter":
