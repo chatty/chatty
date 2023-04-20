@@ -42,7 +42,7 @@ class Json implements Item {
             }
             return outputValue;
         }
-        catch (ParseException ex) {
+        catch (ParseException | NumberFormatException ex) {
             LOGGER.warning("Error parsing JSON: "+ex);
             return null;
         }
