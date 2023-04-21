@@ -2739,7 +2739,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         // Sent messages
         if (user.isLocalUser()) {
             findEmoticons(main.emoticons.getUsableGlobalTwitchEmotes(), text, ranges, rangesStyle);
-            findEmoticons(main.emoticons.getUsableFollowerEmotes(channel.getStreamName()), text, ranges, rangesStyle);
+            findEmoticons(main.emoticons.getUsableFollowerEmotes(user.getStream()), text, ranges, rangesStyle);
             findEmoticons(main.emoticons.getSmilies(), text, ranges, rangesStyle);
         }
         
