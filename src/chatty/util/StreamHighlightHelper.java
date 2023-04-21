@@ -22,6 +22,8 @@ import java.nio.file.Path;
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.WRITE;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -43,6 +45,8 @@ public class StreamHighlightHelper {
     private final Path file;
     
     private long lastStreamStartWritten = -1;
+    
+    private final Map<String, ElapsedTime> highlightLastAdded = new HashMap<>();
     
     public StreamHighlightHelper(Settings settings, TwitchApi api) {
         this.settings = settings;
@@ -111,6 +115,9 @@ public class StreamHighlightHelper {
     public String addHighlight(String channel, String comment, User chatUser) {
         if (channel == null || channel.isEmpty() || !Helper.isRegularChannel(channel)) {
             return "Failed adding stream highlight (no channel).";
+        }
+        if (!checkCooldown(channel)) {
+            return "Stream highlight not added (cooldown).";
         }
         
         String rawComment = comment;
@@ -191,6 +198,7 @@ public class StreamHighlightHelper {
             boolean success = addToFile(line);
             if (success) {
                 lastStreamStartWritten = streamInfo.getTimeStarted();
+                cooldownSetAdded(channel);
                 
                 // Command
                 String template = settings.getString("streamHighlightResponseMsg");
@@ -211,6 +219,24 @@ public class StreamHighlightHelper {
             }
             return "Failed adding stream highlight (write error)."+createdMarkerText;
         }
+    }
+    
+    private boolean checkCooldown(String channel) {
+        int cooldownSeconds = settings.getInt("streamHighlightCooldown");
+        if (cooldownSeconds <= 0) {
+            return true;
+        }
+        if (!highlightLastAdded.containsKey(channel)) {
+            highlightLastAdded.put(channel, new ElapsedTime());
+        }
+        return highlightLastAdded.get(channel).secondsElapsedSync(cooldownSeconds);
+    }
+    
+    private void cooldownSetAdded(String channel) {
+        if (settings.getInt("streamHighlightCooldown") <= 0) {
+            return;
+        }
+        highlightLastAdded.get(channel).setSync();
     }
     
     /**

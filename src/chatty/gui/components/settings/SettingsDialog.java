@@ -942,6 +942,10 @@ public class SettingsDialog extends JDialog implements ActionListener {
     }
     
     protected ComboLongSetting addComboLongSetting(String name, int... choices) {
+        return addComboLongSetting(name, false, choices);
+    }
+    
+    protected ComboLongSetting addComboLongSetting(String name, boolean editable, int... choices) {
         Map<Long, String> localizedChoices = new LinkedHashMap<>();
         for (Integer choice : choices) {
             String label = Language.getString("settings.long."+name+".option."+choice, false);
@@ -951,6 +955,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
             localizedChoices.put((long)choice, label);
         }
         ComboLongSetting result = new ComboLongSetting(localizedChoices);
+        result.setEditable(editable);
         result.setToolTipText(SettingsUtil.addTooltipLinebreaks(Language.getString("settings.long."+name+".tip", false)));
         longSettings.put(name, result);
         return result;

@@ -114,6 +114,10 @@ public class StreamSettings extends SettingsPanel {
         
         SettingsUtil.addSubsettings(customEnabled, customOutput);
         
+        SettingsUtil.addLabeledComponent(hlPanel, "streamHighlightCooldown", 
+                0, 5, 2, GridBagConstraints.WEST,
+                d.addComboLongSetting("streamHighlightCooldown", true, 0, 5, 10, 15, 20, 25, 30, 60, 120));
+        
         //==========================
         // Chat Command
         //==========================

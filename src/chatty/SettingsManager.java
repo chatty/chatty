@@ -775,6 +775,7 @@ public class SettingsManager {
         settings.addBoolean("streamHighlightCustomEnabled", false);
         settings.addString("streamHighlightCustom", "$(timestamp),$(chan),$(uptime),$(streamgame),$(chatuser),$quote($(rawcomment))");
         settings.addBoolean("streamHighlightExtra", true);
+        settings.addLong("streamHighlightCooldown", 0);
 
         // Stream Status Writer
         settings.addBoolean("enableStatusWriter", false);
