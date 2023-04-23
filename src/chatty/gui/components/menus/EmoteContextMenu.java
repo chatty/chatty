@@ -44,7 +44,10 @@ public class EmoteContextMenu extends ContextMenu {
                 }
             }
         }
-        addItem("emoteImage", emoteImage.getSizeString(), ICON_IMAGE);
+        String imageMenu = emoteImage.getSizeString();
+        addItem("emoteImage", "Source", imageMenu);
+        addItem("emoteImageLoaded", "Loaded from", imageMenu);
+        setSubMenuIcon(imageMenu, ICON_IMAGE);
         switch (emote.type) {
             case TWITCH:
             case FFZ:

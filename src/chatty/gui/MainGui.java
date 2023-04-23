@@ -2397,7 +2397,9 @@ public class MainGui extends JFrame implements Runnable {
             } else if (e.getActionCommand().equals("cheer")) {
                 url = "https://help.twitch.tv/customer/portal/articles/2449458";
             } else if (e.getActionCommand().equals("emoteImage")) {
-                url = emoteImage.getLoadedFrom();
+                url = emoteImage.getSourceUrl();
+            } else if (e.getActionCommand().equals("emoteImageLoaded")) {
+                url = emoteImage.getLoadedFromUrl();
             } else if (e.getActionCommand().equals("ffzlink")) {
                 url = TwitchUrl.makeFFZUrl();
             } else if (e.getActionCommand().equals("emoteId")) {
@@ -2472,7 +2474,7 @@ public class MainGui extends JFrame implements Runnable {
                 }
             }
             else if (e.getActionCommand().equals("badgeImage")) {
-                UrlOpener.openUrlPrompt(getActiveWindow(), usericonImage.getLoadedFrom(), true);
+                UrlOpener.openUrlPrompt(getActiveWindow(), usericonImage.getSourceUrl(), true);
             }
         }
         
