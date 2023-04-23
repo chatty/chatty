@@ -614,7 +614,7 @@ public class ImageCache {
          * @return 
          */
         public ImageResult finishIcon(ImageIcon icon, boolean isGif) {
-            Dimension actualBaseSize = getSizeFromImage(icon);
+            Dimension actualBaseSize = getCorrectedSizeFromImage(icon);
             Dimension baseSize = defaultSize != null ? defaultSize : actualBaseSize;
             Dimension scaledSize = getScaledSize(baseSize, scaleFactor, maxHeight);
             if (resize && !actualBaseSize.equals(scaledSize)) {
@@ -696,7 +696,7 @@ public class ImageCache {
          * @param icon The ImageIcon to get the size from
          * @return The size of the given image
          */
-        public Dimension getSizeFromImage(ImageIcon icon) {
+        public Dimension getCorrectedSizeFromImage(ImageIcon icon) {
             return getUrlFactorCorrectedSize(icon.getIconWidth(), icon.getIconHeight());
         }
         
@@ -706,7 +706,7 @@ public class ImageCache {
          * @param image The image to get the size from
          * @return The size of the given image
          */
-        public Dimension getSizeFromImage(BufferedImage image) {
+        public Dimension getCorrectedSizeFromImage(BufferedImage image) {
             return getUrlFactorCorrectedSize(image.getWidth(), image.getHeight());
         }
         
@@ -718,7 +718,7 @@ public class ImageCache {
          * @param height
          * @return 
          */
-        private Dimension getUrlFactorCorrectedSize(int width, int height) {
+        public Dimension getUrlFactorCorrectedSize(int width, int height) {
             if (urlFactor > 1) {
                 width /= urlFactor;
                 height /= urlFactor;

@@ -118,7 +118,7 @@ public class GifUtil {
         try (ImageOutputStream output = ImageIO.createImageOutputStream(bos)) {
             // Determine sizes
             BufferedImage firstImage = gif.getFrame(0);
-            actualBaseSize = request.getSizeFromImage(firstImage);
+            actualBaseSize = request.getCorrectedSizeFromImage(firstImage);
             Dimension scaledSize = request.getScaledSizeIfNecessary(actualBaseSize);
             // Write frames
             GifSequenceWriter w = GifSequenceWriter.create(output, firstImage);
@@ -174,7 +174,7 @@ public class GifUtil {
         GifDecoderFMS gif = new GifDecoderFMS();
         gif.read(new ByteArrayInputStream(data));
         Dimension size = new Dimension();
-        Dimension actualBaseSize = request.getSizeFromImage(gif.getFrame(0));
+        Dimension actualBaseSize = request.getCorrectedSizeFromImage(gif.getFrame(0));
         Dimension scaledSize = request.getScaledSizeIfNecessary(actualBaseSize);
         List<ListAnimatedImageFrame> frames = new ArrayList<>();
         for (int i = 0; i < gif.getFrameCount(); i++) {

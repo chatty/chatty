@@ -128,7 +128,7 @@ public class WebPUtil {
         try {
             WebPImage img = WebPDecoder.decode(data);
             Dimension size = new Dimension();
-            Dimension actualBaseSize = new Dimension(img.canvasWidth, img.canvasHeight);
+            Dimension actualBaseSize = request.getUrlFactorCorrectedSize(img.canvasWidth, img.canvasHeight);
             Dimension scaledSize = request.getScaledSizeIfNecessary(actualBaseSize);
             if (img.frameCount == 1) {
                 ImageIcon icon = new ImageIcon(img.frames.get(0).img);
