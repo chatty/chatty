@@ -71,7 +71,7 @@ public class UrlRequest {
         new Thread(() -> {
             FullResult result = new FullResult();
             performRequest(result);
-            if (Debugging.isEnabled("requestresponse")) {
+            if (Debugging.isEnabled("requestresponse") && result.result != null) {
                 LOGGER.info(result.result);
             }
             listener.result(result.getResult(), result.getResponseCode());

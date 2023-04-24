@@ -169,6 +169,7 @@ public class SevenTV {
             b.setSize(width, height);
             b.setStringId(id);
             b.setAnimated(animated);
+            b.setLiteral(true);
             
             if (stream != null) {
                 b.addStreamRestriction(stream);
