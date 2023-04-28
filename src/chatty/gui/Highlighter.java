@@ -589,6 +589,8 @@ public class Highlighter {
         private Color backgroundColor;
         private boolean noNotification;
         private boolean noSound;
+        private boolean hide;
+        private boolean noLog;
         
         /**
          * Replacement string for filtering parts of a message
@@ -904,6 +906,12 @@ public class Highlighter {
                         }
                         else if (part.equals("!notify")) {
                             noNotification = true;
+                        }
+                        else if (part.equals("hide")) {
+                            hide = true;
+                        }
+                        else if (part.equals("!log")) {
+                            noLog = true;
                         }
                         else if (part.equals("block")) {
                             blacklistBlock = true;
@@ -2041,6 +2049,14 @@ public class Highlighter {
         
         public boolean noSound() {
             return noSound;
+        }
+        
+        public boolean hide() {
+            return hide;
+        }
+        
+        public boolean noLog() {
+            return noLog;
         }
         
         public String getFailedReason() {
