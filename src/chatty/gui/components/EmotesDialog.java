@@ -73,9 +73,13 @@ import chatty.util.api.CachedImage.CachedImageUser;
 import chatty.util.api.Emoticon.TypeCategory;
 import chatty.util.api.EmoticonFavorites.Favorite;
 import chatty.util.api.IgnoredEmotes;
+import java.awt.event.KeyEvent;
+import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 
 /**
  * Dialog showing emoticons that can be clicked on to insert them in the last
@@ -1217,19 +1221,35 @@ public class EmotesDialog extends JDialog {
                     list.setModel(data);
                     notFoundFavorites.forEach(fav -> data.addElement(fav));
                     
-                    // Remove Button
-                    JButton removeButton = new JButton(Language.getString("emotesDialog.button.unfavoriteSelected"));
-                    removeButton.addActionListener(e -> {
-                        int selected = list.getSelectedIndex();
+                    Runnable removeAction = () -> {
                         // Remove selected entries
                         Collection<Favorite> toRemove = list.getSelectedValuesList();
                         emoteManager.removeFavorites(toRemove);
                         toRemove.forEach(fav -> data.removeElement(fav));
-                        // Select an entry again
-                        selected = Math.min(data.size() - 1, selected);
-                        if (data.size() > selected) {
-                            list.setSelectedIndex(selected);
+                        // For updating title
+                        updateEmotes();
+                    };
+                    list.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "removeFavoriteEmotes");
+                    list.getActionMap().put("removeFavoriteEmotes", new AbstractAction() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            removeAction.run();
                         }
+                    });
+                    JListActionHelper.install(list, (a, l, s) -> {
+                        if (a == JListActionHelper.Action.CONTEXT_MENU) {
+                            JPopupMenu menu = new JPopupMenu();
+                            JMenuItem item = new JMenuItem(Language.getString("emotesDialog.button.unfavoriteSelected"));
+                            item.addActionListener(e2 -> removeAction.run());
+                            menu.add(item);
+                            menu.show(list, l.x, l.y);
+                        }
+                    });
+                    
+                    // Remove Button
+                    JButton removeButton = new JButton(Language.getString("emotesDialog.button.unfavoriteSelected"));
+                    removeButton.addActionListener(e -> {
+                        removeAction.run();
                     });
                     
                     // Layout
