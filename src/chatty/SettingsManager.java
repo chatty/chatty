@@ -130,7 +130,7 @@ public class SettingsManager {
 
         // Hotkeys
         addDefaultHotkeyAppWide("0.7.3", "dialog.streams", "ctrl L");
-        addDefaultHotkey("0.7.3", "dialog.toggleEmotes", "ctrl E");
+        addDefaultHotkeyAppWide("0.7.3", "dialog.toggleEmotes", "ctrl E");
         addDefaultHotkey("0.7.3", "dialog.search", "ctrl F");
         addDefaultHotkey("0.7.3", "dialog.joinChannel", "ctrl J");
         addDefaultHotkeyAppWide("0.7.3", "window.toggleUserlist", "F9");
