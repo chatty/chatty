@@ -73,11 +73,48 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.24">Version 0.24</a> <a name="latest">(This one!)</a> (2023-??-??)
+        <a name="0.24">Version 0.24</a> <a name="latest">(This one!)</a> (2023-05-09)
         <a href="#top" class="top">[back to top]</a>
     </h2>
     <pre>
-BETA, TBD
+### Twitch Features
+- Added some support for suspicious users (for moderators)
+  - Info about monitored/restricted messages it appended to the message
+  - Restricted messages (that aren't posted to regular chat) are shown in chat
+  - Changing monitored/restricted status of a user shown in Modlogs
+  - Some information shown in the User Dialog of involved users
+  - You can match on restricted messages via `config:restricted`, monitored
+    users can not be matched on since that information isn't necessarily
+    available at the time matching happens
+  - There is no API to get/change the monitored/restricted state of users, only
+    the info associated with chat messages
+
+### Emoticons
+- Improved support for Follower Emotes (subscribers can use them globally)
+- Added support for FFZ animated emotes
+- Added setting to toggle using WebP (and WebP is now als used for BTTV and
+  animated FFZ emotes for better quality, if possible)
+- Fallback to PNG/GIF for 7TV if WebP is not enabled or supported
+
+### Other
+- Added command `/msgreplythread` to continue a reply thread
+- Added check whether updating stream status in Admin Dialog actually succeeded
+  (the API does not always return an error when it should)
+- Made search dialog resizable
+- Increased chat input field length limit for non-messages (e.g. when using
+  setting commands with a long value)
+- Improved `$j()` replacement (for `$json()`) to allow more functions to be
+  applied to objects, added `[sort]` and sub parameters for more flexibility
+- Added Stream Highlights cooldown setting
+- Added matching prefixes `config:hide` (to not add to the Highlighted/Ignored
+  Messages panel) and `config:!log` (to not add to the separate log files)
+- Some small UI improvements
+- Updated help
+
+### Bugfixes
+- Fixed bug in Highlight Tester where presets/substitutes were sometimes not set
+- Fixed 7TV emotes with special characters not being shown
+- Fixed favorite emotes not being sorted first unless `:` is used
     </pre>
     
     <h2>
