@@ -3479,13 +3479,14 @@ public class MainGui extends JFrame implements Runnable {
                         ignoreMatches = ignoreList.getLastTextMatches();
                         ignoreSource = ignoreList.getLastMatchItems();
                     }
-                    if (!ignoreList.getLastMatchItem().hide()) {
+                    // No match item is set when ignored by "Ignored Users" list
+                    if (ignoredUser || !ignoreList.getLastMatchItem().hide()) {
                         ignoredMessages.addMessage(channel, user, text, action,
                                 tagEmotes, bitsForEmotes, whisper, ignoreMatches,
                                 ignoreSource, tags);
                         ignoredMessagesHelper.ignoredMessage(channel);
                     }
-                    if (!ignoreList.getLastMatchItem().noLog()) {
+                    if (ignoredUser || !ignoreList.getLastMatchItem().noLog()) {
                         client.chatLog.message("ignored", user, text, action, channel);
                     }
                 }
