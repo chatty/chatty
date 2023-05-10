@@ -3479,7 +3479,7 @@ public class MainGui extends JFrame implements Runnable {
                         ignoreMatches = ignoreList.getLastTextMatches();
                         ignoreSource = ignoreList.getLastMatchItems();
                     }
-                    if (!ignoreList.getLastMatchItem().hide()) {
+                    if (ignoreList.getLastMatchItem() != null && !ignoreList.getLastMatchItem().hide()) {
                         ignoredMessages.addMessage(channel, user, text, action,
                                 tagEmotes, bitsForEmotes, whisper, ignoreMatches,
                                 ignoreSource, tags);
