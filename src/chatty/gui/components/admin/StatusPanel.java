@@ -423,7 +423,8 @@ public class StatusPanel extends JPanel {
     
     public void channelStatusReceived(ChannelStatus channelStatus, TwitchApi.RequestResultCode result) {
         if (channelStatus.channelLogin.equals(currentChannel)) {
-            if (channelStatusToCheck != null) {
+            if (channelStatusToCheck != null
+                    && channelStatusToCheck.channelLogin.equals(currentChannel)) {
                 String difference = channelStatusToCheck.getStatusDifference(channelStatus);
                 if (!difference.isEmpty()) {
                     JOptionPane.showMessageDialog(this,
@@ -437,8 +438,8 @@ public class StatusPanel extends JPanel {
                                     + "Tags: %s", difference, channelStatus.title, channelStatus.category, channelStatus.tags),
                             "Update failed", JOptionPane.WARNING_MESSAGE);
                 }
-                channelStatusToCheck = null;
             }
+            channelStatusToCheck = null;
             if (result == TwitchApi.RequestResultCode.SUCCESS) {
                 if (updateStatusAfterLoad) {
                     status.setText(channelStatus.title);
@@ -494,6 +495,8 @@ public class StatusPanel extends JPanel {
                 statusPutResult = "Update: Invalid title/game (possibly bad language)";
                 updated.setText("Error: Invalid title/game");
             }
+            // If error it's not updated anyway, so no need to check
+            channelStatusToCheck = null;
         }
         lastPutResult = System.currentTimeMillis();
         loadingStatus = false;
