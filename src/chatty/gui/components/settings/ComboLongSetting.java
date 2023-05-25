@@ -20,8 +20,16 @@ public class ComboLongSetting extends GenericComboSetting<Long> implements LongS
             return super.getSettingValue(def);
         }
         catch (ClassCastException ex) {
-            return 0L;
+            try {
+                Object v = ((Entry) getSelectedItem()).value;
+                if (v instanceof String) {
+                    return Long.valueOf((String) v);
+                }
+            }
+            catch (NumberFormatException ex2) {
+            }
         }
+        return 0L;
     }
     
 }
