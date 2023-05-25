@@ -233,7 +233,8 @@ public class StreamHighlightHelper {
     }
     
     private void cooldownSetAdded(String channel) {
-        if (settings.getInt("streamHighlightCooldown") <= 0) {
+        if (settings.getInt("streamHighlightCooldown") <= 0
+                || !highlightLastAdded.containsKey(channel)) {
             return;
         }
         highlightLastAdded.get(channel).setSync();
