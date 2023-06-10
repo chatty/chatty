@@ -868,6 +868,9 @@ public class LinkController extends MouseAdapter {
         if (Debugging.isEnabled("tt")) {
             info += " ["+usericonImage.getImageIcon().getDescription()+"]";
         }
+        if (usericon.metaDescription != null && !usericon.metaDescription.isEmpty()) {
+            info += "<br />"+usericon.metaDescription;
+        }
         if (!StringUtil.isNullOrEmpty(moreInfo)) {
             info += "<br />("+moreInfo+")";
         }

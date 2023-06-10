@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
@@ -94,7 +95,15 @@ public class BadgeManager {
             String version = JSONUtil.getString(versionData, "id");
             String url = JSONUtil.getString(versionData, "image_url_1x");
             String url2 = JSONUtil.getString(versionData, "image_url_2x");
-            String title = StringUtil.firstToUpperCase(id);
+            String clickUrl = JSONUtil.getString(versionData, "click_url", "");
+            String title;
+            String description = "";
+            /**
+             * Even after title/description fields were added to the API these
+             * custom created ones seem fine (for subscribers it even seems
+             * better because it includes the Tier, assuming that works
+             * correcly).
+             */
             switch (id) {
                 case "subscriber":
                     title = makeSubscriberTitle(version);
@@ -105,11 +114,17 @@ public class BadgeManager {
                 case "sub-gifter":
                     title = makeSubGifterTitle(version);
                     break;
+                default:
+                    title = JSONUtil.getString(versionData, "title");
+                    description = JSONUtil.getString(versionData, "description");
+            }
+            if (Objects.equals(title, description)) {
+                description = "";
             }
 
             if (id != null && version != null && url != null) {
                 Usericon icon = UsericonFactory.createTwitchBadge(id, version, 
-                        url, url2, room, title, "", "");
+                        url, url2, room, title, description, clickUrl);
                 if (icon != null) {
                     result.add(icon);
                     Debugging.println("badgetitles", "%s/%s %s", id, version, title);
