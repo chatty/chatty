@@ -73,8 +73,13 @@ public class QueuedApi {
                             // Get some data from the response and forward to external listener
                             QueuedApi.this.ratelimitRemaining = ratelimitRemaining;
                             activeRequests.release();
-                            if (Debugging.isEnabled("requestresponse") && result != null) {
-                                LOGGER.info(result);
+                            if (Debugging.isEnabled("requestresponse")) {
+                                if (result != null) {
+                                    LOGGER.info(result);
+                                }
+                                if (errorResult != null) {
+                                    LOGGER.info("E:"+errorResult);
+                                }
                             }
                             // This may run a while (e.g. loading images etc.)
                             entry.listener.result(new ResultListener.Result(result, responseCode, errorResult));
