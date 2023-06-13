@@ -194,6 +194,14 @@ public class LinkController extends MouseAdapter {
                 handleSingleLeftClick(e, element);
             }
         }
+        else if (e.getClickCount() == 1
+                && SwingUtilities.isMiddleMouseButton(e)
+                && !e.isPopupTrigger()) {
+            Element element = getElement(e);
+            if (element != null) {
+                handleSingleMiddleClick(e, element);
+            }
+        }
         else if (e.isPopupTrigger()) {
             openContextMenu(e);
         }
@@ -229,6 +237,18 @@ public class LinkController extends MouseAdapter {
         } else if ((usericonImage = getUsericonImage(element)) != null) {
             for (UserListener listener : userListener) {
                 listener.usericonClicked(usericonImage.getObject(), e);
+            }
+        }
+    }
+    
+    private void handleSingleMiddleClick(MouseEvent e, Element element) {
+        User user;
+        if ((user = getUser(element)) != null || (user = getMention(element)) != null) {
+            for (UserListener listener : userListener) {
+                final User finalUser = user;
+                SwingUtilities.invokeLater(() -> {
+                    listener.userClicked(finalUser, getMsgId(element), getAutoModMsgId(element), e);
+                });
             }
         }
     }

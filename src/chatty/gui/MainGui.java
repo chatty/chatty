@@ -2533,32 +2533,51 @@ public class MainGui extends JFrame implements Runnable {
         
         @Override
         public void userClicked(User user, String msgId, String autoModMsgId, MouseEvent e) {
-            if (e == null || (!e.isControlDown() && !e.isAltDown())) {
+            if (e == null ||
+                    (!e.isControlDown()
+                     && !e.isAltDown()
+                     && !SwingUtilities.isMiddleMouseButton(e))) {
                 openUserInfoDialog(user, msgId, autoModMsgId);
                 return;
             }
             String command = client.settings.getString("commandOnCtrlClick").trim();
-            if (e.isControlDown() && command.length() > 1) {
-                CustomCommand customCommand;
-                Parameters parameters = Parameters.create(user.getRegularDisplayNick());
-                Helper.addUserParameters(user, msgId, autoModMsgId, parameters);
-                if (command.contains(" ")) {
-                    // Assume that something containing a space is direct Custom Command
-                    customCommand = CustomCommand.parse(command);
+            if (SwingUtilities.isMiddleMouseButton(e)) {
+                if (e.isControlDown()) {
+                    userClickCommand(user, client.settings.getString("commandOnCtrlMiddleClick"), msgId, autoModMsgId);
                 } else {
-                    // Just a command name (old format)
-                    if (!command.startsWith("/")) {
-                        // Need to add since not calling client.command(), so
-                        // it would just be output to chat (but could just be
-                        // a command name)
-                        command = "/"+command;
-                    }
-                    customCommand = CustomCommand.createDefault(command);
+                    userClickCommand(user, client.settings.getString("commandOnMiddleClick"), msgId, autoModMsgId);
                 }
-                client.anonCustomCommand(user.getRoom(), customCommand, parameters);
-            } else if (!e.isAltDown()) {
+            }
+            else if (e.isControlDown() && command.length() > 1) {
+                userClickCommand(user, command, msgId, autoModMsgId);
+            }
+            else if (!e.isAltDown()) {
                 openUserInfoDialog(user, msgId, autoModMsgId);
             }
+        }
+        
+        private void userClickCommand(User user, String command, String msgId, String autoModMsgId) {
+            command = command.trim();
+            if (command.length() <= 1) {
+                return;
+            }
+            CustomCommand customCommand;
+            Parameters parameters = Parameters.create(user.getRegularDisplayNick());
+            Helper.addUserParameters(user, msgId, autoModMsgId, parameters);
+            if (command.contains(" ")) {
+                // Assume that something containing a space is direct Custom Command
+                customCommand = CustomCommand.parse(command);
+            } else {
+                // Just a command name (old format)
+                if (!command.startsWith("/")) {
+                    // Need to add since not calling client.command(), so
+                    // it would just be output to chat (but could just be
+                    // a command name)
+                    command = "/" + command;
+                }
+                customCommand = CustomCommand.createDefault(command);
+            }
+            client.anonCustomCommand(user.getRoom(), customCommand, parameters);
         }
 
         @Override

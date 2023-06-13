@@ -1873,7 +1873,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
          */
         @Override
         public void userClicked(User user, String messageId, String autoModMsgId, MouseEvent e) {
-            if (e != null && ((e.isAltDown() && e.isControlDown()) || e.isAltGraphDown())) {
+            if (e != null
+                    && ((e.isAltDown() && e.isControlDown()) || e.isAltGraphDown())
+                    && !SwingUtilities.isMiddleMouseButton(e)) {
                 Element element = LinkController.getElement(e);
                 Element line = null;
                 while (element.getParentElement() != null) {

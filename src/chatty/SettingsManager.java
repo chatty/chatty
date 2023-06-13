@@ -590,6 +590,8 @@ public class SettingsManager {
         settings.addBoolean("pauseChatOnMouseMove", false);
         settings.addBoolean("pauseChatOnMouseMoveCtrlRequired", false);
         settings.addString("commandOnCtrlClick", "");
+        settings.addString("commandOnMiddleClick", "");
+        settings.addString("commandOnCtrlMiddleClick", "");
 
         // Not really used anymore, kept for compatability
         settings.addBoolean("ignoreJoinsParts",false);
