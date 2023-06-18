@@ -59,6 +59,7 @@ import chatty.util.TimerCommand.TimerResult;
 import chatty.util.TwitchEmotesApi;
 import chatty.util.UserRoom;
 import chatty.util.Webserver;
+import chatty.util.api.AccessChecker;
 import chatty.util.api.AutoModCommandHelper;
 import chatty.util.api.ChannelStatus;
 import chatty.util.api.CheerEmoticon;
@@ -352,6 +353,9 @@ public class TwitchClient {
         c.setBotNameManager(botNameManager);
         c.addChannelStateListener(new ChannelStateUpdater());
         c.setMaxReconnectionAttempts(settings.getLong("maxReconnectionAttempts"));
+        
+        // Uses TwitchConnection
+        AccessChecker.setInstance(new AccessChecker(settings, this));
         
         w = new WhisperManager(new MyWhisperListener(), settings, c, this);
         

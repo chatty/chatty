@@ -5000,6 +5000,7 @@ public class MainGui extends JFrame implements Runnable {
         }
         if (info.valid) {
             client.settings.putList("scopes", info.scopes);
+            AccessChecker.instance().removeWarningsForAvailableScopes();
         } else {
             client.settings.listClear("scopes");
         }

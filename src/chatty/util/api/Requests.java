@@ -80,6 +80,22 @@ public class Requests {
         });
     }
     
+    public void requestFollowersNew(String streamId, String stream) {
+        boolean modAccess = AccessChecker.instance().check(Helper.toChannel(stream), TokenInfo.Scope.CHANNEL_FOLLOWERS, true, false);
+        // Use old API in some cases while still available
+        if (!modAccess && !FollowerManager.forceNewFollowsApi()) {
+            requestFollowers(streamId, stream);
+            return;
+        }
+        
+        String url = makeUrl("https://api.twitch.tv/helix/channels/followers",
+                "broadcaster_id", streamId,
+                "first", "100");
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            api.followerManager.received(r.responseCode, stream, r.text);
+        });
+    }
+    
     protected void requestSubscribers(String streamId, String stream) {
         String url = String.format("https://api.twitch.tv/helix/subscriptions?broadcaster_id=%s&first=100",
                 streamId);
@@ -242,7 +258,46 @@ public class Requests {
                 userID,
                 streamID);
         newApi.add(url, "GET", api.defaultToken, r -> {
-            api.followerManager.receivedSingle(r.responseCode, stream, r.text, user);
+            api.followerManager.receivedSingle(r.responseCode, stream, r.text, user, false);
+        });
+    }
+    
+    public void getSingleFollowerNew(String stream, String streamID, String user, String userID) {
+        boolean modAccess = AccessChecker.instance().check(Helper.toChannel(stream), TokenInfo.Scope.CHANNEL_FOLLOWERS, true, false);
+        // Use old API in some cases while still available
+        if (!modAccess && !FollowerManager.forceNewFollowsApi()) {
+            getSingleFollower(stream, streamID, user, userID);
+            return;
+        }
+        
+        if (StringUtil.isNullOrEmpty(stream, user, streamID, userID)) {
+            return;
+        }
+        if (userID.equals(api.localUserId)) {
+            // User may not have access to the channel's followers, but to their own
+            getSingleOwnFollow(stream, streamID, user, userID);
+            return;
+        }
+        if (!modAccess) {
+            return;
+        }
+        String url = makeUrl("https://api.twitch.tv/helix/channels/followers",
+                "broadcaster_id", streamID,
+                "user_id", userID);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            api.followerManager.receivedSingle(r.responseCode, stream, r.text, user, false);
+        });
+    }
+    
+    public void getSingleOwnFollow(String stream, String streamID, String user, String userID) {
+        if (StringUtil.isNullOrEmpty(stream, user, streamID, userID)) {
+            return;
+        }
+        String url = makeUrl("https://api.twitch.tv/helix/channels/followed",
+                "broadcaster_id", streamID,
+                "user_id", userID);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            api.followerManager.receivedSingle(r.responseCode, stream, r.text, user, true);
         });
     }
     

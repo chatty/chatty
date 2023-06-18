@@ -56,6 +56,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.Timer;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
@@ -96,6 +97,9 @@ public class FollowersDialog extends JDialog {
     private final JTable table;
     private final ListTableModel<Follower> followers = new MyListTableModel();
     private final JLabel loadInfo = new JLabel();
+    
+    private final JScrollPane accessInfo;
+    private final JScrollPane mainTable;
     
     private final TwitchApi api;
     private final MainGui main;
@@ -176,7 +180,16 @@ public class FollowersDialog extends JDialog {
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setFont(table.getFont().deriveFont(Font.BOLD));
         table.setRowHeight(table.getFontMetrics(table.getFont()).getHeight()+2);
-        mainPanel.add(new JScrollPane(table), gbc);
+        mainTable = new JScrollPane(table);
+        mainPanel.add(mainTable, gbc);
+        
+        JTextArea accessInfoText = new JTextArea("The list of followers is only available for moderators. "
+                + "If you are a moderator you may be missing the required access, see 'Main - Account'.");
+        accessInfoText.setLineWrap(true);
+        accessInfoText.setWrapStyleWord(true);
+        accessInfoText.setEditable(false);
+        accessInfo = new JScrollPane(accessInfoText);
+        mainPanel.add(accessInfo, gbc);
         
         gbc = GuiUtil.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST);
         gbc.insets = new Insets(2, 5, 5, 5);
@@ -283,6 +296,14 @@ public class FollowersDialog extends JDialog {
         setSize(300,400);
         
         GuiUtil.installEscapeCloseOperation(this);
+        
+        updateMain();
+    }
+    
+    private void updateMain() {
+        boolean showTable = currentInfo == null || currentInfo.total == 0 || !currentInfo.followers.isEmpty();
+        mainTable.setVisible(showTable);
+        accessInfo.setVisible(!showTable);
     }
     
     @Override
@@ -474,6 +495,7 @@ public class FollowersDialog extends JDialog {
             loadInfo.setText("Loading..");
         }
         updateStats();
+        updateMain();
     }
     
     /**
@@ -494,6 +516,7 @@ public class FollowersDialog extends JDialog {
             lastValidInfo = null;
             lastUpdated = -1;
             updateStats();
+            updateMain();
         }
         setVisible(true);
         request();

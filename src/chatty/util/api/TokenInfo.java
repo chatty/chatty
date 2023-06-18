@@ -38,7 +38,8 @@ public class TokenInfo {
                 Scope.BLOCKED_MANAGE,
                 Scope.ANNOUNCEMENTS,
                 Scope.MANAGE_SHIELD,
-                Scope.MANAGE_SHOUTOUTS
+                Scope.MANAGE_SHOUTOUTS,
+                Scope.CHANNEL_FOLLOWERS
         ),
         BROADCASTER("broadcaster",
                 Scope.MANAGE_MODS,
@@ -86,6 +87,7 @@ public class TokenInfo {
         EDIT_BROADCAST("channel:manage:broadcast", "broadcast"),
         COMMERICALS("channel_commercial", "commercials"),
         FOLLOWS("user:read:follows", "follows"), // Followed streams
+        CHANNEL_FOLLOWERS("moderator:read:followers", "viewFollowers"),
         SUBSCRIBERS("channel:read:subscriptions", "subscribers"),
         CHAN_MOD("channel:moderate", "chanMod"), // PubSub topics
         AUTOMOD("moderator:manage:automod", "automod"),

@@ -5,6 +5,9 @@ import chatty.util.DateTime;
 import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
 import chatty.util.api.Follower.Type;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -132,7 +135,7 @@ public class FollowerManager {
                 if (!r.hasError()) {
                     String streamId = r.getId(stream);
                     if (type == Follower.Type.FOLLOWER) {
-                        api.requests.requestFollowers(streamId, stream);
+                        api.requests.requestFollowersNew(streamId, stream);
                     } else if (type == Follower.Type.SUBSCRIBER) {
                         api.requests.requestSubscribers(streamId, stream);
                     }
@@ -248,9 +251,9 @@ public class FollowerManager {
      * @param stream The name of the stream this data is for
      * @param json The data returned from the API
      */
-    protected synchronized void receivedSingle(int responseCode, String stream, String json, String username) {
+    protected synchronized void receivedSingle(int responseCode, String stream, String json, String username, boolean ownFollow) {
         // Parsing adds to alreadyFollowed automatically
-        FollowerInfo followerInfo = parseFollowers(stream, json);
+        FollowerInfo followerInfo = ownFollow ? parseOwnFollow(stream, username, json) : parseFollowers(stream, json);
         if (followerInfo != null) {
             if (!cachedSingle.containsKey(stream)) {
                 cachedSingle.put(stream, new HashMap<>());
@@ -267,6 +270,27 @@ public class FollowerManager {
         }
         else {
             listener.receivedFollower(stream, username, TwitchApi.RequestResultCode.FAILED, null);
+        }
+    }
+    
+    private FollowerInfo parseOwnFollow(String stream, String userName, String json) {
+        try {
+            JSONParser parser = new JSONParser();
+            JSONObject root = (JSONObject) parser.parse(json);
+            JSONArray data = (JSONArray) root.get("data");
+            
+            if (!data.isEmpty()) {
+                JSONObject channelFollow = (JSONObject) data.get(0);
+                long followedAt = DateTime.parseDatetime((String) channelFollow.get("followed_at"));
+                Follower follower = createFollowerItem(stream, userName, null, followedAt, -1, null, null);
+                List<Follower> result = new ArrayList<>();
+                result.add(follower);
+                return new FollowerInfo(type, stream, result, -1, -1);
+            }
+            return new FollowerInfo(type, stream, new ArrayList<>(), -1, -1);
+        } catch (ParseException ex) {
+            LOGGER.warning("Error parsing "+type+": "+ex);
+            return null;
         }
     }
     
@@ -300,7 +324,15 @@ public class FollowerManager {
         try {
             long followedAt = DateTime.parseDatetime((String) data.get("followed_at"));
             String display_name = JSONUtil.getString(data, "from_name");
+            if (display_name == null) {
+                // Field in new API endpoint
+                display_name = JSONUtil.getString(data, "user_name");
+            }
             String name = JSONUtil.getString(data, "from_login");
+            if (name == null) {
+                // Field in new API endpoint
+                name = JSONUtil.getString(data, "user_login");
+            }
             return createFollowerItem(stream, name, display_name, followedAt, -1, null, null);
         } catch (Exception ex) {
             LOGGER.warning("Error parsing entry of "+type+": "+data+" ["+ex+"]");
@@ -464,16 +496,23 @@ public class FollowerManager {
     
     private void requestSingleFollower(String stream, String streamId, String username, String userId) {
         if (streamId != null && userId != null) {
-            api.requests.getSingleFollower(stream, streamId, username, userId);
+            api.requests.getSingleFollowerNew(stream, streamId, username, userId);
         } else {
             api.userIDs.getUserIDsAsap(r -> {
                 if (r.hasError()) {
                     listener.receivedFollower(stream, username, TwitchApi.RequestResultCode.FAILED, null);
                 } else {
-                    api.requests.getSingleFollower(stream, r.getId(stream), username, r.getId(username));
+                    api.requests.getSingleFollowerNew(stream, r.getId(stream), username, r.getId(username));
                 }
             }, stream, username);
         }
+    }
+    
+    private static final Instant OLD_FOLLOW_API_OFF = ZonedDateTime.of(2023, 8, 3, 0, 0, 0, 0, ZoneId.of("-07:00")).toInstant();
+//    private static final Instant OLD_FOLLOW_API_OFF = ZonedDateTime.of(2023, 6, 17, 20, 29, 0, 0, ZoneId.of("+02:00")).toInstant(); // For testing only
+    
+    public static boolean forceNewFollowsApi() {
+        return Instant.now().isAfter(OLD_FOLLOW_API_OFF);
     }
     
 }

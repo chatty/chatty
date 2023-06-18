@@ -236,6 +236,8 @@ public class InfoPanel extends JPanel {
         if (follow == null) {
             followedAt.setText(Language.getString("userDialog.loading"));
             followedAt.setToolTipText(null);
+            // Make invisible because if no access the API request is not performed
+            followedAt.setVisible(false);
         } else {
             setFollowInfo(follow, TwitchApi.RequestResultCode.SUCCESS);
         }
@@ -289,6 +291,7 @@ public class InfoPanel extends JPanel {
     }
 
     public void setFollowInfo(Follower follower, TwitchApi.RequestResultCode result) {
+        followedAt.setVisible(true);
         if (result == TwitchApi.RequestResultCode.SUCCESS && follower.follow_time != -1) {
             followedAt.setText(new String[]{
                 Language.getString("userDialog.followed",formatAgoTime(follower.follow_time, false)),
