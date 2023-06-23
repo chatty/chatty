@@ -1188,6 +1188,7 @@ public class TwitchConnection {
                 months = tags.getInteger("msg-param-months", -1);
             }
             int giftMonths = tags.getInteger("msg-param-gift-months", -1);
+            int multiMonth = tags.getInteger("msg-param-multimonth-duration", -1);
             
             if (tags.isValue("msg-id", "announcement") && !StringUtil.isNullOrEmpty(login)) {
                 String displayName = tags.get("display-name", login);
@@ -1214,6 +1215,9 @@ public class TwitchConnection {
                         recipient += " has";
                     }
                     text += " "+recipient+" subscribed for "+months+" months!";
+                }
+                if (multiMonth > 1 && !text.contains("in advance")) {
+                    text += " They subscribed for "+multiMonth+" months in advance.";
                 }
                 listener.onSubscriberNotification(user, text, message, months, tags);
             } else if (tags.isValue("msg-id", "charity") && login.equals("twitch")) {

@@ -73,6 +73,10 @@ public class RawMessageTest {
             // #cirno_tv
             return "@badge-info=subscriber/31;badges=subscriber/2024,bits/5000;client-nonce=abc;color=#4AADFF;display-name=Test;emotes=;flags=;id=abc;mod=0;room-id=123;subscriber=1;tmi-sent-ts=123;turbo=0;user-id=123;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :Abc";
         }
+        if (type.equals("submultimonth")) {
+            // Not sure what the tags would actually look like, this is just with the tags changed
+            return "@badge-info=subscriber/1;badges=subscriber/1,premium/1;color=#5D12F3;display-name=USERNAME;emotes=;flags=;id=1234;login=username;mod=0;msg-id=sub;msg-param-cumulative-months=1;msg-param-months=0;msg-param-multimonth-duration=3;msg-param-multimonth-tenure=0;msg-param-should-share-streak=1;msg-param-streak-months=1;msg-param-sub-plan-name=Channel\\sSubscription\\s(channel);msg-param-sub-plan=1000;msg-param-was-gifted=false;room-id=1234;subscriber=1;system-msg=USERNAME\\ssubscribed\\sat\\sTier\\s1.;tmi-sent-ts=1234;user-id=1234;user-type= :tmi.twitch.tv USERNOTICE "+channel+" :Message";
+        }
         if (type.equals("bits")) {
             return "@badges=bits/1000;bits=1;color=#FF7F50;display-name=tduvaTest;emotes=;id=123;mod=0;subscriber=0;turbo=0;user-type= :tduvatest!tduvatest@tduvatest.tmi.twitch.tv PRIVMSG "+channel+" :"+options;
         }
