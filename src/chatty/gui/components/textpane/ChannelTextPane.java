@@ -159,6 +159,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         ACTION_REASON,
         
         REPLY_PARENT_MSG, REPLY_PARENT_MSG_ID,
+        HYPE_CHAT,
         
         OBJECT_ID
     }
@@ -646,6 +647,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             style = styles.standard(color);
         }
         printTimestamp(style);
+        String hypeChatText = message.tags.getHypeChatAmountText();
+        if (hypeChatText != null) {
+            print(" "+hypeChatText+" ", styles.hypeChat(style, message.tags));
+            print(" ", style);
+        }
         printUser(user, message.localUser, action, message.whisper, message.id, background, message.tags);
         
         // Change style for text if /me and no highlight (if enabled)
@@ -4308,6 +4314,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             CachedImage<Usericon> usericonImage = icon.getIcon(usericonScaleFactor(), getInt(Setting.CUSTOM_USERICON_SCALE_MODE), ChannelTextPane.this);
             StyleConstants.setIcon(style, usericonImage.getImageIcon());
             style.addAttribute(Attribute.USERICON, usericonImage);
+            return style;
+        }
+        
+        public MutableAttributeSet hypeChat(AttributeSet baseStyle, MsgTags tags) {
+            SimpleAttributeSet style = new SimpleAttributeSet(baseStyle);
+            style.addAttribute(Attribute.HYPE_CHAT, tags.getHypeChatInfo());
             return style;
         }
     }

@@ -189,6 +189,12 @@ public class RawMessageTest {
         if (type.equals("announcement3")) {
             return "@badge-info=;badges=broadcaster/1;color=#033700;display-name=ModName;emotes=;flags=;id=1234;login=modname;mod=0;msg-id=announcement;room-id=1234;subscriber=0;system-msg=;tmi-sent-ts=1648758023469;user-id=1234;user-type= :tmi.twitch.tv USERNOTICE "+channel+" :"+options;
         }
+        if (type.equals("hypechat")) {
+            return "@badge-info=subscriber/9;badges=subscriber/9,bits/5000;color=#FF5700;display-name=USERNAME;emotes=;first-msg=0;flags=;id=1234;mod=0;pinned-chat-paid-amount=500;pinned-chat-paid-canonical-amount=500;pinned-chat-paid-currency=USD;pinned-chat-paid-exponent=2;pinned-chat-paid-is-system-message=0;pinned-chat-paid-level=TWO;returning-chatter=0;room-id=1234;subscriber=1;tmi-sent-ts=1687455824759;turbo=0;user-id=1234;user-type= :username!username@username.tmi.twitch.tv PRIVMSG "+channel+" :The message";
+        }
+        if (type.equals("hypechat2")) {
+            return "@badge-info=;badges=;color=#00FF7F;display-name=USERNAME;emotes=;first-msg=0;flags=;id=1234;mod=0;pinned-chat-paid-amount=7500;pinned-chat-paid-canonical-amount=7500;pinned-chat-paid-currency=KRW;pinned-chat-paid-exponent=0;pinned-chat-paid-is-system-message=1;pinned-chat-paid-level=TWO;returning-chatter=0;room-id=1234;subscriber=0;tmi-sent-ts=1687458800209;turbo=0;user-id=1234;user-type= :username!username@username.tmi.twitch.tv PRIVMSG "+channel+" :User sent Hype Chat";
+        }
         if (type.equals("custom")) {
             String[] parts = options.split("&");
             String badges = parts[0];

@@ -1,6 +1,8 @@
 
 package chatty.util.irc;
 
+import chatty.util.StringUtil;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,6 +78,24 @@ public class MsgTags extends IrcMsgTags {
     
     public String getReplyParentMsgId() {
         return get("reply-parent-msg-id");
+    }
+    
+    public String getHypeChatAmountText() {
+        int amount = getInteger("pinned-chat-paid-amount", -1);
+        String currency = get("pinned-chat-paid-currency");
+        int exponent = getInteger("pinned-chat-paid-exponent", -1);
+        if (amount > 0 && !StringUtil.isNullOrEmpty(currency) && exponent != -1) {
+            return String.format("%s %s",
+                    currency,
+                    new BigDecimal(amount).scaleByPowerOfTen(-exponent));
+        }
+        return null;
+    }
+    
+    public String getHypeChatInfo() {
+        return String.format("Level %s Hype Chat for %s",
+                get("pinned-chat-paid-level"),
+                getHypeChatAmountText());
     }
     
     //================

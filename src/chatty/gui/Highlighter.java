@@ -944,6 +944,11 @@ public class Highlighter {
                                 return tags.isRestrictedMessage();
                             });
                         }
+                        else if (part.equals("hypechat")) {
+                            addTagsItem("Hype Chat", null, tags -> {
+                                return tags.getHypeChatAmountText() != null;
+                            });
+                        }
                         else if (part.startsWith("repeatedmsg")) {
 //                            String options = parsePrefix(item, "repeatmsg:");
 //                            String[] split = options.split("/");
