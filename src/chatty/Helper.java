@@ -992,6 +992,11 @@ public class Helper {
                 parameters.put("msg", m.text);
                 parameters.put("msg-time", String.valueOf(m.getTime()));
             }
+            User.SubMessage sm = user.getSubMessage(msgId);
+            if (sm != null) {
+                parameters.put("msg", sm.attached_message);
+                parameters.put("msg-time", String.valueOf(sm.getTime()));
+            }
         }
         if (autoModMsgId != null) {
             parameters.put("automod-msg-id", autoModMsgId);

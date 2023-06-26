@@ -2,6 +2,7 @@
 package chatty.util;
 
 import chatty.util.api.CheerEmoticon;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  *
@@ -201,7 +202,7 @@ public class RawMessageTest {
             String name = parts[1];
             String username = name.toLowerCase();
             String msg = parts[2];
-            return "@badges="+badges+";color=#008000;display-name="+name+";emote-only=0;emotes=;id=fwaef;mod=0;subscriber=1;tmi-sent-ts=1508516209239;turbo=0;user-type= :"+name+"!abc@abc.tmi.twitch.tv PRIVMSG "+channel+" :"+msg;
+            return "@badges="+badges+";color=#008000;display-name="+name+";emote-only=0;emotes=;id=fwaef"+ThreadLocalRandom.current().nextInt()+";mod=0;subscriber=1;tmi-sent-ts=1508516209239;turbo=0;user-type= :"+username+"!abc@abc.tmi.twitch.tv PRIVMSG "+channel+" :"+msg;
         }
         return null;
     }

@@ -1153,7 +1153,7 @@ public class TwitchConnection {
                     }
                     b.append(" (").append(recipients.size()).append(" total)");
                 }
-                listener.onSubscriberNotification(gifter, b.toString(), null, -1, null);
+                listener.onSubscriberNotification(gifter, b.toString(), null, -1, MsgTags.EMPTY);
                 this.gifter = null;
                 this.text = null;
                 this.subPlan = null;

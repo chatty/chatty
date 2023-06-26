@@ -219,7 +219,29 @@ public class PastMessages extends JTextArea {
             }
             else if (m instanceof User.SubMessage) {
                 User.SubMessage sm = (User.SubMessage)m;
-                b.append(timestampFormat.make(m.getTime(), user.getRoom())).append("$ ");
+                
+                int simPercentage = 0;
+                if (!StringUtil.isNullOrEmpty(currentMessageId)
+                        && currentMessageId.equals(sm.id)) {
+                    startHighlight(b.length(), CURRENT_MSG);
+                    b.append(">");
+                    endHighlight(b.length(), CURRENT_MSG);
+                    //singleMessage.setText(SINGLE_MESSAGE_CHECK+" ("+StringUtil.shortenTo(tm.text, 14)+")");
+                    currentMessageIdMessage = sm.attached_message;
+                }
+                else if (currentMsgText != null) {
+                    simPercentage = repeatHelper.getPercentage(user, sm.attached_message, currentMsgText);
+                }
+                
+                b.append(timestampFormat.make(m.getTime(), user.getRoom()));
+                
+                if (simPercentage > 0) {
+                    startHighlight(b.length() + 1, REPEATED_MSG);
+                    b.append(" [").append(simPercentage).append("%]");
+                    endHighlight(b.length(), REPEATED_MSG);
+                }
+                
+                b.append("$ ");
                 b.append(sm.system_msg);
                 if (!sm.attached_message.isEmpty()) {
                     b.append(" [").append(sm.attached_message).append("]");

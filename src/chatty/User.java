@@ -365,9 +365,9 @@ public class User implements Comparable<User> {
         replayCachedBanInfo();
     }
     
-    public synchronized void addSub(String message, String text) {
+    public synchronized void addSub(String message, String text, String id) {
         setFirstSeen();
-        addLine(new SubMessage(System.currentTimeMillis(), message, text));
+        addLine(new SubMessage(System.currentTimeMillis(), message, text, id));
     }
     
     public synchronized void addInfo(String message, String fullText) {
@@ -592,9 +592,34 @@ public class User implements Comparable<User> {
         return null;
     }
     
+    public synchronized SubMessage getSubMessage(String msgId) {
+        if (msgId == null) {
+            return null;
+        }
+        if (lines == null) {
+            return null;
+        }
+        for (Message msg : lines) {
+            if (msg instanceof SubMessage) {
+                SubMessage textMsg = (SubMessage)msg;
+                if (msgId.equals(textMsg.id)) {
+                    return textMsg;
+                }
+            }
+        }
+        return null;
+    }
+    
     public String getMessageText(String msgId) {
         TextMessage msg = getMessage(msgId);
-        return msg != null ? msg.text : null;
+        if (msg != null) {
+            return msg.text;
+        }
+        SubMessage subMsg = getSubMessage(msgId);
+        if (subMsg != null) {
+            return subMsg.attached_message;
+        }
+        return null;
     }
     
     public synchronized AutoModMessage getAutoModMessage(String msgId) {
@@ -1278,11 +1303,13 @@ public class User implements Comparable<User> {
         
         public final String attached_message;
         public final String system_msg;
+        public final String id;
         
-        public SubMessage(long time, String message, String text) {
+        public SubMessage(long time, String message, String text, String id) {
             super(time);
             this.attached_message = message;
             this.system_msg = text;
+            this.id = id;
         }
     }
     

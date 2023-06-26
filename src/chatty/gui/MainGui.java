@@ -3574,7 +3574,13 @@ public class MainGui extends JFrame implements Runnable {
                 CopyMessages.copyMessage(client.settings, user, text, highlighted);
                 
                 // Update User
-                user.addMessage(processMessage(text), action, tags.getId());
+                String hypeChatAmount = tags.getHypeChatAmountText();
+                if (hypeChatAmount != null) {
+                    user.addSub(processMessage(text), tags.getHypeChatInfo(), tags.getId());
+                }
+                else {
+                    user.addMessage(processMessage(text), action, tags.getId());
+                }
                 if (highlighted) {
                     user.setHighlighted();
                 }
@@ -3637,7 +3643,7 @@ public class MainGui extends JFrame implements Runnable {
             String message = m.attachedMessage != null ? processMessage(m.attachedMessage) : "";
             String text = m.infoText;
             if (m instanceof SubscriberMessage) {
-                m.user.addSub(message, text);
+                m.user.addSub(message, text, m.tags.getId());
             } else {
                 m.user.addInfo(message, m.text);
             }
