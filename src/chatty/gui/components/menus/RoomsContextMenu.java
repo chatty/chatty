@@ -20,7 +20,7 @@ public class RoomsContextMenu extends ContextMenu {
         this.listener = listener;
         this.rooms = rooms;
         
-        ContextMenuHelper.addStreamsOptions(this, rooms.size());
+        ContextMenuHelper.addStreamsOptions(this, rooms.size(), null);
     }
 
     @Override

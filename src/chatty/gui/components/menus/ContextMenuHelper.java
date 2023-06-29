@@ -3,6 +3,7 @@ package chatty.gui.components.menus;
 
 import chatty.gui.components.help.About;
 import chatty.lang.Language;
+import chatty.util.commands.Parameters;
 import chatty.util.settings.Settings;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,10 +45,11 @@ public class ContextMenuHelper {
      * @param m The menu to add the items to
      * @param numStreams How many streams this is for (labels the menu items
      * accordingly)
+     * @param parameters
      * @see addStreamsOptions(ContextMenu, int, boolean)
      */
-    protected static void addStreamsOptions(ContextMenu m, int numStreams) {
-        addStreamsOptions(m, numStreams, true);
+    protected static void addStreamsOptions(ContextMenu m, int numStreams, Parameters parameters) {
+        addStreamsOptions(m, numStreams, true, parameters);
     }
     
     /**
@@ -58,8 +60,9 @@ public class ContextMenuHelper {
      * @param numStreams How many streams this is for (labels the menu items
      * accordingly)
      * @param join Whether to add a join channel menu item
+     * @param parameters
      */
-    protected static void addStreamsOptions(ContextMenu m, int numStreams, boolean join) {
+    protected static void addStreamsOptions(ContextMenu m, int numStreams, boolean join, Parameters parameters) {
         String streamSubmenu = "Twitch Stream";
         String miscSubmenu = Language.getString("channelCm.menu.misc");
         m.setSubMenuIcon(streamSubmenu, ICON_SPACING);
@@ -82,7 +85,7 @@ public class ContextMenuHelper {
             m.addItem("favoriteChannel", Language.getString("channelCm.favorite"), miscSubmenu);
             m.addItem("unfavoriteChannel", Language.getString("channelCm.unfavorite"), miscSubmenu);
         }
-        CommandMenuItems.addCommands(CommandMenuItems.MenuType.STREAMS, m);
+        CommandMenuItems.addCommands(CommandMenuItems.MenuType.STREAMS, m, parameters);
     }
     
     /**

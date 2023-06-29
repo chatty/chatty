@@ -1008,6 +1008,12 @@ public class Helper {
         parameters.putObject("user", user);
     }
     
+    public static Parameters createRoomParameters(Room room) {
+        Parameters parameters = Parameters.create("");
+        parameters.putObject("room", room);
+        return parameters;
+    }
+    
     private static final Map<UserNotice, javax.swing.Timer> pointsMerge = new HashMap<>();
     
     /**

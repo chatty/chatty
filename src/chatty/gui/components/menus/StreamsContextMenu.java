@@ -1,6 +1,8 @@
 
 package chatty.gui.components.menus;
 
+import chatty.util.StringUtil;
+import chatty.util.commands.Parameters;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
 
@@ -19,7 +21,7 @@ public class StreamsContextMenu extends ContextMenu {
         this.listener = listener;
         this.streams = streams;
         
-        ContextMenuHelper.addStreamsOptions(this, streams.size());
+        ContextMenuHelper.addStreamsOptions(this, streams.size(), Parameters.create(StringUtil.join(streams, " ")));
     }
 
     @Override

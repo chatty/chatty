@@ -27,7 +27,7 @@ public class RaceEntrantContextMenu extends ContextMenu {
         if (streams.isEmpty()) {
             addItem("", "No stream set");
         } else {
-            ContextMenuHelper.addStreamsOptions(this, streams.size());
+            ContextMenuHelper.addStreamsOptions(this, streams.size(), null);
         }
     }
     

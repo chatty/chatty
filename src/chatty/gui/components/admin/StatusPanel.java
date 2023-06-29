@@ -353,6 +353,17 @@ public class StatusPanel extends JPanel {
             
             private void openContextMenu(MouseEvent e) {
                 if (e.isPopupTrigger()) {
+                    Parameters params = Parameters.create("");
+                    params.put("title", status.getText());
+                    params.put("game", game.getText());
+                    params.put("tag-ids", StringUtil.join(currentStreamTags, ",", o -> {
+                        return ((StreamTag) o).getName();
+                    }));
+                    params.put("tag-names", StringUtil.join(currentStreamTags, ",", o -> {
+                        return ((StreamTag) o).getDisplayName();
+                    }));
+                    Room room = Room.createRegular(Helper.toChannel(currentChannel));
+                    
                     ContextMenu m = new ContextMenu() {
 
                         @Override
@@ -360,23 +371,14 @@ public class StatusPanel extends JPanel {
                             if (e instanceof CommandActionEvent) {
                                 // Command Context Menu
                                 CommandActionEvent c = (CommandActionEvent)e;
-                                Parameters params = Parameters.create("");
-                                params.put("title", status.getText());
-                                params.put("game", game.getText());
-                                params.put("tag-ids", StringUtil.join(currentStreamTags, ",", o -> {
-                                    return ((StreamTag) o).getName();
-                                }));
-                                params.put("tag-names", StringUtil.join(currentStreamTags, ",", o -> {
-                                    return ((StreamTag) o).getDisplayName();
-                                }));
-                                main.anonCustomCommand(Room.createRegular(Helper.toChannel(currentChannel)), c.getCommand(), params);
+                                main.anonCustomCommand(room, c.getCommand(), params);
                                 addCurrentToHistory();
                             }
                             // Dock item
                             parent.helper.menuAction(e);
                         }
                     };
-                    CommandMenuItems.addCommands(CommandMenuItems.MenuType.ADMIN, m);
+                    CommandMenuItems.addCommands(CommandMenuItems.MenuType.ADMIN, m, params);
                     m.addSeparator();
                     parent.helper.addToContextMenu(m);
                     m.show(e.getComponent(), e.getPoint().x, e.getPoint().y);

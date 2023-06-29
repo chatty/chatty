@@ -1941,6 +1941,14 @@ public class Highlighter {
                     ab = user.getAddressbook();
                 }
             }
+            if (localUser != null) {
+                if (channel == null) {
+                    channel = localUser.getChannel();
+                }
+                if (ab == null) {
+                    ab = localUser.getAddressbook();
+                }
+            }
             if (tags == null) {
                 tags = MsgTags.EMPTY;
             }

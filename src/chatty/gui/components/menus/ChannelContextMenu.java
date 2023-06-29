@@ -1,8 +1,10 @@
 
 package chatty.gui.components.menus;
 
+import chatty.Helper;
 import chatty.gui.components.Channel;
 import chatty.lang.Language;
+import chatty.util.commands.Parameters;
 import java.awt.event.ActionEvent;
 
 
@@ -23,10 +25,12 @@ public class ChannelContextMenu extends ContextMenu {
         this.listener = listener;
         this.channel = channel;
         
+        Parameters parameters = Helper.createRoomParameters(channel.getRoom());
+        
         addItem("channelInfo", Language.getString("menubar.dialog.channelInfo"));
         addItem("channelAdmin", Language.getString("menubar.dialog.channelAdmin"));
         addSeparator();
-        ContextMenuHelper.addStreamsOptions(this, 1, false);
+        ContextMenuHelper.addStreamsOptions(this, 1, false, parameters);
         addSeparator();
         
         addItem("raidchannel", Language.getString("channelCm.raidChannel"), MISC_MENU);
@@ -38,7 +42,7 @@ public class ChannelContextMenu extends ContextMenu {
         addSeparator();
         addItem("closeChannel", Language.getString("channelCm.closeChannel"));
         
-        CommandMenuItems.addCommands(CommandMenuItems.MenuType.CHANNEL, this);
+        CommandMenuItems.addCommands(CommandMenuItems.MenuType.CHANNEL, this, parameters);
     }
 
     @Override

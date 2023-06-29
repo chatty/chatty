@@ -1,6 +1,7 @@
 
 package chatty.gui.components.menus;
 
+import chatty.Helper;
 import chatty.TwitchClient;
 import chatty.User;
 import chatty.lang.Language;
@@ -37,6 +38,9 @@ public class UserContextMenu extends ContextMenu {
         this.msgId = msgId;
         this.autoModMsgId = autoModMsgId;
         
+        Parameters parameters = Parameters.create(user.getRegularDisplayNick());
+        Helper.addUserParameters(user, msgId, autoModMsgId, parameters);
+        
         addItem("userinfo", Language.getString("userCm.user", user.getDisplayNick()));
         if (client != null) {
             List<UserRoom> rooms = client.getOpenUserRooms(user);
@@ -63,7 +67,7 @@ public class UserContextMenu extends ContextMenu {
             }
         }
         addSeparator();
-        ContextMenuHelper.addStreamsOptions(this, 1, false);
+        ContextMenuHelper.addStreamsOptions(this, 1, false, parameters);
         addSeparator();
         addItem("join", Language.getString("userCm.join", user.getName()));
         addSeparator();
@@ -117,8 +121,8 @@ public class UserContextMenu extends ContextMenu {
                 addItem("addressbookEdit", Language.getString("dialog.button.add"), submenu);
             }
         }
-
-        CommandMenuItems.addCommands(CommandMenuItems.MenuType.USER, this);
+        
+        CommandMenuItems.addCommands(CommandMenuItems.MenuType.USER, this, parameters);
     }
 
     @Override

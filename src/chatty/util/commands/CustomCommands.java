@@ -142,6 +142,11 @@ public class CustomCommands {
     public void addCustomIdentifierParametersForCommand(CustomCommand command, Parameters parameters) {
         Map<String, CustomCommand> customIdentifiersCommands = getCustomIdentifierCommands(command, null);
         addCustomIdentifiers(customIdentifiersCommands, parameters);
+        Room room = (Room) parameters.getObject("room");
+        if (room != null) {
+            parameters.putObject("localUser", client.getLocalUser(room.getChannel()));
+            CustomCommands.addChans(room, parameters);
+        }
     }
     
     private Map<String, CustomCommand> getCustomIdentifierCommands(CustomCommand command, String channel) {

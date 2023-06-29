@@ -4,7 +4,9 @@ package chatty.gui.components.menus;
 import chatty.gui.components.LiveStreamsDialog;
 import chatty.gui.components.settings.SettingsUtil;
 import chatty.lang.Language;
+import chatty.util.StringUtil;
 import chatty.util.api.StreamInfo;
+import chatty.util.commands.Parameters;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +40,7 @@ public class StreamInfosContextMenu extends ContextMenu {
             addItem("openChannelInfo", "Info: "+selected.get(0).getStream());
             addSeparator();
             
-            ContextMenuHelper.addStreamsOptions(this, streams.size());
+            ContextMenuHelper.addStreamsOptions(this, streams.size(), Parameters.create(StringUtil.join(streams, " ")));
             
             if (liveStreams) {
                 addSeparator();

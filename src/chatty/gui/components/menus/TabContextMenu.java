@@ -1,10 +1,13 @@
 
 package chatty.gui.components.menus;
 
+import chatty.Helper;
+import chatty.Room;
 import chatty.gui.Channels;
 import chatty.gui.components.Channel;
 import chatty.gui.components.settings.TabSettings;
 import chatty.util.StringUtil;
+import chatty.util.commands.Parameters;
 import chatty.util.dnd.DockContent;
 import chatty.util.settings.Settings;
 import java.awt.event.ActionEvent;
@@ -105,7 +108,8 @@ public class TabContextMenu extends ContextMenu {
         //--------------------------
         if (content instanceof Channels.DockChannelContainer
                 && ((Channels.DockChannelContainer)content).getContent().getType() == Channel.Type.CHANNEL) {
-            CommandMenuItems.addCommands(CommandMenuItems.MenuType.CHANNEL, this);
+            Channel chan = (Channel) content.getComponent();
+            CommandMenuItems.addCommands(CommandMenuItems.MenuType.CHANNEL, this, Helper.createRoomParameters(chan.getRoom()));
         }
     }
     

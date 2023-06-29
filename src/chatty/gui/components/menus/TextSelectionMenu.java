@@ -35,7 +35,7 @@ public class TextSelectionMenu extends ContextMenu {
             add(new DefaultEditorKit.CutAction(), Language.getString("textCm.cut"), KeyEvent.VK_X);
             add(new DefaultEditorKit.PasteAction(), Language.getString("textCm.paste"), KeyEvent.VK_P);
         }
-        CommandMenuItems.addCommands(CommandMenuItems.MenuType.TEXT, this);
+        CommandMenuItems.addCommands(CommandMenuItems.MenuType.TEXT, this, null);
     }
     
     private void add(Action action, String name, int key) {

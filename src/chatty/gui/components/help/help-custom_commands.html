@@ -42,6 +42,8 @@
                 <li><a href="#separators">Separators</a></li>
                 <li><a href="#shortcuts">Shortcuts</a></li>
                 <li><a href="#positioning">Positioning</a></li>
+                <li><a href="#label-commands">Dynamic Labels</a></li>
+                <li><a href="#menu-restrictions">Optional Menu Entries</a></li>
                 <li><a href="#special-commands">Special Commands</a></li>
             </ul>
         </li>
@@ -915,6 +917,8 @@ $j(
         <li><a href="#separators">Separators</a></li>
         <li><a href="#shortcuts">Shortcuts</a></li>
         <li><a href="#positioning">Positioning</a></li>
+        <li><a href="#label-commands">Dynamic Labels</a></li>
+        <li><a href="#menu-restrictions">Optional Menu Entries</a></li>
         <li><a href="#special-commands">Special Commands</a></li>
     </ul>
     
@@ -1147,6 +1151,93 @@ Spoiler[S]=/timeout $$1 600 No spoilers
         moving down <code>Important</code>. This demonstrates that the
         positioning is based on the current state of the menu, so it can matter
         <em>when</em> you add entries with absolute positioning.</p>
+    
+    <h3><a name="label-commands">Dynamic Labels using Custom Commands</a></h3>
+    
+    <p class="note"><em>Note:</em> This feature must be enabled in the Settings
+        under "Commands" (otherwise replacements in labels have no effect).</p>
+    
+    <p>You can use Custom Command replacements in the label of <a href="#inline-commands">inline commands</a>
+        or submenus.</p>
+    
+    <p>For example if you have a counter command that increases a number, it
+        could show the current number in the menu entry label by reading it from
+        the settings via <a href="#func-get"><code>$get()</code></a>:</p>
+    
+        <div class="codeblock"><pre>
+Increase counter ($get(var,c))=/set2 var c $calc($get(var,c) + 1)
+</pre></div>
+    
+    <p>You can also use this to hide an entry, by adding a required replacement,
+        like <code>$$is(mystatus:M)</code>, which will cause the entire label to
+        be empty if you are not a mod in the channel and thus will not be added
+        to the menu. Just adding <code>$$is(mystatus:M)</code> will add <code>true</code>
+        if you are a mod, so you can wrap it in an <code>$if()</code> (in this
+        example it's a submenu called "Mod Menu"):</p>
+    
+        <div class="codeblock"><pre>
+@$if($$is(mystatus:M),Mod Menu)
+</pre></div>
+    
+    <p><em>Note:</em> Compared to <a href="#parameters-context">identifiers</a>
+        for regular commands, some information may be missing in the context of
+        labels and <a href="#menu-restrictions">restrictions</a>.</p>
+    
+    <h3><a name="menu-restrictions">Optional Menu Entries (Restrictions)</a></h3>
+    
+    <p class="note"><em>Note:</em> This feature must be enabled in the Settings
+        under "Commands" (otherwise added restrictions have no effect).</p>
+    
+    <p>You can add restrictions to individual menu entries or a group of
+        entries. The restriction must always be on it's own line and start and
+        end with a square bracket, which contain a Custom Command that is
+        surrounded by spaces. If the Custom Command returns a non-empty value
+        the menu entries will show up, otherwise they are hidden.</p>
+    
+    <dl class="defList">
+        <dt><code>[ &lt;restriction using custom command&gt; ]</code></dt>
+        <dd>Only affects the following menu entry. A similar effect can be
+            achieved by using <a href="#label-commands">Label Commands</a>.</dd>
+        
+        <dt><code>[&lt;name&gt; &lt;restriction using custom command&gt; ]</code></dt>
+        <dd>Opens up a section, like an HTML tag. The <code>&lt;name&gt;</code>
+            is used to identify where the section ends. Different restrictions
+            can be nested inside eachother, causing them all to be applied to
+            the affected menu entries.</dd>
+        
+        <dt><code>[/&lt;name&gt;]</code></dt>
+        <dd>Ends a section that has the given name.</dd>
+    </dl>
+    
+    <p>Example:</p>
+    
+        <div class="codeblock"><pre>
+[mod $is(mystatus:M) ]
+@Modes
+.Emoteonly[E]=/emoteonly
+.Emoteonly Off[O]=/emoteonlyoff
+.Subsonly[S]=/subscribers
+.Subsonly Off[D]=/subscribersoff
+Clear[C]=/clear
+[ $ifeq($datetime(M),9,true) ]
+/Subtember
+[/mod]
+</pre></div>
+    
+    <p>The "Modes" submenu, the "Clear" command and the "Subtember" command only
+        show when you are a mod in the channel. The <a href="#func-is"><code>$is()</code></a>
+        function uses <a href="help-settings.html#Highlight_Matching">Highlight syntax</a>
+        and returns an empty value if it doesn't match. It's that Custom Command
+        part that defines the actual restriction, the "mod" in <code>[mod&nbsp;...&nbsp;]</code>
+        is arbitrarily named, it just has to match the closing <code>[/mod]</code>.</p>
+    
+    <p>The "Subtember" command has an additional requirement though, defined
+        directly above it, which uses the functions <a href="#func-ifeq"><code>$ifeq()</code></a> and <a href="#func-datetime"><code>$datetime()</code></a> to
+        only show the menu entry when the month is September.</p>
+    
+    <p><em>Note:</em> Compared to <a href="#parameters-context">identifiers</a>
+        for regular commands, some information may be missing in the context of
+        <a href="#label-commands">labels</a> and restrictions.</p>
     
     <h3><a name="special-commands">Special Commands</a></h3>
     
