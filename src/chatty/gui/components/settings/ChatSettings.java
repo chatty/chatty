@@ -170,7 +170,7 @@ public class ChatSettings extends SettingsPanel {
             gbc.fill = GridBagConstraints.BOTH;
             gbc.weightx = 1;
             gbc.weighty = 1;
-            SimpleTableEditor<Long> editor = d.addLongMapSetting("bufferSizes", 300, 200);
+            SimpleTableEditor<Long> editor = d.addLongMapSetting("bufferSizes", 300, 200, "Tab Name", "Buffer Size");
             add(editor, gbc);
             
             gbc = d.makeGbc(0, 2, 1, 1);

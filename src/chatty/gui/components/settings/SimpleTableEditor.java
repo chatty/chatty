@@ -40,13 +40,14 @@ public abstract class SimpleTableEditor<T> extends TableEditor<MapItem<T>> imple
     private DocumentFilter keyFilter;
     private DocumentFilter valueFilter;
     
-    public SimpleTableEditor(JDialog owner, Class<T> valueClass) {
+    public SimpleTableEditor(JDialog owner, Class<T> valueClass,
+            String keyLabel, String valueLabel) {
         super(SORTING_MODE_SORTED, false);
-        data = new MyTableModel<>(valueClass);
+        data = new MyTableModel<>(valueClass, keyLabel, valueLabel);
         setModel(data);
         setItemEditor(() -> {
             if (editor == null) {
-                editor = new MyItemEditor(owner);
+                editor = new MyItemEditor(owner, keyLabel, valueLabel);
                 editor.setKeyFilter(keyFilter);
                 editor.setValueFilter(valueFilter);
             }
@@ -158,8 +159,8 @@ public abstract class SimpleTableEditor<T> extends TableEditor<MapItem<T>> imple
 
         private Class<T> valueClass;
         
-        public MyTableModel(Class<T> valueClass) {
-            super(new String[]{"Key", "Value"});
+        public MyTableModel(Class<T> valueClass, String keyLabel, String valueLabel) {
+            super(new String[]{keyLabel, valueLabel});
             this.valueClass = valueClass;
         }
 
@@ -193,7 +194,7 @@ public abstract class SimpleTableEditor<T> extends TableEditor<MapItem<T>> imple
         private String presetKey;
         private boolean save;
         
-        public MyItemEditor(JDialog owner) {
+        public MyItemEditor(JDialog owner, String keyLabel, String valueLabel) {
             dialog = new JDialog(owner);
             dialog.setTitle("Edit Item");
             dialog.setModal(true);
@@ -239,13 +240,13 @@ public abstract class SimpleTableEditor<T> extends TableEditor<MapItem<T>> imple
             GridBagConstraints gbc;
             
             gbc = GuiUtil.makeGbc(0, 0, 1, 1);
-            dialog.add(new JLabel("Key:"), gbc);
+            dialog.add(new JLabel(keyLabel+":"), gbc);
             gbc = GuiUtil.makeGbc(1, 0, 2, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             dialog.add(key, gbc);
             
             gbc = GuiUtil.makeGbc(0, 1, 1, 1);
-            dialog.add(new JLabel("Value:"), gbc);
+            dialog.add(new JLabel(valueLabel+":"), gbc);
             gbc = GuiUtil.makeGbc(1, 1, 2, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             dialog.add(value, gbc);

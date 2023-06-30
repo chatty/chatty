@@ -365,7 +365,7 @@ public class TabSettings extends SettingsPanel {
         
         private TabsPos(SettingsDialog d) {
             this.d = d;
-            this.editor = d.addLongMapSetting("tabsPos", 300, 200);
+            this.editor = d.addLongMapSetting("tabsPos", 300, 200, "Tab Name", "Position Value");
         }
         
         @Override

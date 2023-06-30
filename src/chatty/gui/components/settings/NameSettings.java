@@ -130,7 +130,7 @@ public class NameSettings extends SettingsPanel {
         // Custom Names
         //--------------------------
         JPanel custom = addTitledPanel("Custom Names", 2, true);
-        customNamesEditor = d.addStringMapSetting("customNames", 270, 200);
+        customNamesEditor = d.addStringMapSetting("customNames", 270, 200, "Twitch Username", "Custom Name");
         customNamesEditor.setKeyFilter("[^\\w]");
         
         gbc = d.makeGbc(0, 0, 1, 1);
