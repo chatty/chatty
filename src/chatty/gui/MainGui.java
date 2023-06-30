@@ -2725,7 +2725,7 @@ public class MainGui extends JFrame implements Runnable {
             }
             else {
                 User user = client.getUser(channel, username);
-                openUserInfoDialog(user, null, null);
+                openUserInfoDialog(user, p.getParameters().get("msg-id"), null);
             }
         });
         client.commands.addEdt("search", p -> {
