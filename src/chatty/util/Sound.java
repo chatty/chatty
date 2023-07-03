@@ -4,6 +4,8 @@ package chatty.util;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -13,6 +15,8 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import javax.sound.sampled.*;
+import static javax.sound.sampled.AudioSystem.NOT_SPECIFIED;
+import javax.sound.sampled.Line.Info;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
@@ -109,7 +113,7 @@ public class Sound {
     private Clip createClip(Path file, String id) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
         // getAudioInputStream() also accepts a File or InputStream
         AudioInputStream ais = AudioSystem.getAudioInputStream(file.toFile());
-
+        ais = addConversion(ais, mixer != null ? mixer : AudioSystem.getMixer(null));
         DataLine.Info info = new DataLine.Info(Clip.class, ais.getFormat());
         final Clip clip;
         if (mixer != null) {
@@ -175,6 +179,95 @@ public class Sound {
         float range = max - min;
         float gain = ((range * volume / (MAX_VOLUME - MIN_VOLUME)) + min);
         return gain;
+    }
+    
+    /**
+     * If the input format is not supported for the given mixer, try to find a
+     * format that the mixer supports and try to create a conversion for the
+     * input stream.
+     * 
+     * @param ais The original input stream
+     * @param mixer The mixer
+     * @return A new input stream with the conversion, or the original input
+     * stream if a conversion is either not needed or not possible
+     */
+    private static AudioInputStream addConversion(AudioInputStream ais, Mixer mixer) {
+        if (Debugging.isEnabled("audio")) {
+            LOGGER.info(String.format("[Input Stream Format] %s\n[Mixer] %s\n%s",
+                    ais.getFormat(),
+                    mixer.getMixerInfo(),
+                    StringUtil.join(mixer.getSourceLineInfo(),"\n")));
+        }
+        
+        AudioFormat convertToFormat = null;
+        for (Info info : mixer.getSourceLineInfo()) {
+            if (info instanceof SourceDataLine.Info) {
+                // Check whether sdi is for Clip or SourceDataLine?
+                SourceDataLine.Info sdi = (SourceDataLine.Info) info;
+                if (!sdi.isFormatSupported(ais.getFormat())) {
+                    AudioFormat[] formats = sdi.getFormats();
+                    sortFormats(formats);
+                    for (AudioFormat format : formats) {
+                        if (AudioSystem.isConversionSupported(format, ais.getFormat())) {
+                            convertToFormat = new AudioFormat(
+                                    format.getEncoding(),
+                                    format.getSampleRate() == NOT_SPECIFIED
+                                            ? ais.getFormat().getSampleRate()
+                                            : format.getSampleRate(),
+                                    format.getSampleSizeInBits() == NOT_SPECIFIED
+                                            ? ais.getFormat().getSampleSizeInBits()
+                                            : format.getSampleSizeInBits(),
+                                    format.getChannels() == NOT_SPECIFIED
+                                            ? ais.getFormat().getChannels()
+                                            : format.getChannels(),
+                                    format.getFrameSize() == NOT_SPECIFIED
+                                            ? ais.getFormat().getFrameSize()
+                                            : format.getFrameSize(),
+                                    format.getFrameRate() == NOT_SPECIFIED
+                                            ? ais.getFormat().getFrameRate()
+                                            : format.getFrameRate(),
+                                    format.isBigEndian());
+                            break;
+                        }
+                    }
+                    if (Debugging.isEnabled("audio")) {
+                        LOGGER.info(String.format("[Available Formats] %s\n%s\n[Selected Format]\n%s",
+                                sdi,
+                                StringUtil.join(formats, "\n"),
+                                convertToFormat));
+                    }
+                    if (convertToFormat != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        if (convertToFormat != null) {
+            ais = AudioSystem.getAudioInputStream(convertToFormat, ais);
+        }
+        return ais;
+    }
+    
+    /**
+     * Sort "better"(?) formats first.
+     * 
+     * @param formats 
+     */
+    private static void sortFormats(AudioFormat[] formats) {
+        Arrays.sort(formats, new Comparator<AudioFormat>() {
+            
+            @Override
+            public int compare(AudioFormat o1, AudioFormat o2) {
+                if (o1.getChannels() != o2.getChannels()) {
+                    return o2.getChannels() - o1.getChannels();
+                }
+                if (o1.getSampleSizeInBits() != o2.getSampleSizeInBits()) {
+                    return o2.getSampleSizeInBits() - o1.getSampleSizeInBits();
+                }
+                return (int)(o2.getSampleRate() - o1.getSampleRate());
+            }
+            
+        });
     }
     
     public static List<String> getDeviceNames() {

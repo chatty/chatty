@@ -56,6 +56,10 @@ public class StringUtil {
         return join(Arrays.asList(array), ",");
     }
     
+    public static String join(Object[] array, String delimiter) {
+        return join(Arrays.asList(array), delimiter);
+    }
+    
     public static String join(Collection<?> items, String delimiter) {
         return join(items, delimiter, -1, -1);
     }
