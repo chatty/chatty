@@ -39,6 +39,7 @@ public class UserContextMenu extends ContextMenu {
         this.autoModMsgId = autoModMsgId;
         
         Parameters parameters = Parameters.create(user.getRegularDisplayNick());
+        parameters.putObject("room", user.getRoom());
         Helper.addUserParameters(user, msgId, autoModMsgId, parameters);
         
         addItem("userinfo", Language.getString("userCm.user", user.getDisplayNick()));
