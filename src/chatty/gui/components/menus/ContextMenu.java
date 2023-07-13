@@ -263,6 +263,9 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
         for (JMenuItem item : items.values()) {
             if (item.getText().isEmpty()) {
                 remove(item);
+                for (JMenu menu : subMenus.values()) {
+                    menu.remove(item);
+                }
             }
         }
         for (JMenu menu : subMenus.values()) {
