@@ -132,12 +132,13 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
             }
         } else if (item.getCommand() == null) {
             JMenu menu = getSubmenu(item.getLabel(), item.getLabel(parameters), item.getPos());
+            menu.setToolTipText(item.getTooltipHtml());
             addKey(item, menu);
             return menu;
         } else {
             commands.put(item.getId(), item.getCommand());
             JMenuItem mItem = addItem(item.getId(), item.getLabel(parameters), item.getPos(), item.getParent(), null);
-            mItem.setToolTipText(StringUtil.shortenTo("<html><body>Command: <code>"+Helper.htmlspecialchars_encode(item.getCommand().getRaw())+"</code>", 100));
+            mItem.setToolTipText(item.getTooltipHtml());
             addKey(item, mItem);
             return mItem;
         }

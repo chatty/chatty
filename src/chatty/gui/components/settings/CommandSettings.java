@@ -103,7 +103,7 @@ public class CommandSettings extends SettingsPanel {
                         JOptionPane.showMessageDialog(parent, result, "Command result", JOptionPane.INFORMATION_MESSAGE);
                     }
                 }, null, d.settings, null);
-                dialog.setUserDefinedButtonsDef(value);
+                dialog.setUserDefinedButtonsDef(value, true);
                 GuiUtil.setLocationRelativeTo(dialog, parent);
                 dialog.show(component, user, "s0m3-msg-1d", null, null);
                 return null;

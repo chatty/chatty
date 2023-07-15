@@ -353,7 +353,12 @@ public class SettingsDialog extends JDialog implements ActionListener {
 
             @Override
             public void linkClicked(String type, String ref) {
-                owner.openHelp("help-settings.html", currentlyShown.name);
+                if (currentlyShown == Page.COMMANDS) {
+                    owner.openHelp("help-custom_commands.html", "");
+                }
+                else {
+                    owner.openHelp("help-settings.html", currentlyShown.name);
+                }
             }
         }), gbc);
         

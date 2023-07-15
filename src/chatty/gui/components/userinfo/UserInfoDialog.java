@@ -237,7 +237,7 @@ public class UserInfoDialog extends JDialog {
         gbc.insets = new Insets(8,5,3,5);
         add(closeButton,gbc);
 
-        buttons.set("30,120,600,1800");
+        buttons.set("30,120,600,1800", false, Parameters.create(""));
         
         finishDialog();
         
@@ -352,11 +352,12 @@ public class UserInfoDialog extends JDialog {
      * Sets the new custom buttons definition, which is just a single String
      * that is parsed accordingly. Removes current buttons, then adds the new
      * ones, resizing the dialog if necessary.
-     * 
+     *
      * @param def 
+     * @param isTest Whether this is set for a test dialog
      */
-    public void setUserDefinedButtonsDef(String def) {
-        buttons.set(def);
+    public void setUserDefinedButtonsDef(String def, boolean isTest) {
+        buttons.set(def, isTest, currentUser != null ? makeParameters() : null);
         updateButtons();
         GuiUtil.setFontSize(fontSize, this);
         // Pack because otherwise the dialog won't be sized correctly when
@@ -387,7 +388,7 @@ public class UserInfoDialog extends JDialog {
         setMinimumSize(getPreferredSize());
     }
     
-    private void setUser(User user, String msgId, String autoModMsgId, String localUsername) {
+    private void setUser(User user, String msgId, String autoModMsgId, String localUsername, boolean opened) {
         if (currentUser != user) {
             currentUser = user;
             currentMsgId = msgId;
@@ -404,6 +405,16 @@ public class UserInfoDialog extends JDialog {
         updateMessages();
         infoPanel.update(user);
         singleMessage.setEnabled(currentMsgId != null);
+        if (opened) {
+            /**
+             * Prevent the buttons from being added/removed at bad times (for
+             * example when the user is about to click a button) by only
+             * changing when the dialog is opened (even if it is already open,
+             * the "show" method is run when the user clicks on a username in
+             * chat).
+             */
+            buttons.removeAndAddButtons(makeParameters());
+        }
         updateButtons();
         finishDialog();
     }
@@ -454,7 +465,7 @@ public class UserInfoDialog extends JDialog {
         banReasons.updateReasonsFromSettings();
         banReasons.reset();
         singleMessage.setSelected(false);
-        setUser(user, msgId, autoModMsgId, localUsername);
+        setUser(user, msgId, autoModMsgId, localUsername, true);
         setVisible(true);
         closeButton.requestFocusInWindow();
     }
@@ -469,7 +480,7 @@ public class UserInfoDialog extends JDialog {
      */
     public void update(User user, String localUsername) {
         if (currentUser == user && isVisible()) {
-            setUser(user, null, null, localUsername);
+            setUser(user, null, null, localUsername, false);
         }
     }
     

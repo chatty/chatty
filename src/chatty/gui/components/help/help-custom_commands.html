@@ -1158,7 +1158,13 @@ Spoiler[S]=/timeout $$1 600 No spoilers
         under "Commands" (otherwise replacements in labels have no effect).</p>
     
     <p>You can use Custom Command replacements in the label of <a href="#inline-commands">inline commands</a>
-        or submenus.</p>
+        or submenus. The label is updated:</p>
+    
+    <ul>
+        <li>For context menus, when opening the menu</li>
+        <li>For the User Dialog, when performing an action that opens/updates
+            the dialog, like clicking a user in chat</li>
+    </ul>
     
     <p>For example if you have a counter command that increases a number, it
         could show the current number in the menu entry label by reading it from
@@ -1189,7 +1195,15 @@ Increase counter ($get(var,c))=/set2 var c $calc($get(var,c) + 1)
         under "Commands" (otherwise added restrictions have no effect).</p>
     
     <p>You can add restrictions to individual menu entries or a group of
-        entries. The restriction must always be on it's own line and start and
+        entries. The restriction is applied (entries added or removed):</p>
+    
+    <ul>
+        <li>For context menus, when opening the menu</li>
+        <li>For the User Dialog, when performing an action that opens/updates
+            the dialog, like clicking a user in chat</li>
+    </ul>
+    
+    <p>The restriction must always be on it's own line and start and
         end with a square bracket, which contain a Custom Command that is
         surrounded by spaces. If the Custom Command returns a non-empty value
         the menu entries will show up, otherwise they are hidden.</p>
@@ -1219,9 +1233,13 @@ Increase counter ($get(var,c))=/set2 var c $calc($get(var,c) + 1)
 .Subsonly[S]=/subscribers
 .Subsonly Off[D]=/subscribersoff
 Clear[C]=/clear
+
 [ $ifeq($datetime(M),9,true) ]
 /Subtember
 [/mod]
+
+[ $is(chan:joshimuz\,botimuz) ]
+/JoshFAQ /JoshSub
 </pre></div>
     
     <p>The "Modes" submenu, the "Clear" command and the "Subtember" command only
@@ -1234,6 +1252,13 @@ Clear[C]=/clear
     <p>The "Subtember" command has an additional requirement though, defined
         directly above it, which uses the functions <a href="#func-ifeq"><code>$ifeq()</code></a> and <a href="#func-datetime"><code>$datetime()</code></a> to
         only show the menu entry when the month is September.</p>
+    
+    <p>The "/JoshFAQ" and "/JoshSub" commands only show in the channel #joshimuz
+        or #botimuz. Note that the <code>\,</code> between the channel names
+        requires the backslash to <a href="#escaping">escape</a> the comma,
+        meaning it tells the Custom Command parser that the comma isn't meant as
+        a function parameter separator, but rather to separate the channels in
+        the Highlighting syntax.</p>
     
     <p><em>Note:</em> Compared to <a href="#parameters-context">identifiers</a>
         for regular commands, some information may be missing in the context of

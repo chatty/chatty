@@ -1,6 +1,7 @@
 
 package chatty.gui.components.menus;
 
+import chatty.gui.components.settings.CommandSettings;
 import chatty.util.StringUtil;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
@@ -124,6 +125,23 @@ public class CommandMenuItem {
     
     public int getLineNumber() {
         return lineNumber;
+    }
+    
+    public String getTooltipHtml() {
+        if (getCommand() == null) {
+            if (hasRestrictionCommands()) {
+                return String.format("<html><body>Restrictions:<br /><code>%s</code>",
+                CommandSettings.formatCommandInfo(StringUtil.join(getRestrictionCommands(), "\n")));
+            }
+            return "";
+        }
+        if (hasRestrictionCommands()) {
+            return String.format("<html><body><code>%s</code><br /><br />Restrictions:<br /><code>%s</code><br />",
+                CommandSettings.formatCommandInfo(StringUtil.shortenTo(getCommand().getRaw(), 100)),
+                CommandSettings.formatCommandInfo(StringUtil.join(getRestrictionCommands(), "\n")));
+        }
+        return String.format("<html><body><code>%s</code>",
+                CommandSettings.formatCommandInfo(StringUtil.shortenTo(getCommand().getRaw(), 100)));
     }
     
     @Override

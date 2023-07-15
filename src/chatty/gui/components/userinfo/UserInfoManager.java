@@ -106,7 +106,7 @@ public class UserInfoManager {
     public void setUserDefinedButtonsDef(String def) {
         this.buttonsDef = def;
         for (UserInfoDialog dialog : dialogs) {
-            dialog.setUserDefinedButtonsDef(def);
+            dialog.setUserDefinedButtonsDef(def, false);
         }
     }
     
@@ -192,7 +192,7 @@ public class UserInfoManager {
     
     private UserInfoDialog createNew() {
         UserInfoDialog dialog = new UserInfoDialog(main, userInfoListener, userInfoRequester, settings, contextMenuListener);
-        dialog.setUserDefinedButtonsDef(buttonsDef);
+        dialog.setUserDefinedButtonsDef(buttonsDef, false);
         dialog.setFontSize(fontSize);
         dialog.setTimestampFormat(timestampFormat);
         return dialog;

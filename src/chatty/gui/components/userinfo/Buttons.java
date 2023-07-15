@@ -4,12 +4,12 @@ package chatty.gui.components.userinfo;
 import chatty.gui.GuiUtil;
 import chatty.gui.components.menus.CommandMenuItem;
 import chatty.gui.components.menus.CommandMenuItems;
-import chatty.gui.components.settings.CommandSettings;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +35,9 @@ public class Buttons {
     
     private final Map<String, JPanel> rows = new HashMap<>();
     private final Map<JButton, CustomCommand> commands = new HashMap<>();
+    private List<CommandMenuItem> items = new ArrayList<>();
+    private boolean noKeyLabels = false;
+    private boolean isTest = false;
     
     private final CustomCommand modCommand = CustomCommand.parse("/mod $$1");
     private final CustomCommand unmodCommand = CustomCommand.parse("/unmod $$1");
@@ -52,9 +55,24 @@ public class Buttons {
         secondary.setLayout(new BoxLayout(secondary, BoxLayout.Y_AXIS));
     }
     
-    public void set(String setting) {
-        remove();
-        add(setting);
+    public void removeAndAddButtons(Parameters parameters) {
+        if (isTest) {
+            parameters.put("menu-test", "true");
+        }
+        removeButtons();
+        addButtons(parameters);
+    }
+    
+    public void set(String setting, boolean isTest, Parameters parameters) {
+        this.isTest = isTest;
+        if (setting.contains("nokeylabels")) {
+            setting = setting.replaceAll("nokeylabels", "");
+            noKeyLabels = true;
+        }
+        items = CommandMenuItems.parse(setting);
+        if (parameters != null) {
+            removeAndAddButtons(parameters);
+        }
     }
     
     protected void updateModButtons(boolean localIsStreamer, boolean userIsMod) {
@@ -90,7 +108,7 @@ public class Buttons {
         }
     }
     
-    private void remove() {
+    private void removeButtons() {
         for (JButton button : commands.keySet()) {
             clearShortcut(button);
         }
@@ -101,21 +119,15 @@ public class Buttons {
         modUnmodButton = null;
     }
     
-    private void add(String setting) {
-        boolean noKeyLabels = false;
-        if (setting.contains("nokeylabels")) {
-            setting = setting.replaceAll("nokeylabels", "");
-            noKeyLabels = true;
-        }
-        List<CommandMenuItem> items = CommandMenuItems.parse(setting);
+    private void addButtons(Parameters parameters) {
         for (CommandMenuItem item : items) {
-            if (item.getCommand() == null) {
+            parameters = CommandMenuItems.getMenuParameters(item, parameters);
+            if (item.getCommand() == null || item.getLabel(parameters).isEmpty()) {
                 continue;
             }
-            JButton button = new JButton(item.getLabel());
+            JButton button = new JButton(item.getLabel(parameters));
             button.addActionListener(listener);
-            button.setToolTipText("<html><body><p style='font-family:monospaced;'>"
-                    +CommandSettings.formatCommandInfo(item.getCommand().toString()));
+            button.setToolTipText(item.getTooltipHtml());
             commands.put(button, item.getCommand());
             
             boolean secondaryButton = false;
@@ -211,7 +223,9 @@ public class Buttons {
                 button.setMargin(GuiUtil.SPECIAL_BUTTON_INSETS);
             }
         }
-        button.setToolTipText(button.getToolTipText()+" [Shortcut: "+key+"]");
+        button.setToolTipText(String.format("%s<br />Shortcut: %s",
+                button.getToolTipText(),
+                key));
         
         
         owner.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyStroke, button);
