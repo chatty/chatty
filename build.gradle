@@ -1,8 +1,8 @@
 import java.util.regex.Matcher
 
 plugins {
-    id "com.github.johnrengelman.shadow" version "6.0.0"
-    id "org.gradle.crypto.checksum" version "1.1.0"
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id "org.gradle.crypto.checksum" version "1.4.0"
     id "java"
 }
 
@@ -81,7 +81,7 @@ jar {
 // dependencies. This removes the need for a separate 'libs' directory when Chatty is installed.
 shadowJar {
     // A suffix for the release jar name. By default this is '-all', which gives a name like 'Chatty-v0.8.3b3-all.jar'
-    classifier = ''
+    archiveClassifier = ''
     archiveVersion = ''
 
     manifest {
@@ -321,6 +321,8 @@ task releaseWinSetups(group: 'build') {
 import org.gradle.crypto.checksum.Checksum
 
 task createChecksums(type: Checksum) {
+    mustRunAfter(allPlatformsZip, windowsZip, releaseWindows, releaseWinSetups)
+
     files = layout.files { releasesDir.listFiles() }.filter { File f ->
         f.name.endsWith(".exe") || f.name.endsWith(".zip")
     }
