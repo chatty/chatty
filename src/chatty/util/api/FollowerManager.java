@@ -2,6 +2,7 @@
 package chatty.util.api;
 
 import chatty.util.DateTime;
+import chatty.util.Debugging;
 import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
 import chatty.util.api.Follower.Type;
@@ -512,7 +513,7 @@ public class FollowerManager {
 //    private static final Instant OLD_FOLLOW_API_OFF = ZonedDateTime.of(2023, 6, 17, 20, 29, 0, 0, ZoneId.of("+02:00")).toInstant(); // For testing only
     
     public static boolean forceNewFollowsApi() {
-        return Instant.now().isAfter(OLD_FOLLOW_API_OFF);
+        return Debugging.isEnabled("newfollowerapi") || Instant.now().isAfter(OLD_FOLLOW_API_OFF);
     }
     
 }

@@ -126,4 +126,8 @@ public class FollowerInfo {
         return new FollowerInfo(type, stream, updatedFollowers, total, totalPoints);
     }
     
+    public boolean hasFollowers() {
+        return followers != null && !followers.isEmpty();
+    }
+    
 }

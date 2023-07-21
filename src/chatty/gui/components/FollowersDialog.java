@@ -15,6 +15,7 @@ import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.StreamsContextMenu;
 import chatty.gui.components.menus.UserContextMenu;
 import chatty.gui.components.settings.ListTableModel;
+import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.Debugging;
 import chatty.util.StringUtil;
@@ -23,7 +24,6 @@ import chatty.util.api.FollowerInfo;
 import chatty.util.api.TwitchApi;
 import chatty.util.colors.ColorCorrectionNew;
 import chatty.util.dnd.DockContent;
-import chatty.util.dnd.DockContentContainer;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -183,8 +182,10 @@ public class FollowersDialog extends JDialog {
         mainTable = new JScrollPane(table);
         mainPanel.add(mainTable, gbc);
         
-        JTextArea accessInfoText = new JTextArea("The list of followers is only available for moderators. "
-                + "If you are a moderator you may be missing the required access, see 'Main - Account'.");
+        JTextArea accessInfoText = new JTextArea(
+                type == Type.FOLLOWERS
+                        ? Language.getString("followersDialog.accessInfo")
+                        : Language.getString("subscribersDialog.accessInfo"));
         accessInfoText.setLineWrap(true);
         accessInfoText.setWrapStyleWord(true);
         accessInfoText.setEditable(false);
@@ -301,7 +302,7 @@ public class FollowersDialog extends JDialog {
     }
     
     private void updateMain() {
-        boolean showTable = currentInfo == null || currentInfo.total == 0 || !currentInfo.followers.isEmpty();
+        boolean showTable = currentInfo == null || currentInfo.total == 0 || currentInfo.hasFollowers();
         mainTable.setVisible(showTable);
         accessInfo.setVisible(!showTable);
     }
