@@ -75,11 +75,39 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.25">Version 0.25</a> <a name="latest">(This one!)</a> (2023-??-??)
+        <a name="0.25">Version 0.25</a> <a name="latest">(This one!)</a> (2023-07-21)
         <a href="#top" class="top">[back to top]</a>
     </h2>
     <pre>
-TBD
+### Twitch Features
+- Added amount/currency next to Hype Chat messages, added `config:hypechat`
+  Highlighting prefix
+- Switched to new follower API (only allows moderators to see the list of
+  followers, count is visible for everyone though)
+- Added multi-month subs info to subscriber notifications
+- Improved badge tooltips based on updated API information
+
+### Custom Commands
+- Context Menu/User Dialog custom entries/buttons:
+  - Added ability to show entries only when they match certain restrictions
+    (for example based on channel or user status, see the Custom Commands help)
+  - Entries with empty labels now get removed, so using a required replacement
+    in a label can also serve to hide it based on certain conditions
+  - Added more context-specific parameters for use in labels and restrictions
+  - Added ability to use replacements in User Dialog button labels, like you can
+    in context menus as well
+- Added settings to trigger commands when middle-clicking on user in chat
+  (equivalent to Ctrl+clicking, in the Settings under "Chat")
+
+### Other
+- Select associated message in a few more cases when opening User Dialog
+- Improved support for different `.wav` file formats
+- Updated Gradle to 8.2.1 (and related build changes)
+- Updated Java for the Windows Standalone
+- Updated help
+
+### Bugfixes
+- Fixed channel status warning appearing in Admin Dialog when it shouldn't
     </pre>
     
     <h2>
