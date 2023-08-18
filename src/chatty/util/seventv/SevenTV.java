@@ -5,6 +5,7 @@ import chatty.Helper;
 import chatty.util.Debugging;
 import chatty.util.EmoticonListener;
 import chatty.util.JSONUtil;
+import chatty.util.MiscUtil;
 import chatty.util.RetryManager;
 import chatty.util.StringUtil;
 import chatty.util.UrlRequest;
@@ -17,7 +18,6 @@ import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -170,6 +170,7 @@ public class SevenTV {
             b.setStringId(id);
             b.setAnimated(animated);
             b.setLiteral(true);
+            b.setZeroWidth(MiscUtil.isBitEnabled(JSONUtil.getInteger(data, "flags", 0), 1 << 8));
             
             if (stream != null) {
                 b.addStreamRestriction(stream);

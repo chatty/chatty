@@ -573,14 +573,14 @@ public class Emoticons {
         return result;
     }
     
-    public Emoticon getCombinedEmote(List<Emoticon> emotes) {
+    public Emoticon getCombinedEmote(List<Emoticon> emotes, CachedImage.ImageType imageType) {
         emotes = new ArrayList<>(emotes);
         String code = CombinedEmoticon.getCode(emotes);
         Emoticon emote = combinedEmotes.get(code);
         if (emote != null) {
             return emote;
         }
-        emote = CombinedEmoticon.create(emotes, code);
+        emote = CombinedEmoticon.create(emotes, code, imageType);
         combinedEmotes.put(code, emote);
         return emote;
     }

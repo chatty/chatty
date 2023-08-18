@@ -117,6 +117,7 @@ public class Emoticon {
     private ArrayList<String> infos;
     private String emotesetInfo;
     private boolean isAnimated;
+    private final boolean isZeroWidth;
     
     private volatile int width;
     private volatile int height;
@@ -152,6 +153,7 @@ public class Emoticon {
         private String stringIdAlias = null;
         private String creator;
         private boolean isAnimated = false;
+        private boolean isZeroWidth = false;
         
         public Builder(Type type, String search, String url) {
             this.type = type;
@@ -232,6 +234,11 @@ public class Emoticon {
         
         public Builder setAnimated(boolean isAnimated) {
             this.isAnimated = isAnimated;
+            return this;
+        }
+        
+        public Builder setZeroWidth(boolean isZeroWidth) {
+            this.isZeroWidth = isZeroWidth;
             return this;
         }
         
@@ -386,6 +393,7 @@ public class Emoticon {
             this.infos.trimToSize();
         }
         this.isAnimated = builder.isAnimated;
+        this.isZeroWidth = builder.isZeroWidth;
         this.subType = builder.subtype;
     }
     
@@ -523,6 +531,10 @@ public class Emoticon {
         this.isAnimated = isAnimated;
     }
     
+    public synchronized boolean isZeroWidth() {
+        return isZeroWidth;
+    }
+    
     public boolean hasGlobalEmoteset() {
         return isGlobalEmoteset(emoteset);
     }
@@ -616,7 +628,7 @@ public class Emoticon {
 
                 @Override
                 public boolean loadImage() {
-                    return true;
+                    return imageType != ImageType.TEMP;
                 }
             }, ("emote_" + type).intern());
         }

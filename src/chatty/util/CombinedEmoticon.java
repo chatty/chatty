@@ -1,7 +1,6 @@
 
 package chatty.util;
 
-import chatty.gui.GuiUtil;
 import chatty.util.api.Emoticon;
 import chatty.util.api.CachedImage;
 import chatty.util.api.CachedImage.ImageType;
@@ -14,6 +13,8 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import chatty.util.api.CachedImage.CachedImageUser;
+import java.util.ArrayList;
+import javax.swing.Timer;
 
 /**
  * This does currently not support proper cleanup of images (e.g. references in
@@ -27,6 +28,7 @@ public class CombinedEmoticon extends Emoticon {
     private static final Logger LOGGER = Logger.getLogger(CombinedEmoticon.class.getName());
     
     private final List<Emoticon> emotes;
+    private final ImageType imageType;
     
     /**
      * Store for which EmoticonImage (as in, scale etc.) the combined image has
@@ -51,26 +53,42 @@ public class CombinedEmoticon extends Emoticon {
      * @param emotes List of emotes, must not be modified, must contain at least
      * one value
      * @param code
+     * @param imageType
      * @return 
      */
-    public static CombinedEmoticon create(List<Emoticon> emotes, String code) {
+    public static CombinedEmoticon create(List<Emoticon> emotes, String code, ImageType imageType) {
         Debugging.println("combinedemotes", "Create: %s", emotes);
         Emoticon base = emotes.get(0);
         Emoticon.Builder b = new Emoticon.Builder(base.type, code, base.url);
         b.setStringId(base.stringId);
         b.setStringIdAlias(base.stringIdAlias);
         b.setLiteral(base.literal);
-        b.setSize(base.getWidth(), base.getHeight());
-        b.setAnimated(base.isAnimated());
+        b.setAnimated(false);
+        int maxWidth = -1;
+        int maxHeight = -1;
+        for (Emoticon emote : emotes) {
+            maxWidth = Math.max(maxWidth, emote.getWidth());
+            maxHeight = Math.max(maxHeight, emote.getHeight());
+            if (emote.isAnimated()) {
+                b.setAnimated(true);
+                break;
+            }
+        }
+        b.setSize(maxWidth, maxHeight);
         b.setX2Url(base.urlX2);
         b.setSubType(base.subType);
         b.addInfo("Special Combined Emote");
-        return new CombinedEmoticon(b, emotes);
+        return new CombinedEmoticon(b, emotes, imageType);
     }
     
-    private CombinedEmoticon(Builder b, List<Emoticon> emotes) {
+    private CombinedEmoticon(Builder b, List<Emoticon> emotes, ImageType imageType) {
         super(b);
         this.emotes = emotes;
+        this.imageType = imageType;
+    }
+    
+    public List<Emoticon> getEmotes() {
+        return new ArrayList<>(emotes);
     }
     
     /**
@@ -84,14 +102,31 @@ public class CombinedEmoticon extends Emoticon {
      */
     @Override
     public CachedImage<Emoticon> getIcon(float scaleFactor, int maxHeight, ImageType imageType, CachedImageUser user) {
-        CachedImage<Emoticon> emoteImage = super.getIcon(scaleFactor, maxHeight, ImageType.STATIC, user);
+        // Don't request actual emote image, just leave default (TEMP)
+        CachedImage<Emoticon> emoteImage = super.getIcon(scaleFactor, maxHeight, ImageType.TEMP, user);
         Debugging.println("combinedemotes", "Get: %s [%s] %s", emotes, System.identityHashCode(this), alreadyMade.contains(emoteImage));
         if (alreadyMade.contains(emoteImage)) {
             return emoteImage;
         }
+        /**
+         * Fallback timer. Sometimes iconLoaded() is not called, not sure why.
+         * Could have to do with getImageIcon() being called before already when
+         * first normally adding the emotes separately, but still the user added
+         * here should be informed anyway. Posting the same combined emote in
+         * chat again would fix it as well, but can't really rely on that, so
+         * call makeImage() again just in case. The issue could depend on timing
+         * since it only happens sometimes and adding debug messages appeared to
+         * change the behaviour.
+         */
+        Timer timer = new Timer(2000, e -> {
+            makeImage(scaleFactor, maxHeight, user);
+        });
+        timer.setRepeats(false);
+        timer.start();
+        
         boolean allLoaded = true;
         for (Emoticon emote : emotes) {
-            CachedImage<Emoticon> image = emote.getIcon(scaleFactor, maxHeight, ImageType.STATIC, new CachedImageUser() {
+            CachedImage<Emoticon> image = emote.getIcon(scaleFactor, maxHeight, imageType, new CachedImageUser() {
 
                 @Override
                 public void iconLoaded(Image oldImage, Image newImage, boolean sizeChanged) {
@@ -121,7 +156,7 @@ public class CombinedEmoticon extends Emoticon {
      * @param user 
      */
     private void makeImage(float scaleFactor, int maxHeight, CachedImageUser user) {
-        CachedImage<Emoticon> emoteImage = super.getIcon(scaleFactor, maxHeight, ImageType.STATIC, user);
+        CachedImage<Emoticon> emoteImage = super.getIcon(scaleFactor, maxHeight, ImageType.TEMP, user);
         if (alreadyMade.contains(emoteImage)) {
             return;
         }
@@ -129,7 +164,7 @@ public class CombinedEmoticon extends Emoticon {
         LinkedHashMap<ImageIcon, Integer> data = new LinkedHashMap<>();
         // Build list images and offsets
         for (Emoticon emote : emotes) {
-            CachedImage<Emoticon> image = emote.getIcon(scaleFactor, maxHeight, ImageType.STATIC, null);
+            CachedImage<Emoticon> image = emote.getIcon(scaleFactor, maxHeight, imageType, null);
             if (!image.isLoaded()) {
                 LOGGER.warning(image.getObject()+" not loaded for "+emotes);
                 return;
@@ -138,7 +173,13 @@ public class CombinedEmoticon extends Emoticon {
             data.put(image.getImageIcon(), yOffset);
         }
         // Create and change this emotes icon
-        ImageIcon result = GuiUtil.overlay(data);
+        ImageIcon result;
+        try {
+            result = chatty.util.gif.Overlay.overlayNew(data);
+        } catch (Exception ex) {
+            LOGGER.warning("Error when combining "+emotes+": "+ex);
+            return;
+        }
         alreadyMade.add(emoteImage);
         emoteImage.setImageIcon(result, true);
     }

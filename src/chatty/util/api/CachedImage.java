@@ -4,6 +4,7 @@ package chatty.util.api;
 import chatty.util.ImageCache;
 import chatty.util.ImageCache.ImageRequest;
 import chatty.util.ImageCache.ImageResult;
+import chatty.util.gif.AnimatedImageSource;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -116,7 +117,7 @@ public class CachedImage<T> {
     }
 
     public static enum ImageType {
-        STATIC, ANIMATED_DARK, ANIMATED_LIGHT
+        STATIC, ANIMATED_DARK, ANIMATED_LIGHT, TEMP
     }
     
     public final float scaleFactor;
@@ -267,7 +268,8 @@ public class CachedImage<T> {
     public boolean isAnimated() {
         boolean emoteAnimated = object instanceof Emoticon ? ((Emoticon) object).isAnimated() : false;
         boolean imageLoadedAsGif = icon != null && icon.getDescription() != null && icon.getDescription().startsWith("GIF");
-        return emoteAnimated || imageLoadedAsGif;
+        boolean imageAnimatedSource = icon.getImage().getSource() instanceof AnimatedImageSource;
+        return emoteAnimated || imageLoadedAsGif || imageAnimatedSource;
     }
 
     /**

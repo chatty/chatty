@@ -76,6 +76,10 @@ public class AnimatedImageSource implements ImageProducer {
         // Empty
     }
     
+    public AnimatedImage getAnimatedImage() {
+        return image;
+    }
+    
     //==========================
     // Frame updates
     //==========================

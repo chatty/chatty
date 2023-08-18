@@ -2792,10 +2792,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                 MutableAttributeSet style = rangesStyle.get(start);
                 CachedImage<Emoticon> image = (CachedImage<Emoticon>) style.getAttribute(Attribute.EMOTICON);
                 // Only affect emotes that aren't GIFs
-                if (image != null && !image.isAnimated()) {
+                if (image != null) {
+                    Emoticon cEmote = image.getObject();
                     // Check for emote that can overlay over another one, and
                     // that there is an emote to modify directly before that
-                    if (cei.containsCode(image.getObject().code)
+                    if ((cei.containsCode(cEmote.code) || cEmote.isZeroWidth())
                             && !emotes.isEmpty()
                             && lastEnd + 2 == start) {
                         // Extend original emote to span to the end of this one
@@ -2806,7 +2807,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                         // This isn't an overlay emote, so check if a previous
                         // combined emote still needs to be created
                         if (emotes.size() > 1) {
-                            Emoticon emote = main.emoticons.getCombinedEmote(emotes);
+                            Emoticon emote = main.emoticons.getCombinedEmote(emotes, styles.emoticonImageType());
                             styleChanges.put(baseStart, styles.emoticon(emote));
                         }
                         // Always reset when it's not an overlay emote
@@ -2823,7 +2824,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             }
             // Finish any remaining changes
             if (emotes.size() > 1) {
-                Emoticon emote = main.emoticons.getCombinedEmote(emotes);
+                Emoticon emote = main.emoticons.getCombinedEmote(emotes, styles.emoticonImageType());
                 styleChanges.put(baseStart, styles.emoticon(emote));
             }
             // Apply changes (except removing entries, which is already done)

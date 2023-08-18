@@ -22,6 +22,7 @@ import chatty.gui.components.textpane.ChannelTextPane.Attribute;
 import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_CTRL;
 import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_MENTIONS;
 import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_MENTIONS_CTRL_ALL;
+import chatty.util.CombinedEmoticon;
 import chatty.util.DateTime;
 import chatty.util.Debugging;
 import chatty.util.ReplyManager;
@@ -824,28 +825,23 @@ public class LinkController extends MouseAdapter {
     
     private static String makeEmoticonPopupText2(CachedImage<Emoticon> emoticonImage, boolean showImage, MyPopup popup) {
         Emoticon emote = emoticonImage.getObject();
-        String result = "";
-        if (emote.type == Emoticon.Type.TWITCH) {
-            if (emote.subType == Emoticon.SubType.CHEER) {
-                result = "Cheering Emote";
-                if (emote.hasStreamRestrictions()) {
-                    result += " Local";
-                } else {
-                    result += " Global";
-                }
-            } else {
-                result = TwitchEmotesApi.getEmoteType(emote);
+        String result = getEmoteType(emote);
+        String code = emote.type == Emoticon.Type.EMOJI
+                ? emote.stringId
+                : Emoticons.toWriteable(emote.code);
+        
+        if (emote instanceof CombinedEmoticon) {
+            List<Emoticon> combinedEmotes = ((CombinedEmoticon) emote).getEmotes();
+            code = combinedEmotes.get(0).code;
+            String combinedWith = "";
+            for (int i=1; i<combinedEmotes.size(); i++) {
+                Emoticon cEmote = combinedEmotes.get(i);
+                combinedWith += String.format("<br />+ <span style='font-weight:bold'>%s</span> (%s)",
+                        Helper.htmlspecialchars_encode(cEmote.code),
+                        getEmoteType(cEmote));
             }
-        } else if (emote.type == Emoticon.Type.CUSTOM2) {
-            result = "Local Emote";
-        } else {
-            result = emote.type.label;
-            if (emote.type != Emoticon.Type.EMOJI) {
-                if (emote.hasStreamRestrictions()) {
-                    result += " Local";
-                } else {
-                    result += " Global";
-                }
+            if (!combinedWith.isEmpty()) {
+                result += "<br />"+combinedWith;
             }
         }
 
@@ -853,18 +849,50 @@ public class LinkController extends MouseAdapter {
             result += " [" + emoticonImage.getImageIcon().getDescription() + "]";
         }
 
-        if (showImage && !emote.isAnimated()) {
-            CachedImage<Emoticon> icon = emote.getIcon(2, 0, ImageType.STATIC, (o,n,c) -> {
+        if (showImage) {
+            CachedImage<Emoticon> icon = emote.getIcon(2, 0, ImageType.ANIMATED_DARK, (o,n,c) -> {
                 // The set ImageIcon will have been updated
                 popup.forceUpdate();
             });
             popup.setIcon(icon.getImageIcon());
         }
-        String code = emote.type == Emoticon.Type.EMOJI ? emote.stringId : Emoticons.toWriteable(emote.code);
         return String.format("%s%s<br /><span style='font-weight:normal'>%s</span>",
                 POPUP_HTML_PREFIX,
                 Helper.htmlspecialchars_encode(code),
                 result);
+    }
+    
+    private static String getEmoteType(Emoticon emote) {
+        String result;
+        if (emote.type == Emoticon.Type.TWITCH) {
+            if (emote.subType == Emoticon.SubType.CHEER) {
+                result = "Cheering Emote";
+                if (emote.hasStreamRestrictions()) {
+                    result += " Local";
+                }
+                else {
+                    result += " Global";
+                }
+            }
+            else {
+                result = TwitchEmotesApi.getEmoteType(emote);
+            }
+        }
+        else if (emote.type == Emoticon.Type.CUSTOM2) {
+            result = "Local Emote";
+        }
+        else {
+            result = emote.type.label;
+            if (emote.type != Emoticon.Type.EMOJI) {
+                if (emote.hasStreamRestrictions()) {
+                    result += " Local";
+                }
+                else {
+                    result += " Global";
+                }
+            }
+        }
+        return result;
     }
     
     //----------------
