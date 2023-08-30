@@ -614,6 +614,8 @@ public class Highlighter {
          */
         private int substitutesEnabled = 1;
         
+        private List<String> routingTargets;
+        
         //--------------------------
         // Debugging
         //--------------------------
@@ -1114,6 +1116,9 @@ public class Highlighter {
                     String newItem = StringUtil.append(result, " ", remaining);
                     modifications.add(new Modification(item, newItem, "preset:"));
                     prepare(newItem);
+                }
+                else if (item.startsWith("to:")) {
+                    routingTargets = parseStringListPrefix(item, "to:", c -> c);
                 }
                 else if (item.startsWith("n:")) {
                     parsePrefix(item, "n:");
@@ -1814,6 +1819,10 @@ public class Highlighter {
                     addPatternWarning(result, item.pattern);
                 }
             }
+            if (routingTargets != null) {
+                result.append("Copy message to: ").append(routingTargets);
+                result.append("\n");
+            }
             return result.toString();
         }
         
@@ -2072,6 +2081,10 @@ public class Highlighter {
             return noLog;
         }
         
+        public List<String> getRoutingTargets() {
+            return routingTargets;
+        }
+        
         public String getFailedReason() {
             if (failedItem != null) {
                 return failedItem.toString();
@@ -2113,6 +2126,10 @@ public class Highlighter {
         
         public String getReplacement() {
             return replacement;
+        }
+        
+        public String getUsedForFeature() {
+            return usedForFeature;
         }
         
         public static Map<String, CustomCommand> makePresets(Collection<String> input) {

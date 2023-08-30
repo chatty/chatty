@@ -13,14 +13,20 @@ import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.StreamChatContextMenu;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.textpane.Message;
+import chatty.util.Timestamp;
+import chatty.util.colors.ColorCorrector;
 import chatty.util.dnd.DockContent;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import javax.swing.JDialog;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
 
 /**
  * Simple dialog that contains a ChannelTextPane with stream chat features
@@ -41,8 +47,48 @@ public class StreamChat extends JDialog {
         super(g);
         this.contextMenuListener = contextMenuListener;
         setTitle("Stream Chat");
+        
+        StyleServer modifiedStyleServer = new StyleServer() {
 
-        textPane = new TextPane(g, styles, startAtBottom);
+            @Override
+            public Color getColor(String type) {
+                return styles.getColor(type);
+            }
+
+            @Override
+            public MutableAttributeSet getStyle(String type) {
+                if (type.equals("settings")) {
+                    MutableAttributeSet attr = new SimpleAttributeSet(styles.getStyle(type));
+                    
+                    int channelLogoSize = -1;
+                    try {
+                        channelLogoSize = Integer.parseInt(g.getSettings().getString("streamChatLogos"));
+                    } catch (NumberFormatException ex) {
+                        // Just leave at default -1
+                    }
+                    attr.addAttribute(ChannelTextPane.Setting.CHANNEL_LOGO_SIZE, channelLogoSize);
+                    return attr;
+                }
+                return styles.getStyle(type);
+            }
+
+            @Override
+            public Font getFont(String type) {
+                return styles.getFont(type);
+            }
+
+            @Override
+            public Timestamp getTimestampFormat() {
+                return styles.getTimestampFormat();
+            }
+
+            @Override
+            public ColorCorrector getColorCorrector() {
+                return styles.getColorCorrector();
+            }
+        };
+
+        textPane = new TextPane(g, modifiedStyleServer, startAtBottom);
         textPane.setContextMenuListener(new ContextMenuAdapter(contextMenuListener) {
             
             @Override

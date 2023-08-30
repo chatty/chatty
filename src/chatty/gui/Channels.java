@@ -570,6 +570,11 @@ public class Channels {
                 gui.client.closeChannel(id);
             }
         }
+        else if (id.startsWith("'")) {
+            if (add) {
+                gui.routingManager.addTarget(id.replace("'", ""));
+            }
+        }
         else {
             //--------------------------
             // Other content (dialogs)

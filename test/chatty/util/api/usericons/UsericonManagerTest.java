@@ -59,7 +59,7 @@ public class UsericonManagerTest {
     
     private void testThirdParty(UsericonManager m, Set<String> usernames, Set<String> userids, User user, boolean... results) {
         List<Usericon> thirdParty = setThirdParty(m, usernames, userids);
-        List<Usericon> badges = m.getBadges(IrcBadges.parse(null), user, null, false, null, false);
+        List<Usericon> badges = m.getBadges(IrcBadges.parse(null), user, null, false, null, -1);
         for (int i=0;i<results.length;i++) {
             if (results[i]) {
                 assertTrue("Badge "+i, badges.contains(thirdParty.get(i)));

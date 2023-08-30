@@ -53,6 +53,8 @@ public class InfoMessage {
     public List<Match> highlightMatches;
     public Object colorSource;
     public Object highlightSource;
+    public Object ignoreSource;
+    public Object routingSource;
     public Object objectId;
     
     public InfoMessage(Type msgType, String text) {
@@ -63,6 +65,21 @@ public class InfoMessage {
         this.msgType = msgType;
         this.text = text;
         this.tags = tags;
+    }
+    
+    public InfoMessage copy() {
+        InfoMessage result = new InfoMessage(msgType, text, tags);
+        result.highlighted = highlighted;
+        result.hidden = hidden;
+        result.color = color;
+        result.bgColor = bgColor;
+        result.highlightMatches = highlightMatches;
+        result.colorSource = colorSource;
+        result.highlightSource = highlightSource;
+        result.ignoreSource = ignoreSource;
+        result.routingSource = routingSource;
+        result.objectId = objectId;
+        return result;
     }
     
     public static InfoMessage createInfo(String text) {

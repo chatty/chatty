@@ -411,12 +411,8 @@ public class LinkController extends MouseAdapter {
         return (String)(e.getAttributes().getAttribute(ChannelTextPane.Attribute.REPLY_PARENT_MSG_ID));
     }
     
-    private Object getHighlightSource(Element e) {
-        return e.getAttributes().getAttribute(ChannelTextPane.Attribute.HIGHLIGHT_SOURCE);
-    }
-    
-    private Object getCustomColorSource(Element e) {
-        return e.getAttributes().getAttribute(ChannelTextPane.Attribute.CUSTOM_COLOR_SOURCE);
+    private Object getSource(Attribute attribute, Element e) {
+        return e.getAttributes().getAttribute(attribute);
     }
     
     private String getSelectedText(MouseEvent e) {
@@ -1029,36 +1025,22 @@ public class LinkController extends MouseAdapter {
      * @param element 
      */
     private void addMessageInfoItems(JPopupMenu m, Element element) {
-        Object highlightSource = getHighlightSource(element);
-        Object colorSource = getCustomColorSource(element);
-        String highlight = "Highlight";
-        if (type == ChannelTextPane.Type.IGNORED) {
-            // Highlight is used for ignore in Ignored Messages dialog
-            highlight = "Ignore";
-        }
-        if (highlightSource != null || colorSource != null) {
+        Object highlightSource = getSource(Attribute.HIGHLIGHT_SOURCE, element);
+        Object ignoreSource = getSource(Attribute.IGNORE_SOURCE, element);
+        Object colorSource = getSource(Attribute.CUSTOM_COLOR_SOURCE, element);
+        Object routingSource = getSource(Attribute.ROUTING_SOURCE, element);
+        
+        if (highlightSource != null
+                || ignoreSource != null
+                || colorSource != null
+                || routingSource != null) {
             JMenu menu = new JMenu("Message Info");
             
-            /**
-             * Treat a single highlight item (meaning no further text matches
-             * from other items, or setting disabled) as before and show
-             * combined if possible, otherwise show separately.
-             */
-            Object highlightSourceItem = null;
-            if (highlightSource != null && highlightSource instanceof List
-                    && ((List) highlightSource).size() == 1) {
-                highlightSourceItem = ((List) highlightSource).get(0);
-            }
-            else {
-                highlightSourceItem = highlightSource;
-            }
-            if (highlightSourceItem == colorSource) {
-                addMessageInfoItem(menu, highlight+"/Custom Color Source", highlightSourceItem);
-            }
-            else {
-                addMessageInfoItem(menu, highlight+" Source", highlightSource);
-                addMessageInfoItem(menu, "Custom Color Source", colorSource);
-            }
+            addMessageInfoItem(menu, "Highlight Source", highlightSource);
+            addMessageInfoItem(menu, "Ignore Source", ignoreSource);
+            addMessageInfoItem(menu, "Custom Color Source", colorSource);
+            addMessageInfoItem(menu, "Routing Source", routingSource);
+            
             m.addSeparator();
             m.add(menu);
         }
@@ -1100,21 +1082,43 @@ public class LinkController extends MouseAdapter {
                 sourceLabel = "Msg. Color: "+sourceText;
             }
             else if (source instanceof List) {
-                List<Highlighter.HighlightItem> list = (List) source;
-                JSONArray rawList = new JSONArray();
-                list.forEach(entry -> rawList.add(entry.getRaw()));
-                sourceText = rawList.toJSONString();
-                if (type == ChannelTextPane.Type.IGNORED) {
-                    sourceType = "ignoreSource";
-                    sourceLabel = "Ignore: ";
+                Object sourceItem = getSingleItem(source);
+                if (sourceItem instanceof Highlighter.HighlightItem) {
+                    Highlighter.HighlightItem hlItem = (Highlighter.HighlightItem) sourceItem;
+                    switch (hlItem.getUsedForFeature()) {
+                        case "highlight":
+                            sourceType = "highlightSource";
+                            sourceLabel = "[Highlight] ";
+                            break;
+                        case "ignore":
+                            sourceType = "ignoreSource";
+                            sourceLabel = "[Ignore] ";
+                            break;
+                        case "msgcolor":
+                            sourceType = "msgColorSource";
+                            sourceLabel = "[Msg. Color] ";
+                            break;
+                        case "routing":
+                            sourceType = "routingSource";
+                            sourceLabel = "[Routing] ";
+                            break;
+                        default:
+                            sourceType = "unknownSource";
+                            sourceLabel = "[Unknown] ";
+                    }
+                    List<Highlighter.HighlightItem> list = (List) source;
+                    JSONArray rawList = new JSONArray();
+                    list.forEach(entry -> rawList.add(entry.getRaw()));
+                    sourceText = rawList.toJSONString();
+                    sourceLabel += list.get(0).getRaw();
+                    if (list.size() > 1) {
+                        sourceLabel += " (and " + (list.size() - 1) + " more for marked matches)";
+                    }
                 }
                 else {
-                    sourceType = "highlightSource";
-                    sourceLabel = "Highlight: ";
-                }
-                sourceLabel += list.get(0).getRaw();
-                if (list.size() > 1) {
-                    sourceLabel += " (and " + (list.size() - 1) + " more for marked matches)";
+                    sourceType = "";
+                    sourceText = "";
+                    sourceLabel = "";
                 }
             }
             else {
@@ -1128,6 +1132,14 @@ public class LinkController extends MouseAdapter {
             item.setToolTipText(sourceLabel);
             menu.add(item);
         }
+    }
+    
+    private static Object getSingleItem(Object o) {
+        if (o != null && o instanceof List
+                && !((List) o).isEmpty()) {
+            return ((List) o).get(0);
+        }
+        return o;
     }
     
 }

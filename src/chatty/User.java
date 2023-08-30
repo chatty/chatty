@@ -202,10 +202,10 @@ public class User implements Comparable<User> {
         return twitchBadges != null && twitchBadges.hasIdVersion(id, version);
     }
     
-    public List<Usericon> getBadges(boolean botBadgeEnabled, MsgTags tags, User localUser, boolean channelLogo) {
+    public List<Usericon> getBadges(boolean botBadgeEnabled, MsgTags tags, User localUser, int channelLogoSize) {
         IrcBadges badges = getTwitchBadges();
         if (userSettings.iconManager != null) {
-            return userSettings.iconManager.getBadges(badges, this, localUser, botBadgeEnabled, tags, channelLogo);
+            return userSettings.iconManager.getBadges(badges, this, localUser, botBadgeEnabled, tags, channelLogoSize);
         }
         return null;
     }

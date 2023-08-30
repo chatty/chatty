@@ -662,6 +662,11 @@ public class SettingsManager {
         settings.addBoolean("filterEnabled", true);
         settings.addBoolean("filterOwnText", true);
         
+        // Routing
+        settings.addList("routingTargets", new ArrayList(), Setting.LIST);
+        settings.addList("routing", new ArrayList(), Setting.STRING);
+        settings.addBoolean("routingMulti", true);
+        
         // Matching
         List<String> matchingPresetsDefault = new ArrayList<>();
         matchingPresetsDefault.add("# _custom replaces \\! with [\\W_]*? (matches non-word characters and underscore 0 or more times)");

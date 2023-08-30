@@ -6,6 +6,7 @@ import chatty.User;
 import chatty.gui.GuiUtil;
 import chatty.util.api.usericons.Usericon.Type;
 import chatty.gui.MainGui;
+import chatty.util.Pair;
 import chatty.util.StringUtil;
 import chatty.util.irc.IrcBadges;
 import chatty.util.irc.MsgTags;
@@ -49,7 +50,8 @@ public class UsericonManager {
     
     private final List<Usericon> thirdParty = new ArrayList<>();
     
-    private final Map<String, Usericon> channelLogos = new HashMap<>();
+    private final Map<Pair<String, Integer>, Usericon> channelLogos = new HashMap<>();
+    private final Map<String, String> channelLogoUrls = new HashMap<>();
 
     private final Settings settings;
     
@@ -89,27 +91,23 @@ public class UsericonManager {
      *
      * @param channel Must not be null
      * @param url Must not be null
-     * @param sizeSetting 
      */
-    public synchronized void updateChannelLogo(String channel, String url, String sizeSetting) {
-        int size = -1;
-        try {
-            size = Integer.parseInt(sizeSetting);
-        } catch (NumberFormatException ex) {
-            // Just leave at default -1
-        }
-        if (size <= 0) {
-            channelLogos.clear();
-            return;
-        }
-        Usericon existing = channelLogos.get(channel);
-        if (existing == null || existing.targetImageSize.width != size) {
-            Usericon icon = UsericonFactory.createChannelLogo(channel, url, size);
+    public synchronized void addChannelLogoUrl(String channel, String url) {
+        channelLogoUrls.put(channel, url);
+    }
+    
+    private synchronized Usericon getChannelLogo(String channel, int size) {
+        Pair<String, Integer> key = new Pair<>(channel, size);
+        Usericon icon = channelLogos.get(key);
+        String url = channelLogoUrls.get(channel);
+        if (icon == null && url != null) {
+            icon = UsericonFactory.createChannelLogo(channel, url, size);
             if (icon != null) {
                 LOGGER.info("Added StreamChat channel logo: "+icon);
-                channelLogos.put(channel, icon);
+                channelLogos.put(key, icon);
             }
         }
+        return icon;
     }
     
     /**
@@ -191,7 +189,7 @@ public class UsericonManager {
     }
     
     public synchronized List<Usericon> getBadges(IrcBadges badgesDef,
-            User user, User localUser, boolean botBadgeEnabled, MsgTags tags, boolean channelLogo) {
+            User user, User localUser, boolean botBadgeEnabled, MsgTags tags, int channelLogoSize) {
         List<Usericon> icons = getTwitchBadges(badgesDef, user, tags);
         if (user.isBot() && botBadgeEnabled) {
             Usericon icon = getIcon(Usericon.Type.BOT, null, null, user, tags);
@@ -214,8 +212,11 @@ public class UsericonManager {
                 icons.add(0, icon);
             }
         }
-        if (channelLogo && channelLogos.containsKey(user.getChannel())) {
-            icons.add(0, channelLogos.get(user.getChannel()));
+        if (channelLogoSize > 0) {
+            Usericon icon = getChannelLogo(user.getChannel(), channelLogoSize);
+            if (icon != null) {
+                icons.add(0, icon);
+            }
         }
         return icons;
     }

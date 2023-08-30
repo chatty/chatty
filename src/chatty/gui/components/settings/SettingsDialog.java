@@ -149,6 +149,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         HIGHLIGHT("Highlight", Language.getString("settings.page.highlight")),
         IGNORE("Ignore", Language.getString("settings.page.ignore")),
         FILTER("Filter", Language.getString("settings.page.filter")),
+        CUSTOM_TABS("Custom Tabs", Language.getString("settings.page.customTabs")),
         HISTORY("History", Language.getString("settings.page.history")),
         NOTIFICATIONS("Notifications", Language.getString("settings.page.notifications")),
         LIVE_STREAMS("Live Streams", Language.getString("settings.page.liveStreams")),
@@ -209,6 +210,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
             Page.HIGHLIGHT,
             Page.IGNORE,
             Page.FILTER,
+            Page.CUSTOM_TABS,
             Page.LOGGING,
         }));
         MENU.put(Page.WINDOW, Arrays.asList(new Page[]{
@@ -301,6 +303,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         panels.put(Page.HIGHLIGHT, new HighlightSettings(this));
         panels.put(Page.IGNORE, new IgnoreSettings(this));
         panels.put(Page.FILTER, new FilterSettings(this));
+        panels.put(Page.CUSTOM_TABS, new RoutingSettings(this));
         panels.put(Page.MSGCOLORS, new MsgColorSettings(this));
         panels.put(Page.HISTORY, new HistorySettings(this));
         panels.put(Page.NOTIFICATIONS, new NotificationSettings(this, settings));
@@ -519,6 +522,11 @@ public class SettingsDialog extends JDialog implements ActionListener {
                 } else if (action.equals("selectMsgColor")) {
                     showPanel(Page.MSGCOLORS);
                     getPanel(MsgColorSettings.class).selectItem((String) parameter);
+                } else if (action.equals("selectRouting")) {
+                    showPanel(Page.CUSTOM_TABS);
+                    @SuppressWarnings("unchecked") // By convention
+                    Collection<String> data = (Collection<String>) parameter;
+                    getPanel(RoutingSettings.class).selectItems(data);
                 } else if (action.equals("show")) {
                     showPage((String) parameter);
                 } else if (action.equals("editHotkey")) {
@@ -566,6 +574,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
                 owner.hotkeyManager.globalHotkeysAvailable());
         getPanel(NotificationSettings.class).setData(owner.getNotificationData());
         getPanel(EmoteSettings.class).setData(owner.localEmotes.getData());
+        getPanel(RoutingSettings.class).setData(owner.routingManager.getData());
     }
     
     public void updateBackgroundColor() {
@@ -643,6 +652,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         owner.hotkeyManager.setData(getPanel(HotkeySettings.class).getData());
         owner.setNotificationData(getPanel(NotificationSettings.class).getData());
         owner.localEmotes.setData(getPanel(EmoteSettings.class).getData());
+        owner.routingManager.setData(getPanel(RoutingSettings.class).getData());
         if (restartRequired) {
             JOptionPane.showMessageDialog(this, RESTART_REQUIRED_INFO, "Info", JOptionPane.INFORMATION_MESSAGE);
         }

@@ -3012,12 +3012,13 @@ public class TwitchClient {
     };
     
     /**
-     * Update the logo for all current Stream Chat channels, based on already
-     * available StreamInfo.
+     * Get the channel logo URL for channels that are being joined.
+     * 
+     * @param joiningChannels
      */
-    public void updateStreamChatLogos() {
+    public void updateStreamChatLogos(Collection<String> joiningChannels) {
         List<String> logins = new ArrayList<>();
-        for (String channel : (List<String>) settings.getList("streamChatChannels")) {
+        for (String channel : joiningChannels) {
             if (Helper.isRegularChannel(channel)) {
                 logins.add(Helper.toStream(channel));
             }
@@ -3026,7 +3027,7 @@ public class TwitchClient {
             for (Map.Entry<String, UserInfo> entry : result.entrySet()) {
                 UserInfo info = entry.getValue();
                 if (info != null && !StringUtil.isNullOrEmpty(info.profileImageUrl)) {
-                    usericonManager.updateChannelLogo(Helper.toChannel(info.login), info.profileImageUrl, settings.getString("streamChatLogos"));
+                    usericonManager.addChannelLogoUrl(Helper.toChannel(info.login), info.profileImageUrl);
                 }
             }
         });
@@ -3534,16 +3535,10 @@ public class TwitchClient {
         
         @Override
         public void onJoinScheduled(Collection<String> channels) {
-            boolean joiningStreamChatChannel = false;
             for (String channel : channels) {
                 g.joinScheduled(channel);
-                if (settings.listContains("streamChatChannels", channel)) {
-                    joiningStreamChatChannel = true;
-                }
             }
-            if (joiningStreamChatChannel) {
-                updateStreamChatLogos();
-            }
+            updateStreamChatLogos(channels);
             // Try to request stream info for all, so it doesn't do it one by one
             api.getStreamInfo(null, new HashSet<>(Helper.toStream(channels)));
         }

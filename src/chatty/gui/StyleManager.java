@@ -45,7 +45,7 @@ public class StyleManager implements StyleServer {
             "customUsericonScaleMode", "botBadgeEnabled",
             "filterCombiningCharacters", "pauseChatOnMouseMove",
             "pauseChatOnMouseMoveCtrlRequired",
-            "animatedEmotes",
+            "animatedEmotes", "streamChatLogos",
             "banReasonAppended", "banDurationAppended",
             "banDurationMessage", "banReasonMessage", "displayNamesMode",
             "paragraphSpacing", "bufferSizes", "userlistFont",

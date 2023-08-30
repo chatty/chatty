@@ -2,6 +2,7 @@
 package chatty.gui;
 
 import chatty.Chatty;
+import chatty.gui.components.routing.RoutingTargetInfo;
 import chatty.lang.Language;
 import chatty.gui.components.settings.SettingsUtil;
 import chatty.util.dnd.DockLayout;
@@ -42,6 +43,7 @@ public class MainMenu extends JMenuBar {
     
     private final JMenu main = new JMenu(Language.getString("menubar.menu.main"));
     protected final JMenu view = new JMenu(Language.getString("menubar.menu.view"));
+    protected final JMenu customTabsMenu = new JMenu("Custom Tabs");
     protected final JMenu channels = new JMenu(Language.getString("menubar.menu.channels"));
     private final JMenu srl = new JMenu(Language.getString("menubar.menu.srl"));
     protected final JMenu srlStreams = new JMenu("Races with..");
@@ -83,6 +85,7 @@ public class MainMenu extends JMenuBar {
         
         view.addMenuListener((MenuListener)itemListener);
         layoutsMenu.addMenuListener((MenuListener)itemListener);
+        customTabsMenu.addMenuListener((MenuListener)itemListener);
         
         main.setMnemonic(KeyEvent.VK_M);
         view.setMnemonic(KeyEvent.VK_V);
@@ -142,6 +145,7 @@ public class MainMenu extends JMenuBar {
         addItem(view, "dialog.search");
         view.addSeparator();
         view.add(layoutsMenu);
+        view.add(customTabsMenu);
         
         //----------
         // Channels
@@ -415,6 +419,18 @@ public class MainMenu extends JMenuBar {
         addItem(layoutsMenu, "layouts.add", "Add");
     }
     
+    public void updateCustomTabs(List<RoutingTargetInfo> infos) {
+        customTabsMenu.removeAll();
+        for (RoutingTargetInfo info : infos) {
+            String label = info.name;
+            if (info.messages > -1) {
+                label = String.format("%s (%d)",
+                        info.name, info.messages);
+            }
+            addItem(customTabsMenu, "customTab."+info.name, label);
+        }
+    }
+    
     //==========================
     // Notifications
     //==========================
@@ -436,7 +452,7 @@ public class MainMenu extends JMenuBar {
             notifyIcons.removeItem("chattyInfo");
         }
     }
-    
+
     private class NotifyIcons {
         
         /**

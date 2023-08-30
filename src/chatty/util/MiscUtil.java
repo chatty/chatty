@@ -354,4 +354,8 @@ public class MiscUtil {
         return input.intern();
     }
     
+    public static boolean isNumTrue(Object object) {
+        return object instanceof Number && ((Number) object).intValue() == 1;
+    }
+    
 }

@@ -27,6 +27,8 @@ public class UserMessage extends Message {
     public boolean action;
     public Object colorSource;
     public Object highlightSource;
+    public Object ignoreSource;
+    public Object routingSource;
     public User localUser;
     
     public UserMessage(User user, String text, Emoticons.TagEmotes emotes,
@@ -38,4 +40,21 @@ public class UserMessage extends Message {
         this.bits = bits;
         this.tags = tags;
     }
+    
+    public UserMessage copy() {
+        UserMessage result = new UserMessage(user, text, emotes, id, bits, highlightMatches, replaceMatches, replacement, tags);
+        result.color = color;
+        result.backgroundColor = backgroundColor;
+        result.whisper = whisper;
+        result.highlighted = highlighted;
+        result.ignored_compact = ignored_compact;
+        result.action = action;
+        result.colorSource = colorSource;
+        result.highlightSource = highlightSource;
+        result.ignoreSource = ignoreSource;
+        result.routingSource = routingSource;
+        result.localUser = localUser;
+        return result;
+    }
+    
 }

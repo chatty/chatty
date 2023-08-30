@@ -255,7 +255,12 @@ public class HighlightedMessages extends JDialog {
         messageAdded(channel);
         UserMessage message = new UserMessage(user, text, emotes, null, bits, highlightMatches, null, null, tags);
         message.whisper = whisper;
-        message.highlightSource = highlightSource;
+        if (messages.type == ChannelTextPane.Type.HIGHLIGHTS) {
+            message.highlightSource = highlightSource;
+        }
+        else if (messages.type == ChannelTextPane.Type.IGNORED) {
+            message.ignoreSource = highlightSource;
+        }
         messages.printMessage(message);
     }
     
@@ -268,7 +273,12 @@ public class HighlightedMessages extends JDialog {
         messageAdded(channel);
         InfoMessage message = InfoMessage.createInfo(text);
         message.highlightMatches = highlightMatches;
-        message.highlightSource = highlightSource;
+        if (messages.type == ChannelTextPane.Type.HIGHLIGHTS) {
+            message.highlightSource = highlightSource;
+        }
+        else if (messages.type == ChannelTextPane.Type.IGNORED) {
+            message.ignoreSource = highlightSource;
+        }
         messages.printInfoMessage(message);
     }
     
