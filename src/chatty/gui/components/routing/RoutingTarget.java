@@ -1,6 +1,7 @@
 
 package chatty.gui.components.routing;
 
+import chatty.User;
 import chatty.gui.DockStyledTabContainer;
 import chatty.gui.MainGui;
 import chatty.gui.StyleManager;
@@ -113,6 +114,15 @@ public class RoutingTarget {
             content.setNewMessage(true);
         }
         numMessages++;
+    }
+    
+    /**
+     * This should be fine as long as the text pane only searches for lines
+     * containing the same User object, so it doesn't affect messages with the
+     * same username from another channel.
+     */
+    public void addBan(User user, long duration, String reason, String targetMsgId) {
+        textPane.userBanned(user, duration, reason, targetMsgId);
     }
     
     public void refreshStyles() {

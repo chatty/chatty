@@ -183,6 +183,12 @@ public class RoutingManager {
         return false;
     }
     
+    public void addBan(User user, long duration, String reason, String targetMsgId) {
+        for (RoutingTarget target : targets.values()) {
+            target.addBan(user, duration, reason, targetMsgId);
+        }
+    }
+    
     private boolean isRoutingMulti() {
         return main.getSettings().getBoolean("routingMulti");
     }

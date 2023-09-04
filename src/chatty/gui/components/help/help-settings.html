@@ -19,6 +19,8 @@
         | <a href="#Names">Names</a>
         | <a href="#Highlight">Highlight</a>
         | <a href="#Ignore">Ignore</a>
+        | <a href="#Filter">Filter</a>
+        | <a href="#Custom_Tabs">Custom Tabs</a>
         | <a href="#Log_to_file">Log to file</a>
         | <a href="#Window">Window</a>
         | <a href="#Tabs">Tabs</a>
@@ -1171,6 +1173,12 @@
             only <code>config:info startw:!quote</code> will have an effect
             (see <a href="#Highlight_Meta_Matching">Meta Prefixes (Matching)</a>
             on how quoting works).</li>
+        <li><code>to:</code> to provide one or several comma-separated names of
+            <a href="#Custom_Tabs">Custom Tabs</a> (case-insensitive) to copy
+            the message to. For example <code>to:Commands start:!</code> will
+            copy messages beginning with "!" to the Custom Tab named "Commands".
+            This is available for the settings Msg. Colours, Highlight, Ignore
+            and Custom Tabs Routing.</li>
     </ul>
     
     <p><em>Note:</em> If you're using the <code>color:</code> or <code>bgcolor:</code>
@@ -1476,6 +1484,25 @@
     
     <p>You can use <code>replacement:none</code> to output no replacement at
         all.</p>
+    
+    <h2>
+        <a name="Custom_Tabs">Custom Tabs</a>
+        <a href="#top" class="top">[back to menu]</a>
+    </h2>
+    <p>Custom Tabs can have messages routed to them by use of the <code>to:</code>
+        prefix in entries of the settings Msg. Colours, Highlight, Ignore and
+        Custom Tabs Routing.</p>
+    
+    <dl class="dl-settings">
+        <dt>Allow routing to several custom tabs</dt>
+        <dd>The routing targets defined with <code>to:</code> get collected from
+            each setting that has a match (e.g. Highlights and Msg. Colours). If
+            this setting is enabled, the same message may be routed to several
+            Custom Tabs and the Routing setting may match more than one entry.
+            If disabled only the first Custom Tab is used (which one is the
+            first is not well defined yet and may change in future Chatty
+            versions).</dd>
+    </dl>
     
     <h2>
         <a name="Log_to_file">Log to file</a>

@@ -3763,6 +3763,7 @@ public class MainGui extends JFrame implements Runnable {
                 }
                 highlightedMessages.addBan(user, duration, reason, id);
                 ignoredMessages.addBan(user, duration, reason, id);
+                routingManager.addBan(user, duration, reason, id);
             }
         });
     }
@@ -3777,6 +3778,7 @@ public class MainGui extends JFrame implements Runnable {
             }
             highlightedMessages.addBan(user, -2, null, targetMsgId);
             ignoredMessages.addBan(user, -2, null, targetMsgId);
+            routingManager.addBan(user, -2, null, targetMsgId);
         });
     }
 
