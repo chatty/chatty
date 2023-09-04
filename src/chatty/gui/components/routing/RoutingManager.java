@@ -11,6 +11,7 @@ import chatty.gui.StyleManager;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.textpane.InfoMessage;
 import chatty.gui.components.textpane.UserMessage;
+import chatty.util.Pair;
 import chatty.util.StringUtil;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -111,9 +112,9 @@ public class RoutingManager {
             return;
         }
         
-        for (Map.Entry<String, HighlightItem> t : targets.getResultTargets().entrySet()) {
-            String name = t.getKey();
-            HighlightItem hlItem = t.getValue();
+        for (Map.Entry<String, Pair<String, HighlightItem>> t : targets.getResultTargets().entrySet()) {
+            String name = t.getValue().key;
+            HighlightItem hlItem = t.getValue().value;
             RoutingTarget target = getTarget(name);
             UserMessage thisMessage = message.copy();
             thisMessage.routingSource = hlItem;
@@ -137,9 +138,9 @@ public class RoutingManager {
             return;
         }
         
-        for (Map.Entry<String, HighlightItem> t : targets.getResultTargets().entrySet()) {
-            String name = t.getKey();
-            HighlightItem hlItem = t.getValue();
+        for (Map.Entry<String, Pair<String, HighlightItem>> t : targets.getResultTargets().entrySet()) {
+            String name = t.getValue().key;
+            HighlightItem hlItem = t.getValue().value;
             RoutingTarget target = getTarget(name);
             InfoMessage thisMessage = message.copy();
             thisMessage.routingSource = hlItem;
@@ -223,7 +224,7 @@ public class RoutingManager {
         String targetId = toId(targetName);
         RoutingEntry entry = entries.get(targetId);
         if (entry == null) {
-            entry = new RoutingEntry(targetId, 1, true);
+            entry = new RoutingEntry(targetName, 1, true);
             entries.put(targetId, entry);
         }
         return entry;

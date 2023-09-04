@@ -2,6 +2,7 @@
 package chatty.gui.components.routing;
 
 import chatty.gui.Highlighter.HighlightItem;
+import chatty.util.Pair;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,7 @@ import java.util.Map;
  */
 public class RoutingTargets {
 
-    private LinkedHashMap<String, HighlightItem> resultTargets;
+    private LinkedHashMap<String, Pair<String, HighlightItem>> resultTargets;
     
     public void add(HighlightItem hlItem) {
         List<String> targets = hlItem.getRoutingTargets();
@@ -21,15 +22,16 @@ public class RoutingTargets {
                 resultTargets = new LinkedHashMap<>();
             }
             for (String target : targets) {
+                String id = RoutingManager.toId(target);
                 // Only save the first hlItem
-                if (!resultTargets.containsKey(target)) {
-                    resultTargets.put(target, hlItem);
+                if (!resultTargets.containsKey(id)) {
+                    resultTargets.put(id, new Pair<>(target, hlItem));
                 }
             }
         }
     }
     
-    public Map<String, HighlightItem> getResultTargets() {
+    public Map<String, Pair<String, HighlightItem>> getResultTargets() {
         return resultTargets;
     }
     
@@ -41,7 +43,7 @@ public class RoutingTargets {
         if (resultTargets == null || resultTargets.size() == 1) {
             return;
         }
-        Map.Entry<String, HighlightItem> entry = resultTargets.entrySet().iterator().next();
+        Map.Entry<String, Pair<String, HighlightItem>> entry = resultTargets.entrySet().iterator().next();
         resultTargets = new LinkedHashMap<>();
         resultTargets.put(entry.getKey(), entry.getValue());
     }
