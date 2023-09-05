@@ -234,7 +234,9 @@ public class RoutingManager {
         Collection<Object> settingsList = main.getSettings().getList("routingTargets");
         for (Object item : settingsList) {
             RoutingEntry entry = RoutingEntry.fromList((List) item);
-            entries.put(entry.getId(), entry);
+            if (entry != null) {
+                entries.put(entry.getId(), entry);
+            }
         }
     }
     

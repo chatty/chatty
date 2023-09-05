@@ -143,7 +143,7 @@ public class Highlighter {
             usernameItem = null;
         }
         else {
-            HighlightItem newItem = new HighlightItem("w:"+username);
+            HighlightItem newItem = new HighlightItem("w:"+username, "noPresetsUsernameHighlight");
             if (!newItem.hasError()) {
                 usernameItem = newItem;
             } else {
@@ -714,7 +714,7 @@ public class Highlighter {
             this.applyPresets = type == null || !type.isEmpty();
             
             Map<String, CustomCommand> presets = getPresets();
-            if (presets != null && type != null && applyPresets) {
+            if (presets != null && type != null && !type.startsWith("noPresets") && applyPresets) {
                 CustomCommand ccf = presets.get("_global_"+type);
                 ccf = ccf != null ? ccf : presets.get("_global");
                 if (ccf != null) {
