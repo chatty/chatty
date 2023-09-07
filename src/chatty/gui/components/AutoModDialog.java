@@ -166,8 +166,8 @@ public class AutoModDialog extends JDialog {
         timer.setRepeats(true);
         timer.start();
         
-        list.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("A"), "automod.approve");
-        list.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("alt A"), "automod.approve");
+        list.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("A"), "automod.approve");
+        list.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("alt A"), "automod.approve");
         list.getActionMap().put("automod.approve", new AbstractAction() {
 
             @Override
@@ -176,8 +176,8 @@ public class AutoModDialog extends JDialog {
             }
         });
         
-        list.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("D"), "automod.deny");
-        list.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("alt D"), "automod.deny");
+        list.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("D"), "automod.deny");
+        list.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("alt D"), "automod.deny");
         list.getActionMap().put("automod.deny", new AbstractAction() {
 
             @Override
@@ -186,7 +186,7 @@ public class AutoModDialog extends JDialog {
             }
         });
         
-        list.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("S"), "automod.next");
+        list.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("S"), "automod.next");
         list.getActionMap().put("automod.next", new AbstractAction() {
 
             @Override
@@ -195,7 +195,7 @@ public class AutoModDialog extends JDialog {
             }
         });
         
-        list.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("W"), "automod.previous");
+        list.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("W"), "automod.previous");
         list.getActionMap().put("automod.previous", new AbstractAction() {
 
             @Override
@@ -204,7 +204,7 @@ public class AutoModDialog extends JDialog {
             }
         });
         
-        list.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("alt S"), "automod.nextUnhandled");
+        list.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("alt S"), "automod.nextUnhandled");
         list.getActionMap().put("automod.nextUnhandled", new AbstractAction() {
 
             @Override
@@ -213,7 +213,7 @@ public class AutoModDialog extends JDialog {
             }
         });
         
-        list.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("alt W"), "automod.previousUnhandled");
+        list.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("alt W"), "automod.previousUnhandled");
         list.getActionMap().put("automod.previousUnhandled", new AbstractAction() {
 
             @Override
@@ -222,7 +222,7 @@ public class AutoModDialog extends JDialog {
             }
         });
         
-        list.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("Q"), "automod.close");
+        list.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke("Q"), "automod.close");
         list.getActionMap().put("automod.close", new AbstractAction() {
 
             @Override

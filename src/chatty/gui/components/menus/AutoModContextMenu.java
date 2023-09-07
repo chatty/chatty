@@ -16,8 +16,8 @@ public class AutoModContextMenu extends ContextMenu {
     
     public AutoModContextMenu(AutoModDialog.Item item, DockedDialogHelper dockedHelper, AutoModContextMenuListener listener) {
         if (item != null) {
-            addItem("approve", "Approve [A]");
-            addItem("reject", "Deny [D]");
+            addItem("approve", "Approve [A]").setMnemonic('A');
+            addItem("reject", "Deny [D]").setMnemonic('D');
             addSeparator();
             addItem("copy", "Copy Message");
             addItem("user", "User Info");
@@ -25,7 +25,7 @@ public class AutoModContextMenu extends ContextMenu {
         }
         addItem("help", "Help");
         addSeparator();
-        addItem("close", "Close [Q]");
+        addItem("close", "Close [Q]").setMnemonic('Q');
         addSeparator();
         dockedHelper.addToContextMenu(this);
         
