@@ -663,6 +663,13 @@ public class TableEditor<T> extends JPanel {
         setRowSelected(indexToView(modelIndex));
     }
     
+    protected void selectItem(T item) {
+        int index = data.indexOf(item);
+        if (index != -1) {
+            selectItem(index);
+        }
+    }
+    
     /**
      * Remove the selected entry. If no entry is selected, nothing is done.
      * After removing, an appropriate remaining entry is selected.

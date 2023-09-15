@@ -527,6 +527,11 @@ public class SettingsDialog extends JDialog implements ActionListener {
                     @SuppressWarnings("unchecked") // By convention
                     Collection<String> data = (Collection<String>) parameter;
                     getPanel(RoutingSettings.class).selectItems(data);
+                } else if (action.equals("selectNotification")) {
+                    showPanel(Page.NOTIFICATIONS);
+                    @SuppressWarnings("unchecked") // By convention
+                    long id = Long.parseLong((String) parameter);
+                    getPanel(NotificationSettings.class).selectItem(id);
                 } else if (action.equals("show")) {
                     showPage((String) parameter);
                 } else if (action.equals("editHotkey")) {

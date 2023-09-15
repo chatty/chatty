@@ -2036,6 +2036,9 @@ public class MainGui extends JFrame implements Runnable {
             else if (cmd.startsWith("routingSource.")) {
                 getSettingsDialog(s -> s.showSettings("selectRouting", JSONValue.parse(cmd.substring("routingSource.".length()))));
             }
+            else if (cmd.startsWith("notificationSource.")) {
+                getSettingsDialog(s -> s.showSettings("selectNotification", cmd.substring("notificationSource.".length())));
+            }
             else {
                 nameBasedStuff(e, channels.getActiveChannel().getStreamName());
             }

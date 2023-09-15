@@ -22,6 +22,7 @@ import chatty.gui.components.textpane.ChannelTextPane.Attribute;
 import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_CTRL;
 import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_MENTIONS;
 import static chatty.gui.components.textpane.SettingConstants.USER_HOVER_HL_MENTIONS_CTRL_ALL;
+import chatty.gui.notifications.Notification;
 import chatty.lang.Language;
 import chatty.util.CombinedEmoticon;
 import chatty.util.DateTime;
@@ -1081,6 +1082,14 @@ public class LinkController extends MouseAdapter {
                 sourceType = "msgColorSource";
                 sourceText = ((ColorItem)source).getId();
                 sourceLabel = "["+Language.getString("settings.page.msgColors")+"] "+sourceText;
+            }
+            else if (source instanceof Notification) {
+                Notification n = (Notification) source;
+                sourceType = "notificationSource";
+                sourceText = String.valueOf(n.id);
+                sourceLabel = String.format("[%s] %s",
+                        Language.getString("settings.page.notifications"),
+                        n.toString());
             }
             else if (source instanceof List) {
                 Object sourceItem = getSingleItem(source);

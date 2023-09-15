@@ -427,6 +427,10 @@ public class NotificationSettings extends SettingsPanel {
         }
         filesResult.setText(resultText);
     }
+
+    public void selectItem(long id) {
+        editor.setSelected(id);
+    }
     
     private class MyButtonListener implements ActionListener {
 

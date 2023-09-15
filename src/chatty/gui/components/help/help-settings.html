@@ -1491,7 +1491,8 @@
     </h2>
     <p>Custom Tabs can have messages routed to them by use of the <code>to:</code>
         prefix in entries of the settings Msg. Colours, Highlight, Ignore and
-        Custom Tabs Routing.</p>
+        Custom Tabs Routing. In addition, Notifications can be routed to Custom
+        Tabs as an Info Message ("Message" tab in the Notification editor).</p>
     
     <dl class="dl-settings">
         <dt>Allow routing to several custom tabs</dt>
@@ -1815,7 +1816,7 @@
             <a href="#Highlight">Highlighting</a> (although some prefixes won't
             work unless it's a chat message).</dd>
         
-        <dt>Notification (Tab)</dt>
+        <dt>Desktop Notification (Tab)</dt>
         <dd>A Desktop Notification, with customizable colors.</dd>
         
         <dt>Sound (Tab)</dt>
@@ -1836,6 +1837,13 @@
             it would play the sound after 5 minutes even if the chat has been
             busy non-stop, at which point you probably wouldn't need to be alerted
             since you're already paying attention to it.</dd>
+        
+        <dt>Message (Tab)</dt>
+        <dd>Output a message to <a href="#Custom_Tabs">Custom Tabs</a> as an
+            info message, with text similar to the Desktop Notification.</dd>
+        <dd>The <code>Custom Tab</code> field can contain one or several
+            comma-separated Custom Tab names. Commas can be quoted to not use as
+            a separator (same as <a href="#Highlight_Meta_Matching">Highlight Meta Prefixes</a>).</dd>
     </dl>
     
     <p>On both the <strong>Notification (Tab)</strong> and <strong>Sound (Tab)</strong>

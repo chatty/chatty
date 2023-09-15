@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 /**
@@ -128,6 +129,7 @@ public class Notification {
         
         private State soundState = State.OFF;
         private State desktopState = State.OFF;
+        private State messageState = State.OFF;
         private String matcher;
         
         private Color foregroundColor = Color.BLACK;
@@ -139,6 +141,8 @@ public class Notification {
         private int soundInactiveCooldown;
         private List<String> options = new ArrayList<>();
         private String channels;
+        private String messageTarget;
+        private boolean messageUseColor;
         
         public Builder(Type type) {
             this.type = type;
@@ -189,6 +193,11 @@ public class Notification {
             return this;
         }
         
+        public Builder setMessageEnabled(State enabled) {
+            this.messageState = enabled;
+            return this;
+        }
+        
         public Builder setOptions(List<String> options) {
             this.options = options;
             return this;
@@ -204,7 +213,22 @@ public class Notification {
             return this;
         }
         
+        public Builder setMessageTarget(String customTab) {
+            this.messageTarget = customTab;
+            return this;
+        }
+        
+        public Builder setMessageUseColor(boolean useColor) {
+            this.messageUseColor = useColor;
+            return this;
+        }
+        
     }
+    
+    private static final AtomicLong COUNTER = new AtomicLong();
+    
+    // To identify a specific entry as a source for Custom Tab messages
+    public final long id;
     
     public final Type type;
     public final List<String> options;
@@ -224,6 +248,11 @@ public class Notification {
     public final long soundVolume;
     public final int soundCooldown;
     public final int soundInactiveCooldown;
+    
+    // Message Notification
+    public final State messageState;
+    public final String messageTarget;
+    public final boolean messageUseColor;
 
     // State
     private long lastMatched;
@@ -232,6 +261,7 @@ public class Notification {
     public Notification(Builder builder) {
         
         // Both
+        id = COUNTER.getAndIncrement();
         type = builder.type;
         this.options = builder.options;
         channels = parseChannels(builder.channels);
@@ -254,6 +284,11 @@ public class Notification {
         this.soundVolume = builder.soundVolume;
         this.soundCooldown = builder.soundCooldown;
         this.soundInactiveCooldown = builder.soundInactiveCooldown;
+        
+        // Message
+        this.messageState = builder.messageState;
+        this.messageTarget = builder.messageTarget;
+        this.messageUseColor = builder.messageUseColor;
     }
 
     private static Set<String> parseChannels(String channels) {
@@ -276,6 +311,10 @@ public class Notification {
     
     public String getSoundState() {
         return soundState.label;
+    }
+    
+    public String getMessageState() {
+        return messageState.label;
     }
     
     public boolean hasEnabled() {
@@ -354,6 +393,9 @@ public class Notification {
         result.add(soundInactiveCooldown);
         result.add(serializeChannels());
         result.add(matcher);
+        result.add(messageState.id);
+        result.add(messageTarget);
+        result.add(messageUseColor);
         return result;
     }
     
@@ -372,10 +414,19 @@ public class Notification {
             int soundInactiveCooldown = ((Number)list.get(10)).intValue();
             String channels = (String)list.get(11);
             String matcher = (String)list.get(12);
+            State messageState = State.OFF;
+            String messageTarget = "";
+            boolean messageUseColor = false;
+            if (list.size() > 13) {
+                messageState = State.getTypeFromId(((Number)list.get(13)).intValue());
+                messageTarget = (String)list.get(14);
+                messageUseColor = (Boolean) list.get(15);
+            }
             
             Builder b = new Builder(type);
             b.setDesktopEnabled(desktopState);
             b.setSoundEnabled(soundState);
+            b.setMessageEnabled(messageState);
             b.setForeground(foregroundColor);
             b.setBackground(backgroundColor);
             b.setFontSize(fontSize);
@@ -386,6 +437,8 @@ public class Notification {
             b.setSoundInactiveCooldown(soundInactiveCooldown);
             b.setChannels(channels);
             b.setMatcher(matcher);
+            b.setMessageTarget(messageTarget);
+            b.setMessageUseColor(messageUseColor);
             return new Notification(b);
         } catch (Exception ex) {
             LOGGER.warning("Error parsing NotificationSettings: "+ex);
@@ -407,7 +460,11 @@ public class Notification {
     
     @Override
     public String toString() {
-        return "Event "+type.label+", Desktop Notification "+getDesktopState()+", Sound "+getSoundState();
+        return String.format("%s [Desktop: %s, Sound: %s, Message: %s]",
+                type.label,
+                getDesktopState(),
+                getSoundState(),
+                getMessageState());
     }
     
 }

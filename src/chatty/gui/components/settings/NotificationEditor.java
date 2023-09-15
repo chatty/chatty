@@ -76,6 +76,7 @@ class NotificationEditor extends TableEditor<Notification> {
         setRendererForColumn(0, new MyRenderer());
         setRendererForColumn(1, new MyRenderer());
         setRendererForColumn(2, new MyRenderer());
+        setRendererForColumn(3, new MyRenderer());
     }
     
     public void setSoundFiles(Path path, String[] fileNames) {
@@ -94,6 +95,14 @@ class NotificationEditor extends TableEditor<Notification> {
         }
         else {
             linkLabelListener = listener;
+        }
+    }
+    
+    public void setSelected(long id) {
+        for (Notification n : getData()) {
+            if (n.id == id) {
+                super.selectItem(n);
+            }
         }
     }
     
@@ -119,7 +128,7 @@ class NotificationEditor extends TableEditor<Notification> {
     private static class MyTableModel extends ListTableModel<Notification> {
 
         public MyTableModel() {
-            super(new String[]{l("column.event"), l("column.notification"), l("column.sound")});
+            super(new String[]{l("column.event"), l("column.notification"), l("column.sound"), l("column.message")});
         }
         
         @Override
@@ -183,7 +192,7 @@ class NotificationEditor extends TableEditor<Notification> {
                         matcher);
             } else if (column == 1) {
                 text = String.format("%s", n.getDesktopState());
-            } else {
+            } else if (column == 2) {
                 String cooldown = "";
                 if (n.soundCooldown > 0 || n.soundInactiveCooldown > 0) {
                     cooldown = String.format("[%s/%s]",
@@ -194,6 +203,10 @@ class NotificationEditor extends TableEditor<Notification> {
                         n.getSoundState(),
                         cooldown,
                         n.soundFile == null ? "No sound file" : n.soundFile);
+            } else {
+                text = String.format("%s\n%s",
+                        n.getMessageState(),
+                        n.messageTarget);
             }
             
             if (text.startsWith("Off")) {
@@ -242,6 +255,7 @@ class NotificationEditor extends TableEditor<Notification> {
         private final GenericComboSetting<Notification.Type> type;
         private final GenericComboSetting<Notification.State> desktopState;
         private final GenericComboSetting<Notification.State> soundState;
+        private final GenericComboSetting<Notification.State> messageState;
         private final SimpleStringSetting channels;
         private final EditorStringSetting matcher;
         private final ColorTemplates colorTemplates;
@@ -253,6 +267,8 @@ class NotificationEditor extends TableEditor<Notification> {
         private final ComboStringSetting soundFile;
         private final SliderLongSetting volumeSlider;
         private final JButton playSound;
+        private final SimpleStringSetting messageTarget;
+        private final JCheckBox messageUseColor;
 
         // State
         private JLabel description;
@@ -284,27 +300,26 @@ class NotificationEditor extends TableEditor<Notification> {
             soundState = new GenericComboSetting<>(status);
             soundState.setToolTipText("abc");
             
+            messageState = new GenericComboSetting<>(status);
+            
             desktopState.addItemListener(e -> {
-                if (desktopState.getSettingValue() == State.OFF) {
-                    tabs.setTitleAt(0, Language.getString("settings.notifications.column.notification")+" (Off)");
-                } else {
-                    tabs.setTitleAt(0, Language.getString("settings.notifications.column.notification"));
-                }
+                tabs.setTitleAt(0, columnLabel("notification", desktopState.getSettingValue() != State.OFF));
                 updateDesktopSettings();
             });
             
             soundState.addItemListener(e -> {
-                if (soundState.getSettingValue() == State.OFF) {
-                    tabs.setTitleAt(1, Language.getString("settings.notifications.column.sound")+" (Off)");
-                } else {
-                    tabs.setTitleAt(1, Language.getString("settings.notifications.column.sound"));
-                }
+                tabs.setTitleAt(1, columnLabel("sound", soundState.getSettingValue() != State.OFF));
                 updateSoundSettings();
             });
             
-            JPanel desktop = new JPanel(new GridBagLayout());
+            messageState.addItemListener(e -> {
+                tabs.setTitleAt(2, columnLabel("message", messageState.getSettingValue() != State.OFF));
+                updateMessageSettings();
+            });
             
+            JPanel desktop = new JPanel(new GridBagLayout());
             JPanel sound = new JPanel(new GridBagLayout());
+            JPanel message = new JPanel(new GridBagLayout());
             
             JPanel optionsPanel = new JPanel(new GridBagLayout());
             //optionsPanel.setBorder(BorderFactory.createTitledBorder("Event"));
@@ -372,6 +387,8 @@ class NotificationEditor extends TableEditor<Notification> {
             soundCooldown = new DurationSetting(3, true);
             soundInactiveCooldown = new DurationSetting(3, true);
             
+            messageTarget = new SimpleStringSetting(20, true, DataFormatter.TRIM);
+            messageUseColor = new JCheckBox(Language.getString("settings.notifications.messageUseColor"));
 
             GridBagConstraints gbc;
 
@@ -444,6 +461,24 @@ class NotificationEditor extends TableEditor<Notification> {
             gbc = GuiUtil.makeGbc(2, 5, 2, 1);
             sound.add(playSound, gbc);
             
+            //------------------
+            // Message Settings
+            //------------------
+            JLabel messageStateLabel = new JLabel("Status:");
+            messageStateLabel.setLabelFor(messageState);
+            gbc = GuiUtil.makeGbc(0, 1, 1, 1);
+            message.add(messageStateLabel, gbc);
+            
+            gbc = GuiUtil.makeGbc(1, 1, 3, 1);
+            gbc.anchor = GridBagConstraints.WEST;
+            message.add(messageState, gbc);
+            
+            SettingsUtil.addLabeledComponent(message, "settings.notifications.messageTarget", 0, 2, 1, EAST, messageTarget);
+            
+            gbc = GuiUtil.makeGbc(0, 3, 4, 1);
+            gbc.anchor = GridBagConstraints.WEST;
+            message.add(messageUseColor, gbc);
+            
             //### Dialog ###
             
             gbc = GuiUtil.makeGbc(0, 2, 3, 1);
@@ -466,8 +501,9 @@ class NotificationEditor extends TableEditor<Notification> {
             gbc.weightx = 0.3;
             dialog.add(cancelButton, gbc);
             
-            tabs.addTab(Language.getString("settings.notifications.column.notification"), GuiUtil.northWrap(desktop));
-            tabs.addTab(Language.getString("settings.notifications.column.sound"), GuiUtil.northWrap(sound));
+            tabs.addTab(columnLabel("notification", true), GuiUtil.northWrap(desktop));
+            tabs.addTab(columnLabel("sound", true), GuiUtil.northWrap(sound));
+            tabs.addTab(columnLabel("message", true), GuiUtil.northWrap(message));
             
             ActionListener buttonAction = new ActionListener() {
 
@@ -487,8 +523,13 @@ class NotificationEditor extends TableEditor<Notification> {
             dialog.pack();
         }
         
-        private void updateOkButton() {
-            okButton.setEnabled(type.getSettingValue() != null);
+        private static String columnLabel(String type, boolean on) {
+            if (on) {
+                return Language.getString("settings.notifications.column."+type);
+            }
+            return String.format("%s (%s)",
+                    Language.getString("settings.notifications.column."+type),
+                    Language.getString("settings.notifications.column.off"));
         }
         
         private void updateSize() {
@@ -563,6 +604,12 @@ class NotificationEditor extends TableEditor<Notification> {
             playSound.setEnabled(enabled);
         }
         
+        private void updateMessageSettings() {
+            boolean enabled = messageState.getSettingValue() != State.OFF;
+            messageTarget.setEnabled(enabled);
+            messageUseColor.setEnabled(enabled);
+        }
+        
         @Override
         public Notification showEditor(Notification preset, Component c, boolean edit, int column) {
             if (edit) {
@@ -586,6 +633,11 @@ class NotificationEditor extends TableEditor<Notification> {
                 soundCooldown.setSettingValue(Long.valueOf(preset.soundCooldown));
                 soundInactiveCooldown.setSettingValue(Long.valueOf(preset.soundInactiveCooldown));
                 volumeSlider.setSettingValue(preset.soundVolume);
+                
+                // Message
+                messageState.setSettingValue(preset.messageState);
+                messageTarget.setSettingValue(preset.messageTarget);
+                
                 updateSubTypes();
             } else {
                 current = null;
@@ -604,15 +656,25 @@ class NotificationEditor extends TableEditor<Notification> {
                 soundCooldown.setSettingValue(Long.valueOf(0));
                 soundInactiveCooldown.setSettingValue(Long.valueOf(0));
                 
+                // Message
+                messageState.setSettingValue(Notification.State.OFF);
+                messageTarget.setSettingValue(null);
+                
                 updateSubTypes();
                 create();
             }
             
             // Default selected tab based on which table column was clicked on
-            if (column == 2) {
-                tabs.setSelectedIndex(1);
-            } else {
-                tabs.setSelectedIndex(0);
+            switch (column) {
+                case 2:
+                    tabs.setSelectedIndex(1);
+                    break;
+                case 3:
+                    tabs.setSelectedIndex(2);
+                    break;
+                default:
+                    tabs.setSelectedIndex(0);
+                    break;
             }
             colorTemplates.selectDefault();
             
@@ -639,6 +701,7 @@ class NotificationEditor extends TableEditor<Notification> {
             Notification.Builder b = new Notification.Builder(type);
             b.setDesktopEnabled(desktopState.getSettingValue());
             b.setSoundEnabled(soundState.getSettingValue());
+            b.setMessageEnabled(messageState.getSettingValue());
             b.setForeground(foreground);
             b.setBackground(background);
             b.setSoundFile(soundFile.getSettingValue());
@@ -648,6 +711,8 @@ class NotificationEditor extends TableEditor<Notification> {
             b.setChannels(channels.getSettingValue());
             b.setMatcher(matcher.getSettingValue());
             b.setOptions(getSubTypes());
+            b.setMessageTarget(messageTarget.getSettingValue());
+            b.setMessageUseColor(messageUseColor.isSelected());
             
             current = new Notification(b);
             return current;

@@ -8,6 +8,7 @@ import chatty.Helper;
 import chatty.Room;
 import chatty.User;
 import chatty.gui.MainGui;
+import chatty.gui.components.textpane.InfoMessage;
 import chatty.gui.notifications.Notification.State;
 import static chatty.gui.notifications.Notification.State.APP_NOT_ACTIVE;
 import static chatty.gui.notifications.Notification.State.CHANNEL_ACTIVE;
@@ -19,6 +20,7 @@ import chatty.gui.notifications.Notification.Type;
 import chatty.gui.notifications.Notification.TypeOption;
 import chatty.util.DateTime;
 import chatty.util.Sound;
+import chatty.util.StringUtil;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.StreamInfo;
@@ -324,6 +326,7 @@ public class NotificationManager {
             NotificationChecker c) {
         boolean shown = false;
         boolean played = false;
+        boolean msgShown = false;
         for (Notification n : properties) {
             if (n.hasEnabled()
                     && (type == n.type || type == null)
@@ -350,6 +353,23 @@ public class NotificationManager {
                         // This may not actually play the sound, if waiting for
                         // cooldown
                         playSound(n);
+                    }
+                    if (!msgShown
+                            && checkRequirements(n.messageState, channel)
+                            && !StringUtil.isNullOrEmpty(n.messageTarget)) {
+                        msgShown = true;
+                        InfoMessage msg = InfoMessage.createSystem(String.format("%s: %s", d.title, d.message));
+                        msg.routingSource = n;
+                        if (n.messageUseColor) {
+                            msg.color = n.foregroundColor;
+                            msg.bgColor = n.backgroundColor;
+                            msg.colorSource = n;
+                        }
+                        for (String target : StringUtil.split(n.messageTarget, ',', '"', '"', 0, 2)) {
+                            if (!StringUtil.isNullOrEmpty(target)) {
+                                main.routingManager.addNotification(target, msg);
+                            }
+                        }
                     }
                     n.setMatched();
                 }
