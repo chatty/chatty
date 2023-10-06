@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -444,7 +445,7 @@ public class MainMenu extends JMenuBar {
     
     public void setSystemEventCount(int count) {
         if (count > 0) {
-            notifyIcons.addItem("chattyInfo", 0, String.valueOf(count), "warning.png", id -> {
+            notifyIcons.addItem("chattyInfo", 0, "Events: "+String.valueOf(count), "warning.png", id -> {
                 actionListener.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_FIRST, "dialog.chattyInfo"));
             });
         }
@@ -458,17 +459,17 @@ public class MainMenu extends JMenuBar {
         /**
          * Associates an item id with a label.
          */
-        private final Map<String, JLabel> current = new HashMap<>();
+        private final Map<String, JMenu> current = new HashMap<>();
         
         /**
          * Stores the target position for an added label.
          */
-        private final Map<JLabel, Integer> targetPositions = new HashMap<>();
+        private final Map<JMenu, Integer> targetPositions = new HashMap<>();
         
         /**
          * Stores whether a label is currently flashing.
          */
-        private final Map<JLabel, Boolean> flashing = new HashMap<>();
+        private final Map<JMenu, Boolean> flashing = new HashMap<>();
         
         /**
          * For aligning to the right.
@@ -487,9 +488,9 @@ public class MainMenu extends JMenuBar {
          * @param consumer Called when a click on this item occurs
          */
         public void addItem(String id, int pos, String text, String imageFile, Consumer<String> consumer) {
-            JLabel label = current.get(id);
+            JMenu label = current.get(id);
             if (label == null) {
-                label = new JLabel();
+                label = new JMenu();
                 int iconSize = label.getFontMetrics(label.getFont()).getHeight();
                 ImageIcon icon = GuiUtil.getScaledIcon(GuiUtil.getIcon(this, imageFile), iconSize, iconSize);
                 label.setIcon(icon);
@@ -497,14 +498,15 @@ public class MainMenu extends JMenuBar {
                 label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                 label.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 4));
                 label.setToolTipText(Language.getStringNull("menubar.notification."+id));
-                label.addMouseListener(new MouseAdapter() {
-
+                
+                JMenuItem item = new JMenuItem(new AbstractAction(Language.getString("menubar.notification.view")) {
                     @Override
-                    public void mouseClicked(MouseEvent e) {
+                    public void actionPerformed(ActionEvent e) {
                         consumer.accept(id);
                     }
-
                 });
+                
+                label.add(item);
                 if (current.isEmpty()) {
                     add(glue);
                 }
@@ -545,7 +547,7 @@ public class MainMenu extends JMenuBar {
          * 
          * @param label 
          */
-        private void flash(JLabel label) {
+        private void flash(JMenu label) {
             Icon icon = label.getIcon();
             if (icon != null && !flashing.containsKey(label)) {
                 flashing.put(label, Boolean.TRUE);
@@ -576,7 +578,7 @@ public class MainMenu extends JMenuBar {
          * @param id The item id
          */
         public void removeItem(String id) {
-            JLabel label = current.get(id);
+            JMenu label = current.get(id);
             if (label != null) {
                 remove(label);
                 current.remove(id);

@@ -217,6 +217,9 @@ public class SettingsManager {
         settings.addString("locale", "");
         settings.addString("timezone", "");
         
+        settings.addBoolean("macScreenMenuBar", true);
+        settings.addBoolean("macSystemAppearance", true);
+        
         settings.addLong("dialogFontSize", -1);
 
         // Chat Appearance

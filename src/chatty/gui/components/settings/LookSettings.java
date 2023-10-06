@@ -144,6 +144,7 @@ public class LookSettings extends SettingsPanel {
         JPanel generalOptions = new JPanel(new GridBagLayout());
         JPanel flatOptions = new JPanel(new GridBagLayout());
         JPanel hifiCustomOptions = new JPanel(new GridBagLayout());
+        JPanel macOptions = new JPanel(new GridBagLayout());
         
         //--------------------------
         // General Options
@@ -209,12 +210,21 @@ public class LookSettings extends SettingsPanel {
         SettingsUtil.addSubsettings(laf, s -> s.equals("hifiCustom"), foregroundColor, backgroundColor, lafGradient, lafStyle, lafVariant);
         
         //--------------------------
+        // Mac Options
+        //--------------------------
+        SettingsUtil.addStandardSetting(macOptions, "macScreenMenuBar", 0,
+                d.addSimpleBooleanSetting("macScreenMenuBar"));
+        SettingsUtil.addStandardSetting(macOptions, "macSystemAppearance", 1,
+                d.addSimpleBooleanSetting("macSystemAppearance"));
+        
+        //--------------------------
         // Add tabs
         //--------------------------
         JTabbedPane optionsTabs = new JTabbedPane();
         optionsTabs.addTab("General", SettingsUtil.topAlign(generalOptions, 20));
         optionsTabs.addTab("Flat", SettingsUtil.topAlign(flatOptions, 20));
         optionsTabs.addTab("HiFi Custom", SettingsUtil.topAlign(hifiCustomOptions, 20));
+        optionsTabs.addTab("MacOS", SettingsUtil.topAlign(macOptions, 20));
         gbc = d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST);
         gbc.weightx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;

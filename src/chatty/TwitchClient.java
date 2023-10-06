@@ -43,6 +43,7 @@ import chatty.util.ffz.FrankerFaceZ;
 import chatty.util.ffz.FrankerFaceZListener;
 import chatty.util.ImageCache;
 import chatty.util.LogUtil;
+import chatty.util.MacAwtOptions;
 import chatty.util.MiscUtil;
 import chatty.util.OtherBadges;
 import chatty.util.ProcessManager;
@@ -247,6 +248,8 @@ public class TwitchClient {
         settingsManager.debugSettings();
         settingsManager.backupFiles();
         settingsManager.startAutoSave(this);
+        
+        MacAwtOptions.setMacLookSettings(settings);
         
         Chatty.setSettings(settings);
         
