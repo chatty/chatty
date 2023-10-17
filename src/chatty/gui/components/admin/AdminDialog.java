@@ -110,7 +110,8 @@ public class AdminDialog extends JDialog {
                 }
             }
         });
-        tabs.addTab(Language.getString("admin.tab.status"), statusPanel);
+        JScrollPane statusScroll = new JScrollPane(statusPanel);
+        tabs.addTab(Language.getString("admin.tab.status"), statusScroll);
         tabs.addTab(Language.getString("admin.tab.commercial"), commercialPanel);
         tabs.addTab("Blocked Terms", blockedTermsPanel);
         gbc = makeGbc(0,0,2,1);
@@ -343,10 +344,10 @@ public class AdminDialog extends JDialog {
     private void changeChannel(String channel) {
         this.currentChannel = channel;
         commercialPanel.changeChannel(channel);
-        if (tabs.getSelectedComponent() == statusPanel) {
+        if (tabs.getSelectedIndex() == 0) {
             statusPanel.changeChannel(channel);
         }
-        if (tabs.getSelectedComponent() == blockedTermsPanel) {
+        if (tabs.getSelectedIndex() == 2) {
             blockedTermsPanel.changeStream(channel);
         }
         update();

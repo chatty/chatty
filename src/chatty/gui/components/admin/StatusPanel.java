@@ -23,9 +23,11 @@ import chatty.util.api.StreamLabels;
 import chatty.util.api.StreamLabels.StreamLabel;
 import chatty.util.api.TwitchApi;
 import chatty.util.commands.Parameters;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -36,15 +38,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -53,7 +56,7 @@ import javax.swing.event.DocumentListener;
  *
  * @author tduva
  */
-public class StatusPanel extends JPanel {
+public class StatusPanel extends JPanel implements Scrollable {
     
     /**
      * Set to not updating the channel info after this time (re-enable buttons).
@@ -161,8 +164,9 @@ public class StatusPanel extends JPanel {
         
         status.setLineWrap(true);
         status.setWrapStyleWord(true);
-        status.setRows(2);
-        status.setMargin(new Insets(2,3,3,2));
+        status.setBorder(BorderFactory.createCompoundBorder(
+                game.getBorder(), 
+                BorderFactory.createEmptyBorder(2, 3, 3, 2)));
         status.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
@@ -184,10 +188,8 @@ public class StatusPanel extends JPanel {
         status.getAccessibleContext().setAccessibleName(Language.getString("admin.input.title"));
         GuiUtil.installLengthLimitDocumentFilter(status, 500, false);
         gbc = makeGbc(0,2,3,1);
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 1;
-        gbc.weighty = 1;
-        add(new JScrollPane(status), gbc);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        add(status, gbc);
         
         game.getAccessibleContext().setAccessibleName(Language.getString("admin.input.game"));
         game.setEditable(false);
@@ -706,6 +708,34 @@ public class StatusPanel extends JPanel {
      */
     private void addCurrentToFavorites() {
         main.getStatusHistory().addFavorite(status.getText().trim(), currentStreamCategory, currentStreamTags, StreamLabels.copyEditableLabelsOnly(currentStreamLabels));
+    }
+
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        return getPreferredSize();
+    }
+
+    @Override
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return 20;
+    }
+
+    @Override
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return 20;
+    }
+
+    /**
+     * Still resize horizontally despite this panel being in a scrollpane.
+     */
+    @Override
+    public boolean getScrollableTracksViewportWidth() {
+        return true;
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportHeight() {
+        return false;
     }
     
     private static class CacheItem {
