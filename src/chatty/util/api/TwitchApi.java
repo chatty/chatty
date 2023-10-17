@@ -238,6 +238,10 @@ public class TwitchApi {
         }
     }
     
+    public void getStreamLabels() {
+        StreamLabels.request(requests);
+    }
+    
     public void getFollowers(String stream) {
         followerManager.request(stream);
     }

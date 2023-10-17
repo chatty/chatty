@@ -4,6 +4,7 @@ package chatty.gui.components.admin;
 import chatty.util.StringUtil;
 import chatty.util.api.ChannelStatus.StreamTag;
 import chatty.util.api.StreamCategory;
+import chatty.util.api.StreamLabels.StreamLabel;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
 import java.util.ArrayList;
@@ -90,15 +91,16 @@ public class StatusHistory implements SettingsListener {
      * @param title The title
      * @param game The game
      * @param tags
+     * @param labels
      * @return 
      */
-    public synchronized StatusHistoryEntry get(String title, StreamCategory game, List<StreamTag> tags) {
-        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, tags);
+    public synchronized StatusHistoryEntry get(String title, StreamCategory game, List<StreamTag> tags, List<StreamLabel> labels) {
+        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, tags, labels);
         return entries.get(entry);
     }
     
-    public synchronized boolean isFavorite(String title, StreamCategory game, List<StreamTag> tags) {
-        StatusHistoryEntry entry = get(title, game, tags);
+    public synchronized boolean isFavorite(String title, StreamCategory game, List<StreamTag> tags, List<StreamLabel> labels) {
+        StatusHistoryEntry entry = get(title, game, tags, labels);
         return entry != null ? entry.favorite : false;
     }
     
@@ -116,8 +118,8 @@ public class StatusHistory implements SettingsListener {
      * @param timesUsed
      * @return 
      */
-    public synchronized StatusHistoryEntry add(String title, StreamCategory game, List<StreamTag> tags, long lastSet, int timesUsed) {
-        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, tags, lastSet, timesUsed, false);
+    public synchronized StatusHistoryEntry add(String title, StreamCategory game, List<StreamTag> tags, List<StreamLabel> labels, long lastSet, int timesUsed) {
+        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, tags, labels, lastSet, timesUsed, false);
         put(entry);
         return entry;
     }
@@ -129,8 +131,8 @@ public class StatusHistory implements SettingsListener {
      * @param game 
      * @param tags 
      */
-    public synchronized void remove(String title, StreamCategory game, List<StreamTag> tags) {
-        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, tags);
+    public synchronized void remove(String title, StreamCategory game, List<StreamTag> tags, List<StreamLabel> labels) {
+        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, tags, labels);
         entries.remove(entry);
     }
     
@@ -152,8 +154,8 @@ public class StatusHistory implements SettingsListener {
      * @param tags
      * @return 
      */
-    public synchronized StatusHistoryEntry addUsed(String title, StreamCategory game, List<StreamTag> tags) {
-        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, tags, System.currentTimeMillis(), 1, false);
+    public synchronized StatusHistoryEntry addUsed(String title, StreamCategory game, List<StreamTag> tags, List<StreamLabel> labels) {
+        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, tags, labels, System.currentTimeMillis(), 1, false);
         StatusHistoryEntry present = entries.get(entry);
         if (present != null) {
             entry = present.increaseUsed();
@@ -169,23 +171,25 @@ public class StatusHistory implements SettingsListener {
      * @param title
      * @param game
      * @param tags
+     * @param labels
      * @return 
      */
-    public synchronized StatusHistoryEntry addFavorite(String title, StreamCategory game, List<StreamTag> tags) {
-        return setFavorite(title, game, tags, true);
+    public synchronized StatusHistoryEntry addFavorite(String title, StreamCategory game, List<StreamTag> tags, List<StreamLabel> labels) {
+        return setFavorite(title, game, tags, labels, true);
     }
     
     /**
-     * Removes the given title and game from the favorites. It actually adds
-     * an entry if none is yet present for this, but with the favorite property
-     * set to {@code false}.
-     * 
+     * Removes the given title and game from the favorites.It actually adds an
+     * entry if none is yet present for this, but with the favorite property set
+     * to {@code false}.
+     *
      * @param title
      * @param game 
      * @param tags 
+     * @param labels 
      */
-    public synchronized void removeFavorite(String title, StreamCategory game, List<StreamTag> tags) {
-        setFavorite(title, game, tags, false);
+    public synchronized void removeFavorite(String title, StreamCategory game, List<StreamTag> tags, List<StreamLabel> labels) {
+        setFavorite(title, game, tags, labels, false);
     }
     
     /**
@@ -194,11 +198,12 @@ public class StatusHistory implements SettingsListener {
      * @param title
      * @param game
      * @param tags
+     * @param labels
      * @param favorite
      * @return 
      */
-    public synchronized StatusHistoryEntry setFavorite(String title, StreamCategory game, List<StreamTag> tags, boolean favorite) {
-        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, tags, System.currentTimeMillis(), 0, favorite);
+    public synchronized StatusHistoryEntry setFavorite(String title, StreamCategory game, List<StreamTag> tags, List<StreamLabel> labels, boolean favorite) {
+        StatusHistoryEntry entry = new StatusHistoryEntry(title, game, tags, labels, System.currentTimeMillis(), 0, favorite);
         return setFavorite(entry, favorite);
     }
     
@@ -339,6 +344,14 @@ public class StatusHistory implements SettingsListener {
         }
         list.add(clist);
         list.add(entry.game.id);
+        
+        List<String> labels = new ArrayList<>();
+        if (entry.labels != null && !entry.labels.isEmpty()) {
+            for (StreamLabel label : entry.labels) {
+                labels.add(label.getId());
+            }
+        }
+        list.add(labels);
         return list;
     }
     
@@ -362,6 +375,7 @@ public class StatusHistory implements SettingsListener {
             Number timesUsed = (Number) list.get(3);
             Boolean favorite = (Boolean) list.get(4);
             List<StreamTag> tags = new ArrayList<>();
+            List<StreamLabel> labels = new ArrayList<>();
             String gameId = null;
             // Communities were at 5, Tags are now at 6 (to be able to
             // differentiate them)
@@ -382,11 +396,16 @@ public class StatusHistory implements SettingsListener {
             if (list.size() > 7) {
                 gameId = (String) list.get(7);
             }
+            if (list.size() > 8) {
+                for (Object obj : (List) list.get(8)) {
+                    labels.add(new StreamLabel((String) obj));
+                }
+            }
             if (title == null || gameName == null) {
                 //LOGGER.warning("Didn't load "+list+" (Unexpected null)");
                 return null;
             }
-            return new StatusHistoryEntry(title, new StreamCategory(gameId, gameName), tags, lastSet.longValue(), timesUsed.intValue(), favorite);
+            return new StatusHistoryEntry(title, new StreamCategory(gameId, gameName), tags, labels, lastSet.longValue(), timesUsed.intValue(), favorite);
         } catch (ClassCastException | IndexOutOfBoundsException ex) {
             //LOGGER.warning("Didn't load "+list+" ("+ex.getLocalizedMessage()+")");
             return null;

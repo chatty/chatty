@@ -326,6 +326,14 @@ public class Requests {
         });
     }
     
+    public void getContentLabels() {
+        newApi.add("https://api.twitch.tv/helix/content_classification_labels", "GET", api.defaultToken, r -> {
+            if (r.responseCode == 200) {
+                StreamLabels.dataReceived(r.text);
+            }
+        });
+    }
+    
     public void getGameSearch(String game, CategoryResult listener) {
         if (game == null || game.isEmpty()) {
             return;

@@ -1087,6 +1087,7 @@ public class MainGui extends JFrame implements Runnable {
         if (client.settings.getList("scopes").isEmpty()) {
             client.api.checkToken();
         }
+        client.api.getStreamLabels();
         
         localEmotes.init();
         emoticons.setLocalEmotes(localEmotes.getData());

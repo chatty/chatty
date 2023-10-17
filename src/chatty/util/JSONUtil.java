@@ -124,6 +124,15 @@ public class JSONUtil {
         return m.toJSONString();
     }
     
+    @SuppressWarnings("unchecked") // Raw type
+    public static JSONObject listMapToJSONObject(Object... args) {
+        JSONObject m = new JSONObject();
+        for (int i=0; i<args.length; i+=2) {
+            m.put(args[i], i+1 < args.length ? args[i+1] : null);
+        }
+        return m;
+    }
+    
     public static long getDatetime(JSONObject data, Object key, long errorValue) {
         Object value = data.get(key);
         if (value != null && value instanceof String) {

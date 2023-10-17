@@ -39,9 +39,19 @@ public class StatusHistoryTable extends JTable {
         Language.getString("admin.presets.column.title"),
         Language.getString("admin.presets.column.game"),
         Language.getString("admin.presets.column.tags"),
+        Language.getString("admin.presets.column.labels"),
         Language.getString("admin.presets.column.lastActivity"),
         Language.getString("admin.presets.column.usage")
     });
+    
+    private static final int FAV_COLUMN = 0;
+    private static final int TITLE_COLUMN = 1;
+    private static final int GAME_COLUMN = 2;
+    private static final int TAGS_COLUMN = 3;
+    private static final int LABELS_COLUMN = 4;
+    private static final int ACTIVITY_COLUMN = 5;
+    private static final int USAGE_COLUMN = 6;
+    
     private final TableRowSorter sorter;
     private final JPopupMenu contextMenu;
     
@@ -54,26 +64,29 @@ public class StatusHistoryTable extends JTable {
         sorter = new TableRowSorter(data);
         this.contextMenu = contextMenu;
         setRowSorter(sorter);
-        TableColumn tc = getColumnModel().getColumn(1); // Title
+        TableColumn tc = getColumnModel().getColumn(TITLE_COLUMN); // Title
         tc.setCellRenderer(new LineWrapCellRenderer(true));
-        TableColumn tc2 = getColumnModel().getColumn(3); // Tags
+        TableColumn tc2 = getColumnModel().getColumn(TAGS_COLUMN); // Tags
         tc2.setCellRenderer(new LineWrapCellRenderer(true));
+        TableColumn tc3 = getColumnModel().getColumn(LABELS_COLUMN); // Labels
+        tc3.setCellRenderer(new LineWrapCellRenderer(true));
         setGridColor(new Color(200,200,200));
         
-        getColumnModel().getColumn(4).setCellRenderer(new LastActivityRenderer());
+        getColumnModel().getColumn(5).setCellRenderer(new LastActivityRenderer());
         getColumnModel().getColumn(0).setCellRenderer(new FavoriteRenderer());
         
-        setColumnWidth(0, 30, 30, 30);  // Fav
-        setColumnWidth(1, 200, 0, 0);   // Title
-        setColumnWidth(2, 120, 0, 0);   // Game
-        setColumnWidth(3, 140, 0, 0);   // Tags
-        setColumnWidth(4, 100, 100, 100); // Last Activity
-        setColumnWidth(5, 50, 50, 50);  // Usage
+        setColumnWidth(FAV_COLUMN, 30, 30, 30);  // Fav
+        setColumnWidth(TITLE_COLUMN, 200, 0, 0);   // Title
+        setColumnWidth(GAME_COLUMN, 120, 0, 0);   // Game
+        setColumnWidth(TAGS_COLUMN, 140, 0, 0);   // Tags
+        setColumnWidth(LABELS_COLUMN, 140, 0, 0);   // Labels
+        setColumnWidth(ACTIVITY_COLUMN, 100, 100, 100); // Last Activity
+        setColumnWidth(USAGE_COLUMN, 50, 50, 50);  // Usage
         
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
         List<RowSorter.SortKey> sortKeys = new ArrayList<>();
-        sortKeys.add(new RowSorter.SortKey(4, SortOrder.DESCENDING)); // Last Activity
+        sortKeys.add(new RowSorter.SortKey(ACTIVITY_COLUMN, SortOrder.DESCENDING)); // Last Activity
         sorter.setSortKeys(sortKeys);
         
         addMouseListener(new MouseAdapter() {
@@ -310,18 +323,23 @@ public class StatusHistoryTable extends JTable {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             StatusHistoryEntry entry = get(rowIndex);
-            if (columnIndex == 0) {
-                return entry.favorite;
-            } else if (columnIndex == 1) {
-                return entry.title;
-            } else if (columnIndex == 2) {
-                return entry.game.name;
-            } else if (columnIndex == 3) {
-                return StringUtil.join(entry.tags, ", ");
-            } else if (columnIndex == 4) {
-                return entry.lastActivity;
-            } else if (columnIndex == 5) {
-                return entry.timesUsed;
+            switch (columnIndex) {
+                case FAV_COLUMN:
+                    return entry.favorite;
+                case TITLE_COLUMN:
+                    return entry.title;
+                case GAME_COLUMN:
+                    return entry.game.name;
+                case TAGS_COLUMN:
+                    return StringUtil.join(entry.tags, ", ");
+                case LABELS_COLUMN:
+                    return StringUtil.join(entry.labels, ", ");
+                case ACTIVITY_COLUMN:
+                    return entry.lastActivity;
+                case USAGE_COLUMN:
+                    return entry.timesUsed;
+                default:
+                    break;
             }
             return null;
         }
@@ -334,13 +352,13 @@ public class StatusHistoryTable extends JTable {
          */
         @Override
         public Class getColumnClass(int columnIndex) {
-            if (columnIndex == 0) { // Fav
+            if (columnIndex == FAV_COLUMN) { // Fav
                 return Boolean.class;
             }
-            if (columnIndex == 4) { // Last Activity
+            if (columnIndex == ACTIVITY_COLUMN) { // Last Activity
                 return Long.class;
             }
-            if (columnIndex == 5) { // Usage
+            if (columnIndex == USAGE_COLUMN) { // Usage
                 return Integer.class;
             }
             return String.class;

@@ -3,6 +3,7 @@ package chatty.util.api;
 
 import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
+import chatty.util.api.StreamLabels.StreamLabel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -27,28 +28,37 @@ public class ChannelStatus {
     public final String title;
     public final StreamCategory category;
     public final List<StreamTag> tags;
+    public final List<StreamLabel> labels;
     
-    public ChannelStatus(String channelId, String channelLogin, String channelName, String title, StreamCategory category, List<StreamTag> tags) {
+    public ChannelStatus(String channelId, String channelLogin, String channelName, String title, StreamCategory category, List<StreamTag> tags, List<StreamLabel> labels) {
         this.channelId = channelId;
         this.channelLogin = channelLogin;
         this.channelName = channelName;
         this.title = title;
         this.category = category;
         this.tags = tags;
+        this.labels = labels;
     }
     
     public static ChannelStatus createInvalid(String channelId, String channelLogin) {
-        return new ChannelStatus(channelId, channelLogin, null, null, null, null);
+        return new ChannelStatus(channelId, channelLogin, null, null, null, null, null);
     }
     
-    public static ChannelStatus createPut(String channelLogin, String title, StreamCategory category, List<StreamTag> tags) {
+    public static ChannelStatus createPut(String channelLogin, String title, StreamCategory category, List<StreamTag> tags, List<StreamLabel> labels) {
         if (category == null) {
             category = new StreamCategory("", "");
         }
         if (tags == null) {
             tags = new ArrayList<>();
         }
-        return new ChannelStatus(null, channelLogin, null, title, category, tags);
+        if (labels == null) {
+            labels = new ArrayList<>();
+        }
+        else {
+            labels = new ArrayList<>(labels);
+        }
+        labels.removeIf(label -> !label.isEditable());
+        return new ChannelStatus(null, channelLogin, null, title, category, tags, labels);
     }
     
     public boolean isValid() {
@@ -67,7 +77,7 @@ public class ChannelStatus {
      * @return 
      */
     public ChannelStatus changeCategory(StreamCategory category) {
-        return new ChannelStatus(channelId, channelLogin, channelName, title, category, tags);
+        return new ChannelStatus(channelId, channelLogin, channelName, title, category, tags, labels);
     }
     
     public static List<ChannelStatus> parseJson(String json) {
@@ -93,14 +103,21 @@ public class ChannelStatus {
                         gameId = "";
                     }
                     String gameName = JSONUtil.getString(channel, "game_name", "");
+                    
                     List<String> tagsArray = JSONUtil.getStringList(channel, "tags");
                     List<StreamTag> tags = new ArrayList<>();
                     for (String tag : tagsArray) {
                         tags.add(new StreamTag(tag));
                     }
                     
+                    List<String> labelsArray = JSONUtil.getStringList(channel, "content_classification_labels");
+                    List<StreamLabel> labels = new ArrayList<>();
+                    for (String id : labelsArray) {
+                        labels.add(new StreamLabel(id));
+                    }
+                    
                     if (!StringUtil.isNullOrEmpty(channelId, channelLogin)) {
-                        result.add(new ChannelStatus(channelId, channelLogin, channelName, title, new StreamCategory(gameId, gameName), tags));
+                        result.add(new ChannelStatus(channelId, channelLogin, channelName, title, new StreamCategory(gameId, gameName), tags, labels));
                     }
                     else {
                         LOGGER.warning("Error parsing ChannelStatus: Invalid data");
@@ -118,10 +135,22 @@ public class ChannelStatus {
     public String makePutJson() {
         List<String> tags2 = new ArrayList<>();
         tags.forEach(t -> tags2.add(t.getName()));
+        
+        List<JSONObject> labels2 = new ArrayList<>();
+        for (StreamLabel label : StreamLabels.getAvailableLabels()) {
+            if (label.isEditable()) {
+                labels2.add(JSONUtil.listMapToJSONObject(
+                        "id", label.getId(),
+                        "is_enabled", labels.contains(label) ? "true" : "false")
+                );
+            }
+        }
+        
         return JSONUtil.listMapToJSON(
                 "title", title,
                 "game_id", category.id,
-                "tags", tags2
+                "tags", tags2,
+                "content_classification_labels", labels2
         );
     }
     
@@ -143,6 +172,9 @@ public class ChannelStatus {
         }
         if (!Objects.equals(tags, other.tags)) {
             difference = StringUtil.append(difference, ", ", "tags");
+        }
+        if (!Objects.equals(StreamLabels.copyEditableLabelsOnly(labels), StreamLabels.copyEditableLabelsOnly(other.labels))) {
+            difference = StringUtil.append(difference, ", ", "labels");
         }
         return difference;
     }
