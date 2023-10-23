@@ -72,8 +72,8 @@ public class StatusHistoryTable extends JTable {
         tc3.setCellRenderer(new LineWrapCellRenderer(true));
         setGridColor(new Color(200,200,200));
         
-        getColumnModel().getColumn(5).setCellRenderer(new LastActivityRenderer());
-        getColumnModel().getColumn(0).setCellRenderer(new FavoriteRenderer());
+        getColumnModel().getColumn(ACTIVITY_COLUMN).setCellRenderer(new LastActivityRenderer());
+        getColumnModel().getColumn(FAV_COLUMN).setCellRenderer(new FavoriteRenderer());
         
         setColumnWidth(FAV_COLUMN, 30, 30, 30);  // Fav
         setColumnWidth(TITLE_COLUMN, 200, 0, 0);   // Title
