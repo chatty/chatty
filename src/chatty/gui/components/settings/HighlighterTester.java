@@ -9,6 +9,7 @@ import chatty.gui.Highlighter.Match;
 import chatty.gui.MainGui;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.components.LinkLabelListener;
+import chatty.gui.components.ScrollPanel;
 import chatty.lang.Language;
 import chatty.util.Replacer2;
 import chatty.util.StringUtil;
@@ -33,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -133,6 +135,8 @@ public class HighlighterTester extends JDialog implements StringEditor {
         
         final Insets leftInsets = new Insets(5, 16, 5, 5);
         
+        JPanel base = new ScrollPanel(new GridBagLayout());
+        
         JPanel main = new JPanel(new GridBagLayout());
         
         gbc = GuiUtil.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST);
@@ -218,12 +222,12 @@ public class HighlighterTester extends JDialog implements StringEditor {
         gbc.weightx = 1;
         gbc.weighty = 1;
         testInput.setDocument(doc);
-        testInput.setPreferredSize(new Dimension(0, 50));
         testInput.setFont(Font.decode(Font.MONOSPACED));
+        testInput.setBorder(itemValue.getBorder());
         // Enable focus traversal keys
         GuiUtil.resetFocusTraversalKeys(testInput);
         GuiUtil.installLengthLimitDocumentFilter(testInput, 1000, false);
-        main.add(new JScrollPane(testInput),
+        main.add(testInput,
                 gbc);
         
         gbc = GuiUtil.makeGbc(0, 16, 2, 1, GridBagConstraints.WEST);
@@ -235,7 +239,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         gbc.insets = new Insets(0, 4, 0, 4);
         gbc.weightx = 1;
         gbc.weighty = 0.5;
-        add(main, gbc);
+        base.add(main, gbc);
         
         //--------------------------
         // Main buttons
@@ -275,7 +279,16 @@ public class HighlighterTester extends JDialog implements StringEditor {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1;
         gbc.weighty = 0.5;
-        add(tabs, gbc);
+        base.add(tabs, gbc);
+        
+        gbc = GuiUtil.makeGbc(0, 1, 2, 1);
+        gbc.insets = new Insets(0, 0, 0, 0);
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        JScrollPane baseScroll = new JScrollPane(base);
+        baseScroll.setBorder(null);
+        add(baseScroll, gbc);
         
         //--------------------------
         // Listeners and stuff
@@ -333,7 +346,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
         
         setModal(true);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setMinimumSize(getPreferredSize());
+        setMinimumSize(new Dimension(getPreferredSize().width, 200));
     }
     
     private static void addDocumentListener(JTextField textField, Consumer<DocumentEvent> action) {
@@ -569,6 +582,8 @@ public class HighlighterTester extends JDialog implements StringEditor {
             okButton.setEnabled((highlightItem != null && !highlightItem.hasError()) || allowEmpty);
         }
     }
+    
+    private String lastSetInfo;
 
     @Override
     public String showDialog(String title, String preset, String info) {
@@ -579,16 +594,23 @@ public class HighlighterTester extends JDialog implements StringEditor {
         }
         setTitle(title);
         result = null;
-        infoText.setText(info);
+        if (!Objects.equals(lastSetInfo, info)) {
+            /**
+             * Only update size if info changes, otherwise keep current (which
+             * may have been changed by the user).
+             */
+            infoText.setText(info);
+            lastSetInfo = info;
+            revalidate();
+            pack();
+        }
         // Reset so it doesn't affect sizing
         itemValue.setText(null);
         blacklistValue.setText(null);
         parseResult.setText(null);
-        revalidate();
-        pack();
         // Caused issues for Notification editor for some reason
         SwingUtilities.invokeLater(() -> {
-            setMinimumSize(getPreferredSize());
+            setMinimumSize(new Dimension(getPreferredSize().width, 200));
             // Set after setting size, so that Parse Result does not affect it
             if (editingBlacklistItem) {
                 blacklistValue.setText(preset);
@@ -600,7 +622,6 @@ public class HighlighterTester extends JDialog implements StringEditor {
             updateBlacklistItem();
             updateTestText();
         });
-        setMinimumSize(getPreferredSize());
         setLocationRelativeTo(getParent());
         setVisible(true);
         return result;

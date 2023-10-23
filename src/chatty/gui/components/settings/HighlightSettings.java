@@ -39,7 +39,7 @@ import static javax.swing.WindowConstants.HIDE_ON_CLOSE;
  */
 public class HighlightSettings extends SettingsPanel {
     
-    public static final String INFO_HEADER = "<html><body style='width:350px;font-weight:normal;'>";
+    public static final String INFO_HEADER = "<html><body style='width:370px;font-weight:normal;'>";
     
     public static String getMatchingHelp(String type) {
         return INFO_HEADER+SettingsUtil.getInfo("info-matching.html", type);
