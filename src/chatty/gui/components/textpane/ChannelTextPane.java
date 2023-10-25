@@ -548,6 +548,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     private void printUsernotice(UserNotice message, MutableAttributeSet style) {
         closeCompactMode();
         printTimestamp(style);
+        printChannelIcon(null, message.localUser);
         
         MutableAttributeSet userStyle;
         if (message.user.getName().isEmpty()) {
@@ -596,6 +597,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     private void printAutoModMessage(AutoModMessage message, AttributeSet style) {
         closeCompactMode();
         printTimestamp(style);
+        printChannelIcon(null, message.localUser);
         
         MutableAttributeSet userStyle = styles.user(message.user, style);
         userStyle.addAttribute(Attribute.ID_AUTOMOD, message.msgId);
@@ -758,6 +760,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     private void printInfoMessage2(InfoMessage message, AttributeSet style) {
         closeCompactMode();
         printTimestamp(style);
+        printChannelIcon(null, message.localUser);
         printSpecialsInfo(message.text, style, message.highlightMatches);
         Pair<String, String> link = message.getLink();
         if (link != null) {
@@ -2204,6 +2207,18 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                 if (!badge.removeBadge) {
                     print(badge.getSymbol(), styles.makeIconStyle(badge, user));
                 }
+            }
+        }
+    }
+    
+    private void printChannelIcon(User user, User localUser) {
+        if (user == null) {
+            user = localUser;
+        }
+        if (user != null && user.getUsericonManager() != null) {
+            Usericon icon = user.getUsericonManager().getChannelIcon(user, styles.getInt(Setting.CHANNEL_LOGO_SIZE));
+            if (icon != null) {
+                print(icon.getSymbol(), styles.makeIconStyle(icon, user));
             }
         }
     }

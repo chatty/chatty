@@ -154,6 +154,7 @@ public class RoutingManager {
             RoutingTarget target = getTarget(name);
             InfoMessage thisMessage = message.copy();
             thisMessage.routingSource = hlItem;
+            thisMessage.localUser = localUser;
             target.addInfoMessage(thisMessage);
             
             RoutingEntry entry = getEntry(name);
@@ -165,7 +166,7 @@ public class RoutingManager {
             }
             
             if (entry.shouldLog()) {
-                chatLog.info(entry.logFile, message.text, localUser.getChannel());
+                chatLog.info(entry.logFile, message.text, localUser != null ? localUser.getChannel() : null);
             }
         }
     }

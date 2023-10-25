@@ -25,6 +25,20 @@ public class AutoModMessage extends InfoMessage {
         this.msgEnd = text.length();
     }
     
+    public AutoModMessage(AutoModMessage other) {
+        super(other);
+        user = other.user;
+        msgId = other.msgId;
+        message = other.message;
+        msgStart = other.msgStart;
+        msgEnd = other.msgEnd;
+    }
+    
+    @Override
+    public AutoModMessage copy() {
+        return new AutoModMessage(this);
+    }
+    
     @Override
     public int getMsgStart() {
         return msgStart;

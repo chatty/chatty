@@ -15,4 +15,14 @@ public class SubscriberMessage extends UserNotice {
             MsgTags tags) {
         super("Notification", user, text, message, tags);
     }
+    
+    public SubscriberMessage(SubscriberMessage other) {
+        super(other);
+    }
+    
+    @Override
+    public SubscriberMessage copy() {
+        return new SubscriberMessage(this);
+    }
+    
 }

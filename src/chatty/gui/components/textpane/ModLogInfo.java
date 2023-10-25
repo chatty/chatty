@@ -35,6 +35,19 @@ public class ModLogInfo extends InfoMessage {
         this.ownAction = ownAction;
     }
     
+    public ModLogInfo(ModLogInfo other) {
+        super(other);
+        data = other.data;
+        showActionBy = other.showActionBy;
+        ownAction = other.ownAction;
+        chan = other.chan;
+    }
+    
+    @Override
+    public ModLogInfo copy() {
+        return new ModLogInfo(this);
+    }
+    
     private static String makeText(ModeratorActionData data) {
         return String.format("[ModAction] %s: /%s %s",
                 data.created_by,
