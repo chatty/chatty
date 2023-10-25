@@ -367,7 +367,7 @@ public class NotificationManager {
                         }
                         for (String target : StringUtil.split(n.messageTarget, ',', '"', '"', 0, 2)) {
                             if (!StringUtil.isNullOrEmpty(target)) {
-                                main.routingManager.addNotification(target, msg);
+                                main.routingManager.addNotification(target, channel, msg);
                             }
                         }
                     }

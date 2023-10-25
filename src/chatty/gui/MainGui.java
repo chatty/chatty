@@ -272,7 +272,7 @@ public class MainGui extends JFrame implements Runnable {
         channels.getComponent().setPreferredSize(new Dimension(600,300));
         add(channels.getComponent(), BorderLayout.CENTER);
         channels.setChangeListener(new ChannelChangeListener());
-        routingManager = new RoutingManager(this, channels, styleManager, contextMenuListener);
+        routingManager = new RoutingManager(this, channels, styleManager, contextMenuListener, client.chatLog);
         
         dockedDialogs = new DockedDialogManager(this, channels, client.settings);
         

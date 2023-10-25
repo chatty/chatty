@@ -13,6 +13,7 @@ import chatty.gui.components.textpane.InfoMessage;
 import chatty.gui.components.textpane.UserMessage;
 import chatty.util.Pair;
 import chatty.util.StringUtil;
+import chatty.util.chatlog.ChatLog;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,14 +37,16 @@ public class RoutingManager {
     private final MainGui main;
     private final StyleManager styles;
     private final Channels channels;
+    private final ChatLog chatLog;
     private final ContextMenuListener contextMenuListener;
     
     public RoutingManager(MainGui main, Channels channels, StyleManager styles,
-            ContextMenuListener contextMenuListener) {
+            ContextMenuListener contextMenuListener, ChatLog chatLog) {
         this.main = main;
         this.styles = styles;
         this.channels = channels;
         this.contextMenuListener = contextMenuListener;
+        this.chatLog = chatLog;
         main.getSettings().addSettingChangeListener((setting, type, value) -> {
             if (setting.equals("tabsMessage")) {
                 SwingUtilities.invokeLater(() -> loadTabSettings());
@@ -120,10 +123,17 @@ public class RoutingManager {
             thisMessage.routingSource = hlItem;
             target.addMessage(thisMessage);
             
-            switch (getEntry(name).openOnMessage) {
+            
+            RoutingEntry entry = getEntry(name);
+            
+            switch (entry.openOnMessage) {
                 case 1: // Any message
                 case 2: // Regular chat message
                     channels.addContent(target.getContent());
+            }
+            
+            if (entry.shouldLog()) {
+                chatLog.message(entry.logFile, message.user, message.text, message.action, message.user.getChannel());
             }
         }
     }
@@ -146,22 +156,46 @@ public class RoutingManager {
             thisMessage.routingSource = hlItem;
             target.addInfoMessage(thisMessage);
             
-            switch (getEntry(name).openOnMessage) {
+            RoutingEntry entry = getEntry(name);
+            
+            switch (entry.openOnMessage) {
                 case 1: // Any message
                 case 3: // Info message
                     channels.addContent(target.getContent());
             }
+            
+            if (entry.shouldLog()) {
+                chatLog.info(entry.logFile, message.text, localUser.getChannel());
+            }
         }
     }
     
-    public void addNotification(String targetName, InfoMessage msg) {
+    public void addBan(User user, long duration, String reason, String targetMsgId) {
+        for (RoutingTarget target : targets.values()) {
+            target.addBan(user, duration, reason, targetMsgId);
+        }
+    }
+    
+    /**
+     * 
+     * @param targetName
+     * @param channel May be null
+     * @param msg 
+     */
+    public void addNotification(String targetName, String channel, InfoMessage msg) {
         RoutingTarget target = getTarget(targetName);
         target.addInfoMessage(msg);
         
-        switch (getEntry(targetName).openOnMessage) {
+        RoutingEntry entry = getEntry(targetName);
+        
+        switch (entry.openOnMessage) {
             case 1: // Any message
             case 3: // Info message
                 channels.addContent(target.getContent());
+        }
+        
+        if (entry.shouldLog()) {
+            chatLog.info(entry.logFile, msg.text, channel);
         }
     }
     
@@ -193,12 +227,6 @@ public class RoutingManager {
             return true;
         }
         return false;
-    }
-    
-    public void addBan(User user, long duration, String reason, String targetMsgId) {
-        for (RoutingTarget target : targets.values()) {
-            target.addBan(user, duration, reason, targetMsgId);
-        }
     }
     
     private boolean isRoutingMulti() {
@@ -235,7 +263,7 @@ public class RoutingManager {
         String targetId = toId(targetName);
         RoutingEntry entry = entries.get(targetId);
         if (entry == null) {
-            entry = new RoutingEntry(targetName, 1, true);
+            entry = new RoutingEntry(targetName, 1, true, false, "");
             entries.put(targetId, entry);
         }
         return entry;
