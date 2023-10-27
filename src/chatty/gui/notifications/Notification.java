@@ -143,6 +143,7 @@ public class Notification {
         private String channels;
         private String messageTarget;
         private boolean messageUseColor;
+        private boolean messageOverrideDefault;
         
         public Builder(Type type) {
             this.type = type;
@@ -223,6 +224,11 @@ public class Notification {
             return this;
         }
         
+        public Builder setMessageOverrideDefault(boolean override) {
+            this.messageOverrideDefault = override;
+            return this;
+        }
+        
     }
     
     private static final AtomicLong COUNTER = new AtomicLong();
@@ -253,6 +259,7 @@ public class Notification {
     public final State messageState;
     public final String messageTarget;
     public final boolean messageUseColor;
+    public final boolean messageOverrideDefault;
 
     // State
     private long lastMatched;
@@ -289,6 +296,7 @@ public class Notification {
         this.messageState = builder.messageState;
         this.messageTarget = builder.messageTarget;
         this.messageUseColor = builder.messageUseColor;
+        this.messageOverrideDefault = builder.messageOverrideDefault;
     }
 
     private static Set<String> parseChannels(String channels) {
@@ -396,6 +404,7 @@ public class Notification {
         result.add(messageState.id);
         result.add(messageTarget);
         result.add(messageUseColor);
+        result.add(messageOverrideDefault);
         return result;
     }
     
@@ -417,10 +426,14 @@ public class Notification {
             State messageState = State.OFF;
             String messageTarget = "";
             boolean messageUseColor = false;
+            boolean messageOverrideDefault = false;
             if (list.size() > 13) {
                 messageState = State.getTypeFromId(((Number)list.get(13)).intValue());
                 messageTarget = (String)list.get(14);
                 messageUseColor = (Boolean) list.get(15);
+            }
+            if (list.size() > 16) {
+                messageOverrideDefault = (Boolean) list.get(16);
             }
             
             Builder b = new Builder(type);
@@ -439,6 +452,7 @@ public class Notification {
             b.setMatcher(matcher);
             b.setMessageTarget(messageTarget);
             b.setMessageUseColor(messageUseColor);
+            b.setMessageOverrideDefault(messageOverrideDefault);
             return new Notification(b);
         } catch (Exception ex) {
             LOGGER.warning("Error parsing NotificationSettings: "+ex);

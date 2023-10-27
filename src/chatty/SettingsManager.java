@@ -574,6 +574,8 @@ public class SettingsManager {
         settings.addLong("nActivityTime", 10);
         settings.addString("nCommand", "");
         settings.addBoolean("nHideOnStart", false);
+        settings.addBoolean("nInfoMsgEnabled", false);
+        settings.addString("nInfoMsgTarget", "Notifications");
 
         settings.addList("notifications", getDefaultNotificationSettingValue(), Setting.LIST);
         settings.addList("nColorPresets", new ArrayList<>(), Setting.LIST);
