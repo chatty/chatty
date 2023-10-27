@@ -82,13 +82,6 @@ public final class Channel extends JPanel {
         //System.out.println(west.getVerticalScrollBarPolicy());
         //System.out.println(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         west.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        
-        // PageUp/Down hotkeys / Scrolling
-        InputMap westScrollInputMap = west.getInputMap(WHEN_IN_FOCUSED_WINDOW);
-        westScrollInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0), "pageUp");
-        west.getActionMap().put("pageUp", new ScrollAction("pageUp", west.getVerticalScrollBar()));
-        westScrollInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0), "pageDown");
-        west.getActionMap().put("pageDown", new ScrollAction("pageDown", west.getVerticalScrollBar()));
         west.getVerticalScrollBar().setUnitIncrement(40);
 
         
@@ -108,9 +101,11 @@ public final class Channel extends JPanel {
         input.addActionListener(main.getActionListener());
         input.setCompletionServer(new ChannelCompletion(this, main, input, users));
         input.setCompletionEnabled(main.getSettings().getBoolean("completionEnabled"));
-        // Remove PAGEUP/DOWN so it can scroll chat (as before JTextArea)
-        input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0), "-");
-        input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0), "-");
+        // Focus on input should scroll chat (focus on chat scrolls it anyway)
+        input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0), "pageUp");
+        input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0), "pageDown");
+        input.getActionMap().put("pageUp", new ScrollAction("pageUp", west.getVerticalScrollBar()));
+        input.getActionMap().put("pageDown", new ScrollAction("pageDown", west.getVerticalScrollBar()));
         installLimits(input);
         TextSelectionMenu.install(input);
 
