@@ -196,7 +196,7 @@ public class RoutingManager {
         }
         
         if (entry.shouldLog()) {
-            chatLog.info(entry.logFile, msg.text, channel);
+            chatLog.info(entry.logFile, msg.text, null);
         }
     }
     
@@ -249,7 +249,7 @@ public class RoutingManager {
         RoutingEntry entry = getEntry(targetName);
         RoutingTarget target = targets.get(targetId);
         if (target == null) {
-            target = new RoutingTarget("'"+targetId+"'", entry.getName(), main, styles, channels.getDock(), contextMenuListener);
+            target = new RoutingTarget("'"+targetId+"'", entry.getName(), main, styles, channels, contextMenuListener);
             targets.put(targetId, target);
             loadTabSettings(target.getContent());
         }

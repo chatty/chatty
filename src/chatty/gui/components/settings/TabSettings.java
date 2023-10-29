@@ -76,10 +76,12 @@ public class TabSettings extends SettingsPanel {
         TabsPrefixPos channelPrefix = new TabsPrefixPos(d, "#", tabsPos.getSetting());
         TabsPrefixPos whisperPrefix = new TabsPrefixPos(d, "$", tabsPos.getSetting());
         TabsPrefixPos dialogsPrefix = new TabsPrefixPos(d, "-", tabsPos.getSetting());
+        TabsPrefixPos customTabsPrefix = new TabsPrefixPos(d, "'", tabsPos.getSetting());
         
         SettingsUtil.addLabeledComponent(orderPanel, "settings.tabsOrder.channel", 0, 1, 3, GridBagConstraints.WEST, channelPrefix);
         SettingsUtil.addLabeledComponent(orderPanel, "settings.tabsOrder.whisper", 0, 2, 3, GridBagConstraints.WEST, whisperPrefix);
         SettingsUtil.addLabeledComponent(orderPanel, "settings.tabsOrder.dialogs", 0, 3, 3, GridBagConstraints.WEST, dialogsPrefix);
+        SettingsUtil.addLabeledComponent(orderPanel, "settings.tabsOrder.customTabs", 0, 4, 3, GridBagConstraints.WEST, customTabsPrefix);
         
         JButton tabsPosButton = new JButton("Advanced Tabs Order");
         GuiUtil.smallButtonInsets(tabsPosButton);
@@ -91,7 +93,9 @@ public class TabSettings extends SettingsPanel {
             channelPrefix.update(data);
             whisperPrefix.update(data);
             dialogsPrefix.update(data);
+            customTabsPrefix.update(data);
         });
+        
         orderPanel.add(tabsPosButton,
                 SettingsDialog.makeGbc(0, 5, 1, 1, GridBagConstraints.WEST));
         
@@ -366,6 +370,38 @@ public class TabSettings extends SettingsPanel {
         private TabsPos(SettingsDialog d) {
             this.d = d;
             this.editor = d.addLongMapSetting("tabsPos", 300, 200, "Tab Name", "Position Value");
+            editor.setValueFilter("[^0-9-]");
+            // Listener must not be lazy init so it's there when data is loaded
+            editor.setTableEditorListener(new TableEditor.TableEditorListener<SimpleTableEditor.MapItem<Long>>() {
+                @Override
+                public void itemAdded(SimpleTableEditor.MapItem<Long> item) {
+                    informChangeListener(editor.getSettingValue());
+                }
+
+                @Override
+                public void itemRemoved(SimpleTableEditor.MapItem<Long> item) {
+                    informChangeListener(editor.getSettingValue());
+                }
+
+                @Override
+                public void itemEdited(SimpleTableEditor.MapItem<Long> oldItem, SimpleTableEditor.MapItem<Long> newItem) {
+                    informChangeListener(editor.getSettingValue());
+                }
+
+                @Override
+                public void allItemsChanged(List<SimpleTableEditor.MapItem<Long>> newItems) {
+                    informChangeListener(editor.getSettingValue());
+                }
+
+                @Override
+                public void refreshData() {
+                }
+
+                @Override
+                public void itemsSet() {
+                    informChangeListener(editor.getSettingValue());
+                }
+            });
         }
         
         @Override
@@ -395,37 +431,6 @@ public class TabSettings extends SettingsPanel {
                 editor.getSorter().setSortKeys(Arrays.asList(new SortKey[]{
                     new SortKey(1, SortOrder.ASCENDING),
                     new SortKey(0, SortOrder.ASCENDING)}));
-                editor.setValueFilter("[^0-9-]");
-                editor.setTableEditorListener(new TableEditor.TableEditorListener<SimpleTableEditor.MapItem<Long>>() {
-                    @Override
-                    public void itemAdded(SimpleTableEditor.MapItem<Long> item) {
-                        informChangeListener(editor.getSettingValue());
-                    }
-
-                    @Override
-                    public void itemRemoved(SimpleTableEditor.MapItem<Long> item) {
-                        informChangeListener(editor.getSettingValue());
-                    }
-
-                    @Override
-                    public void itemEdited(SimpleTableEditor.MapItem<Long> oldItem, SimpleTableEditor.MapItem<Long> newItem) {
-                        informChangeListener(editor.getSettingValue());
-                    }
-
-                    @Override
-                    public void allItemsChanged(List<SimpleTableEditor.MapItem<Long>> newItems) {
-                        informChangeListener(editor.getSettingValue());
-                    }
-
-                    @Override
-                    public void refreshData() {
-                    }
-
-                    @Override
-                    public void itemsSet() {
-                        informChangeListener(editor.getSettingValue());
-                    }
-                });
                 add(editor, gbc);
 
                 gbc = d.makeGbc(0, 2, 1, 1);
@@ -481,16 +486,23 @@ public class TabSettings extends SettingsPanel {
     
     public static String tabPosLabel(String value) {
         if (value.equals("-")) {
-            return "Info Tabs (-)";
+            return String.format("%s (-)",
+                    Language.getString("settings.tabsOrder.dialogs").replace(":", ""));
         }
         else if (value.equals("#")) {
-            return "Channel Tabs (#)";
+            return String.format("%s (#)",
+                    Language.getString("settings.tabsOrder.channel").replace(":", ""));
         }
         else if (value.equals("$")) {
-            return "Whisper Tabs ($)";
+            return String.format("%s ($)",
+                    Language.getString("settings.tabsOrder.whisper").replace(":", ""));
+        }
+        else if (value.equals("'")) {
+            return String.format("%s (')",
+                    Language.getString("settings.tabsOrder.customTabs").replace(":", ""));
         }
         else if (value.equals(Channels.DEFAULT_CHANNEL_ID)) {
-            return String.format("'%s' tab", Language.getString("tabs.noChannel"));
+            return String.format("\"%s\" tab", Language.getString("tabs.noChannel"));
         }
         return value;
     }

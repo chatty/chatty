@@ -2,6 +2,7 @@
 package chatty.gui.components.routing;
 
 import chatty.User;
+import chatty.gui.Channels;
 import chatty.gui.DockStyledTabContainer;
 import chatty.gui.MainGui;
 import chatty.gui.StyleManager;
@@ -9,6 +10,7 @@ import chatty.gui.StyleServer;
 import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.RoutingTargetContextMenu;
+import chatty.gui.components.menus.TabContextMenu;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.textpane.InfoMessage;
 import chatty.gui.components.textpane.Message;
@@ -21,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
@@ -37,7 +40,7 @@ public class RoutingTarget {
     
     private int numMessages;
     
-    public RoutingTarget(String id, String title, MainGui main, StyleManager styles, DockManager dock, ContextMenuListener contextMenuListener) {
+    public RoutingTarget(String id, String title, MainGui main, StyleManager styles, Channels channels, ContextMenuListener contextMenuListener) {
         
         StyleServer modifiedStyleServer = new StyleServer() {
 
@@ -95,7 +98,17 @@ public class RoutingTarget {
             }
         });
         
-        this.content = new DockStyledTabContainer<>(scroll, id, dock);
+        this.content = new DockStyledTabContainer<JComponent>(scroll, id, channels.getDock()) {
+            
+            @Override
+            public JPopupMenu getContextMenu() {
+                return new TabContextMenu(contextMenuListener,
+                        this,
+                        Channels.getCloseTabs(channels, this, main.getSettings().getBoolean("closeTabsSameType")),
+                        main.getSettings());
+            }
+            
+        };
         this.content.setId(id);
         this.content.setTitle(title);
     }
