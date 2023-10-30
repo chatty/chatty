@@ -39,7 +39,7 @@ public class UrlContextMenu extends ContextMenu {
         addItem("copy", "Copy to clipboard");
         
         channel = Helper.getChannelFromUrl(url);
-        if (channel != null) {
+        if (channel != null && Helper.isValidChannel(channel)) {
             addSeparator();
             addItem("join", "Join #"+channel);
             Helper.TwitchPopoutUrlInfo popoutInfo = Helper.getPopoutUrlInfo(url);
