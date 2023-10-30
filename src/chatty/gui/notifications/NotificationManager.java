@@ -408,7 +408,20 @@ public class NotificationManager {
     }
     
     private void addInfoMsg(Notification n, NotificationData d, String channel, String targets) {
-        InfoMessage msg = InfoMessage.createSystem(String.format("%s: %s", d.title, d.message));
+        
+        MsgTags tags = MsgTags.EMPTY;
+        String stream = Helper.toValidStream(channel);
+        if (!StringUtil.isNullOrEmpty(stream)) {
+            int start = StringUtil.toLowerCase(d.title).indexOf(stream);
+            if (start != -1) {
+                int end = start + stream.length() - 1;
+                tags = MsgTags.create(
+                        "chatty-channel-join", stream,
+                        "chatty-channel-join-indices", start+"-"+end);
+            }
+        }
+        
+        InfoMessage msg = new InfoMessage(InfoMessage.Type.INFO, String.format("%s: %s", d.title, d.message), tags);
         msg.routingSource = n;
         if (n.messageUseColor) {
             msg.color = n.foregroundColor;

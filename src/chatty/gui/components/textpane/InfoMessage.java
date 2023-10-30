@@ -141,7 +141,8 @@ public class InfoMessage {
     
     public Pair<String, String> getLink() {
         if (tags != null) {
-            if (tags.getChannelJoin() != null) {
+            // When indicdes are set the join link is added differently
+            if (tags.getChannelJoin() != null && tags.getChannelJoinIndices() == null) {
                 return new Pair<>("Join", "join."+tags.getChannelJoin());
             }
         }
