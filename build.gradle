@@ -60,6 +60,7 @@ dependencies {
     implementation 'com.formdev:flatlaf:2.6'
 
     testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:3.12.4'
 }
 
 // The wrapper is a small batch/bash script that can be used to run Gradle on machines where it hasn't been directly
