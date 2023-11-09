@@ -1,7 +1,7 @@
 
 package chatty.gui.components.settings;
 
-import chatty.gui.components.routing.RoutingEntry;
+import chatty.gui.components.routing.RoutingTargetSettings;
 import static chatty.gui.components.settings.HighlightSettings.getMatchingHelp;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -16,7 +16,7 @@ import javax.swing.JPanel;
  */
 public class RoutingSettings extends SettingsPanel {
 
-    private final RoutingSettingsTable<RoutingEntry> table;
+    private final RoutingSettingsTable<RoutingTargetSettings> table;
     private final ListSelector items;
     
     public RoutingSettings(SettingsDialog d) {
@@ -53,11 +53,11 @@ public class RoutingSettings extends SettingsPanel {
         settings.add(table, gbc);
     }
 
-    public void setData(List<RoutingEntry> data) {
+    public void setData(List<RoutingTargetSettings> data) {
         table.setData(data);
     }
 
-    public List<RoutingEntry> getData() {
+    public List<RoutingTargetSettings> getData() {
         return table.getData();
     }
     

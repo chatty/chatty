@@ -506,6 +506,7 @@ public class FollowersDialog extends JDialog {
      */
     public void showDialog(String stream) {
         this.stream = stream;
+        helper.setCurrentChannel(stream);
         setTitle(type+" of "+stream+" (100 most recent)");
         if (currentInfo == null || !currentInfo.stream.equals(stream)) {
             // Set to default if no info is set yet or if it is opened on a

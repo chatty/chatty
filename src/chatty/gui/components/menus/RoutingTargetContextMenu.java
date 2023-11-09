@@ -1,22 +1,39 @@
 
 package chatty.gui.components.menus;
 
-import chatty.lang.Language;
+import chatty.gui.DockedDialogHelper;
+import chatty.gui.components.Channel;
 import java.awt.event.ActionEvent;
+import java.util.List;
 
 /**
- * Context menu for the Highlights/Ignored Messages dialog (also used for Stream
- * Chat dialog currently).
+ * Context menu for Custom Tabs.
  * 
  * @author tduva
  */
 public class RoutingTargetContextMenu extends ContextMenu {
 
-    public RoutingTargetContextMenu() {
-        addItem("clearHighlights", Language.getString("highlightedDialog.cm.clear"));
-//        addSeparator();
-//        addCheckboxItem("dockToggleDocked", "Dock as tab", isDocked);
-//        addCheckboxItem("dockToggleAutoOpenActivity", "Open on message", autoOpen);
+    public RoutingTargetContextMenu(List<Channel> openChannels,
+                                    boolean fixedChannelEnabled,
+                                    boolean addAllEntry,
+                                    boolean showAll,
+                                    String currentChannel) {
+        
+        if (openChannels != null) {
+            addItem("clearAll", "Clear all");
+            addItem("clearCurrent", "Clear current");
+            addSeparator();
+            DockedDialogHelper.addChannelSelectionToContextMenu(
+                    this,
+                    openChannels,
+                    fixedChannelEnabled,
+                    addAllEntry,
+                    showAll,
+                    currentChannel);
+        }
+        else {
+            addItem("clearAll", "Clear");
+        }
     }
     
     @Override

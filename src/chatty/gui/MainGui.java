@@ -2533,7 +2533,6 @@ public class MainGui extends JFrame implements Runnable {
          */
         @Override
         public void stateChanged(ChangeEvent e) {
-            state.update(true);
             updateChannelInfoDialog(null);
             String stream = channels.getLastActiveChannel().getStreamName();
             emotesDialog.updateStream(stream, client.getEmotesetsByChannel(Helper.toChannel(stream)));
@@ -2550,6 +2549,8 @@ public class MainGui extends JFrame implements Runnable {
                 }
             }
             dockedDialogs.activeContentChanged();
+            routingManager.setChannel(channels.getLastActiveChannel());
+            state.update(true);
         }
     }
     

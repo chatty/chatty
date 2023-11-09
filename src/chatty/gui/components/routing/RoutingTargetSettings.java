@@ -3,7 +3,6 @@ package chatty.gui.components.routing;
 
 import chatty.util.MiscUtil;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +36,9 @@ import java.util.logging.Logger;
  * 
  * @author tduva
  */
-public class RoutingEntry {
+public class RoutingTargetSettings {
     
-    private static Logger LOGGER = Logger.getLogger(RoutingEntry.class.getName());
+    private static Logger LOGGER = Logger.getLogger(RoutingTargetSettings.class.getName());
     
     private static final Map<Long, String> openOnMessageValues = new HashMap<>();
     
@@ -56,14 +55,22 @@ public class RoutingEntry {
     private final String id;
     public final boolean logEnabled;
     public final String logFile;
+    public final int multiChannel;
+    public final boolean channelFixed;
+    public final boolean showAll;
     
-    public RoutingEntry(String targetName, int openOnMessage, boolean exlusive, boolean logEnabled, String logFile) {
+    public RoutingTargetSettings(String targetName, int openOnMessage,
+            boolean exlusive, boolean logEnabled, String logFile,
+            int multiChannel, boolean channelFixed, boolean showAll) {
         this.targetName = targetName;
         this.openOnMessage = openOnMessage;
         this.exclusive = exlusive;
         this.id = RoutingManager.toId(targetName);
         this.logEnabled = logEnabled;
         this.logFile = logFile;
+        this.multiChannel = multiChannel;
+        this.channelFixed = channelFixed;
+        this.showAll = showAll;
     }
     
     public String getName() {
@@ -80,10 +87,36 @@ public class RoutingEntry {
     
     public String makeInfo() {
         String info = openOnMessageValues.get((long) openOnMessage);
+        if (multiChannel == 1) {
+            info += ", by channel";
+        }
+        else if (multiChannel == 2) {
+            info += ", by channel/all";
+        }
         if (shouldLog()) {
             info += ", write to "+logFile+".log";
         }
         return info;
+    }
+    
+    /**
+     * Creates a new RoutingTargetSettings object with the changed value.
+     * 
+     * @param newValue
+     * @return 
+     */
+    public RoutingTargetSettings setChannelFixed(boolean newValue) {
+        if (channelFixed == newValue) {
+            return this;
+        }
+        return new RoutingTargetSettings(targetName, openOnMessage, exclusive, logEnabled, logFile, multiChannel, newValue, showAll);
+    }
+    
+    public RoutingTargetSettings setShowAll(boolean newValue) {
+        if (showAll == newValue) {
+            return this;
+        }
+        return new RoutingTargetSettings(targetName, openOnMessage, exclusive, logEnabled, logFile, multiChannel, channelFixed, newValue);
     }
     
     public List toList() {
@@ -93,21 +126,30 @@ public class RoutingEntry {
         result.add(exclusive ? 1 : 0);
         result.add(logEnabled ? 1 : 0);
         result.add(logFile);
+        result.add(multiChannel);
+        result.add(channelFixed ? 1 : 0);
+        result.add(showAll ? 1 : 0);
         return result;
     }
     
-    public static RoutingEntry fromList(List list) {
+    public static RoutingTargetSettings fromList(List list) {
         try {
             String name = (String) list.get(0);
             int openOnMessage = ((Number) list.get(1)).intValue();
             boolean exclusive = MiscUtil.isNumTrue(list.get(2));
             boolean logEnabled = false;
             String logFile = "";
+            int multiChannel = 0;
+            boolean channelFixed = false;
+            boolean showAll = false;
             if (list.size() > 3) {
                 logEnabled = MiscUtil.isNumTrue(list.get(3));
                 logFile = (String) list.get(4);
+                multiChannel = ((Number) list.get(5)).intValue();
+                channelFixed = MiscUtil.isNumTrue(list.get(6));
+                showAll = MiscUtil.isNumTrue(list.get(7));
             }
-            return new RoutingEntry(name, openOnMessage, exclusive, logEnabled, logFile);
+            return new RoutingTargetSettings(name, openOnMessage, exclusive, logEnabled, logFile, multiChannel, channelFixed, showAll);
         }
         catch (Exception ex) {
             LOGGER.warning("Error parsing routing entry: "+ex);
@@ -126,7 +168,7 @@ public class RoutingEntry {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final RoutingEntry other = (RoutingEntry) obj;
+        final RoutingTargetSettings other = (RoutingTargetSettings) obj;
         return Objects.equals(this.id, other.id);
     }
     

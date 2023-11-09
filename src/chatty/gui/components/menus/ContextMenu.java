@@ -173,11 +173,11 @@ public abstract class ContextMenu extends JPopupMenu implements ActionListener {
         }
     }
     
-    protected void addRadioItem(String action, String text, String group) {
+    public void addRadioItem(String action, String text, String group) {
         items.put(action, add(makeRadioItem(action, text, group)));
     }
     
-    protected void addRadioItem(String action, String text, String group, String parent) {
+    public void addRadioItem(String action, String text, String group, String parent) {
         if (parent != null) {
             JMenuItem item = makeRadioItem(action, text, group);
             getSubmenu(parent).add(item);

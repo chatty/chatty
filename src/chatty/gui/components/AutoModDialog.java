@@ -281,6 +281,7 @@ public class AutoModDialog extends JDialog {
     public void setStream(String stream) {
         if (stream != null && !stream.equals(currentRoom)) {
             currentRoom = stream;
+            helper.setCurrentChannel(stream);
             if (isVisible()) {
                 switchDataToCurrent();
             }

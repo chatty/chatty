@@ -1,6 +1,7 @@
 
 package chatty.gui;
 
+import chatty.Helper;
 import chatty.gui.components.Channel;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.util.MiscUtil;
@@ -15,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 /**
  * Manages docking related actions, such as docking, undocking, settings and so
@@ -53,6 +55,7 @@ public class DockedDialogHelper {
     private boolean autoOpen;
     private boolean autoOpenActivity;
     private boolean fixedChannel;
+    private String currentChannel;
     
     private Consumer<String> channelChangeListener;
     
@@ -265,32 +268,53 @@ public class DockedDialogHelper {
         // Channel Change
         //--------------------------
         if (channelChangeListener != null) {
-            String changeChanLabel = "Channel";
-            String openChansLabel = "Change to";
-            JMenu changeChanMenu = new JMenu(changeChanLabel);
-            JMenu openChansMenu = new JMenu(openChansLabel);
-            openChansMenu.setToolTipText("All open chans, active tabs marked with *");
-            menu.registerSubmenu(changeChanMenu);
-            menu.registerSubmenu(openChansMenu);
-            List<Channel> open = channels.getChannelsOfType(Channel.Type.CHANNEL);
-            Collections.sort(open, (o1, o2) -> {
-                // Stream name should always be available for regular channels
-                return o1.getChannel().compareTo(o2.getChannel());
-            });
-            for (Channel chan : open) {
-                // Add menu item for each channel, mark visible with *
-                menu.addItem("dockChangeChannel."+chan.getChannel(),
-                        chan.getChannel()+(chan.getDockContent().isContentVisible() ? "*" : ""),
-                        openChansLabel);
-            }
-            if (!open.isEmpty()) {
-                changeChanMenu.add(openChansMenu);
-                menu.addSeparator(changeChanLabel);
-            }
-            menu.add(changeChanMenu);
-            menu.addCheckboxItem("dockToggleFixedChannel", "Fixed", changeChanLabel, fixedChannel);
-            menu.getItem("dockToggleFixedChannel").setToolTipText("Stay on the channel it was opened on (or the first channel joined if it was open on start)");
+            addChannelSelectionToContextMenu(menu,
+                    channels.getChannelsOfType(Channel.Type.CHANNEL),
+                    fixedChannel,
+                    false, false, currentChannel);
         }
+    }
+    
+    public static void addChannelSelectionToContextMenu(ContextMenu menu,
+            List<Channel> open,
+            boolean fixedChannelEnabled,
+            boolean addAllEntry,
+            boolean showAll,
+            String currentChannel) {
+        String optionsLabel = "Options";
+        String openChansLabel = "Channel";
+        JMenu changeChanMenu = new JMenu(optionsLabel);
+        JMenu openChansMenu = new JMenu(openChansLabel);
+        openChansMenu.setToolTipText("All open chans, active tabs marked with *");
+        menu.registerSubmenu(changeChanMenu);
+        menu.registerSubmenu(openChansMenu);
+
+        Collections.sort(open, (o1, o2) -> {
+            // Stream name should always be available for regular channels
+            return o1.getChannel().compareTo(o2.getChannel());
+        });
+        if (!open.isEmpty()) {
+            menu.add(openChansMenu);
+            if (addAllEntry) {
+                menu.addCheckboxItem("dockChannelsShowAll", "All", openChansLabel, showAll);
+                menu.addSeparator(openChansLabel);
+            }
+        }
+        for (Channel chan : open) {
+            // Add menu item for each channel, mark visible with *
+            menu.addRadioItem("dockChangeChannel." + chan.getChannel(),
+                    chan.getChannel() + (chan.getDockContent().isContentVisible() ? "*" : ""),
+                    "chansGroup", openChansLabel);
+        }
+        if (currentChannel != null) {
+            JMenuItem selectedChannel = menu.getItem("dockChangeChannel." + currentChannel);
+            if (selectedChannel != null) {
+                selectedChannel.setSelected(true);
+            }
+        }
+        menu.add(changeChanMenu);
+        menu.addCheckboxItem("dockToggleFixedChannel", "Channel Fixed", optionsLabel, fixedChannelEnabled);
+        menu.getItem("dockToggleFixedChannel").setToolTipText("Stay on the channel it was opened on (or the first channel joined if it was open on start)");
     }
     
     private class MyContextMenu extends ContextMenu {
@@ -310,6 +334,15 @@ public class DockedDialogHelper {
         if (channelChangeListener != null && !fixedChannel) {
             channelChangeListener.accept(channel);
         }
+    }
+    
+    /**
+     * Set the current channel for the context menu.
+     * 
+     * @param channel 
+     */
+    public void setCurrentChannel(String channel) {
+        currentChannel = Helper.toChannel(channel);
     }
     
     public static abstract class DockedDialog {
