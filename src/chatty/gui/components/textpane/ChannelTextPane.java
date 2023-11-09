@@ -2228,15 +2228,21 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
      * scroll position.
      */
     private void clearSomeChat() {
-        if (scrollManager.fixedChat) {
-            return;
-        }
-        if (!scrollManager.isScrollPositionNearEnd()) {
-            return;
-        }
         int count = doc.getDefaultRootElement().getElementCount();
         int max = styles.bufferSize();
-        if (count > max) {
+        
+        boolean regularRequirement =
+                  !scrollManager.fixedChat
+                && scrollManager.isScrollPositionNearEnd()
+                && count > max;
+        
+        /**
+         * If not scrolled down for a long time (accidentally or on purpose)
+         * it could cause running out of memory, so remove stuff just in case.
+         */
+        boolean failsafe = count > max * 2;
+        
+        if (regularRequirement || failsafe) {
             removeFirstLines(2);
         }
     }
