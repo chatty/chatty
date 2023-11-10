@@ -101,14 +101,9 @@ public final class Channel extends JPanel {
         input.addActionListener(main.getActionListener());
         input.setCompletionServer(new ChannelCompletion(this, main, input, users));
         input.setCompletionEnabled(main.getSettings().getBoolean("completionEnabled"));
-        // Focus on input should scroll chat (focus on chat scrolls it anyway)
-        input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0), "pageUp");
-        input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0), "pageDown");
-        input.getActionMap().put("pageUp", new ScrollAction("pageUp", west.getVerticalScrollBar()));
-        input.getActionMap().put("pageDown", new ScrollAction("pageDown", west.getVerticalScrollBar()));
         installLimits(input);
         TextSelectionMenu.install(input);
-
+        
         // Add components
         add(mainPane, BorderLayout.CENTER);
         add(input, BorderLayout.SOUTH);
@@ -345,28 +340,24 @@ public final class Channel extends JPanel {
         input.insertAtCaret(text, withSpace);
     }
     
-    private static class ScrollAction extends AbstractAction {
-        
-        private final String action;
-        private final JScrollBar scrollbar;
-        
-        ScrollAction(String action, JScrollBar scrollbar) {
-            this.scrollbar = scrollbar;
-            this.action = action;
+    public void scroll(String action) {
+        scroll(west.getVerticalScrollBar(), action);
+    }
+    
+    public static void scroll(JScrollBar scrollbar, String action) {
+        int now = scrollbar.getValue();
+        int height = scrollbar.getVisibleAmount();
+        height = height - height / 10;
+        int newValue = 0;
+        switch (action) {
+            case "pageUp":
+                newValue = now - height;
+                break;
+            case "pageDown":
+                newValue = now + height;
+                break;
         }
-        
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            int now = scrollbar.getValue();
-            int height = scrollbar.getVisibleAmount();
-            height = height - height / 10;
-            int newValue = 0;
-            switch (action) {
-                case "pageUp": newValue = now - height; break;
-                case "pageDown": newValue = now + height; break;
-            }
-            scrollbar.setValue(newValue);
-        }
+        scrollbar.setValue(newValue);
     }
     
     public final void setUserlistWidth(int width, int minWidth) {

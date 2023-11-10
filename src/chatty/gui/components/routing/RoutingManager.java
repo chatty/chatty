@@ -274,6 +274,10 @@ public class RoutingManager {
         return StringUtil.toLowerCase(name);
     }
     
+    private static String contentIdToTargetId(String id) {
+        return id.substring(1, id.length() - 1);
+    }
+    
     protected RoutingTargetSettings getSettings(String targetName) {
         String targetId = toId(targetName);
         RoutingTargetSettings entry = entries.get(targetId);
@@ -318,6 +322,13 @@ public class RoutingManager {
     public void refreshStyles() {
         for (RoutingTarget target : targets.values()) {
             target.refreshStyles();
+        }
+    }
+
+    public void scroll(String contentId, String action) {
+        RoutingTarget target = targets.get(contentIdToTargetId(contentId));
+        if (target != null) {
+            target.scroll(action);
         }
     }
     

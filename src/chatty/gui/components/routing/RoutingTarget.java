@@ -362,11 +362,20 @@ public class RoutingTarget {
         return numMessages;
     }
 
-    void setName(String name) {
+    protected void setName(String name) {
         content.setTitle(name);
     }
     
+    protected void scroll(String action) {
+        TextPane textPane = textPanes.get(currentKey);
+        if (textPane != null) {
+            Channel.scroll(textPane.getScrollPane().getVerticalScrollBar(), action);
+        }
+    }
+    
     class TextPane extends ChannelTextPane {
+        
+        private JScrollPane scrollPane;
         
         public TextPane(MainGui main, StyleServer styleServer, boolean startAtBottom) {
             super(main, styleServer, ChannelTextPane.Type.REGULAR, startAtBottom);
@@ -378,6 +387,16 @@ public class RoutingTarget {
                     multiChannel() == 2,
                     routingManager.getSettings(targetId).showAll,
                     currentChannel));
+        }
+        
+        @Override
+        public void setScrollPane(JScrollPane scrollPane) {
+            super.setScrollPane(scrollPane);
+            this.scrollPane = scrollPane;
+        }
+        
+        public JScrollPane getScrollPane() {
+            return scrollPane;
         }
         
     }

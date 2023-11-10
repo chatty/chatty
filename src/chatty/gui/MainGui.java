@@ -823,6 +823,33 @@ public class MainGui extends JFrame implements Runnable {
             }
         });
         
+        // Scroll
+        Consumer<String> scrollAction = action -> {
+            DockContent content = channels.getActiveContent();
+            if (content.getComponent() instanceof Channel) {
+                ((Channel) content.getComponent()).scroll(action);
+            }
+            else if (content.getId().startsWith("'")) {
+                routingManager.scroll(content.getId(), action);
+            }
+        };
+        
+        hotkeyManager.registerAction("scroll.pageUp", "Scroll: Page Up", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                scrollAction.accept("pageUp");
+            }
+        });
+        
+        hotkeyManager.registerAction("scroll.pageDown", "Scroll: Page Down", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                scrollAction.accept("pageDown");
+            }
+        });
+        
         hotkeyManager.registerAction("window.toggleCompact", "Window: Toggle Compact Mode", new AbstractAction() {
 
             @Override
