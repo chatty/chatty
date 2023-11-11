@@ -141,7 +141,7 @@ public class RoutingManager {
             }
             
             if (ts.shouldLog()) {
-                chatLog.message(ts.logFile, message.user, message.text, message.action, message.user.getChannel());
+                chatLog.message(ts.getPrefixedLogFilename(), message.user, message.text, message.action, message.user.getChannel());
             }
         }
     }
@@ -174,7 +174,7 @@ public class RoutingManager {
             }
             
             if (ts.shouldLog()) {
-                chatLog.info(ts.logFile, message.text, localUser != null ? localUser.getChannel() : null);
+                chatLog.info(ts.getPrefixedLogFilename(), message.text, localUser != null ? localUser.getChannel() : null);
             }
         }
     }
@@ -204,7 +204,7 @@ public class RoutingManager {
         }
         
         if (ts.shouldLog()) {
-            chatLog.info(ts.logFile, msg.text, null);
+            chatLog.info(ts.getPrefixedLogFilename(), msg.text, null);
         }
     }
     

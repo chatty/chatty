@@ -4,8 +4,11 @@ package chatty.gui.components.settings;
 import chatty.gui.GuiUtil;
 import chatty.gui.RegexDocumentFilter;
 import chatty.gui.components.routing.RoutingTargetSettings;
+import static chatty.gui.components.settings.SettingsUtil.createLabel;
 import static chatty.gui.components.settings.TableEditor.SORTING_MODE_MANUAL;
 import chatty.lang.Language;
+import chatty.util.FileUtil;
+import chatty.util.StringUtil;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -32,6 +35,10 @@ import javax.swing.text.AbstractDocument;
  */
 public class RoutingSettingsTable<T extends RoutingTargetSettings> extends TableEditor<RoutingTargetSettings> {
 
+    private static final int NAME_COLUMN = 0;
+    private static final int SETTINGS_COLUMN = 1;
+    private static final int LOG_COLUMN = 2;
+    
     private final MyTableModel<T> data;
     private MyItemEditor<T> editor;
     
@@ -47,21 +54,25 @@ public class RoutingSettingsTable<T extends RoutingTargetSettings> extends Table
             return editor;
         });
         
-        setFixedColumnWidth(0, 200);
+        setFixedColumnWidth(NAME_COLUMN, 180);
     }
     
     private static class MyTableModel<T extends RoutingTargetSettings> extends ListTableModel<RoutingTargetSettings> {
         
         public MyTableModel() {
-            super(new String[]{"Name", "Settings"});
+            super(new String[]{"Name", "Settings", "Log file"});
         }
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             RoutingTargetSettings entry = get(rowIndex);
             switch (columnIndex) {
-                case 0: return entry.getName();
-                case 1: return entry.makeInfo();
+                case NAME_COLUMN:
+                    return entry.getName();
+                case SETTINGS_COLUMN:
+                    return entry.makeSettingsInfo();
+                case LOG_COLUMN:
+                    return entry.getFullLogFilename();
             }
             return "";
         }
@@ -116,7 +127,7 @@ public class RoutingSettingsTable<T extends RoutingTargetSettings> extends Table
             SettingsUtil.setTextAndTooltip(multiChannelSepAndAll, "settings.customTabSettings.multiChannelSepAndAll");
             SettingsUtil.setTextAndTooltip(channelFixed, "settings.customTabSettings.channelFixed");
             
-            ((AbstractDocument) logFile.getDocument()).setDocumentFilter(new RegexDocumentFilter("[^a-zA-Z]"));
+            ((AbstractDocument) logFile.getDocument()).setDocumentFilter(new RegexDocumentFilter(FileUtil.ILLEGAL_FILENAME_CHARACTERS_PATTERN.pattern()));
             
             name.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -205,19 +216,32 @@ public class RoutingSettingsTable<T extends RoutingTargetSettings> extends Table
             JPanel logPanel = new JPanel(new GridBagLayout());
             logPanel.setBorder(BorderFactory.createTitledBorder("Log to file"));
             
-            gbc = GuiUtil.makeGbc(0, 0, 3, 1, GridBagConstraints.WEST);
+            // Log enabled
+            gbc = GuiUtil.makeGbc(0, 0, 4, 1, GridBagConstraints.WEST);
             logPanel.add(logEnabled, gbc);
             
-            SettingsUtil.addLabeledComponent(logPanel,
-                    "settings.customTabSettings.logFile",
-                    0, 1, 1, GridBagConstraints.WEST,
-                    logFile, true);
+            // Log file name
+            JLabel logFileLabel = createLabel("settings.customTabSettings.logFile");
+            logFileLabel.setLabelFor(logFile);
+            gbc = GuiUtil.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST);
+            logPanel.add(logFileLabel, gbc);
+            
+            gbc = GuiUtil.makeGbc(1, 1, 1, 1, GridBagConstraints.WEST);
+            gbc.insets = new Insets(5, 0, 5, 0);
+            logPanel.add(new JLabel("customTab-"), gbc);
             
             gbc = GuiUtil.makeGbc(2, 1, 1, 1, GridBagConstraints.WEST);
+            gbc.insets = new Insets(5, 2, 5, 2);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1;
+            logPanel.add(logFile, gbc);
+            
+            gbc = GuiUtil.makeGbc(3, 1, 1, 1, GridBagConstraints.WEST);
             gbc.insets = new Insets(5, 0, 5, 5);
             logPanel.add(new JLabel(".log"), gbc);
             
-            gbc = GuiUtil.makeGbc(0, 2, 3, 1, GridBagConstraints.WEST);
+            // Log info
+            gbc = GuiUtil.makeGbc(0, 2, 4, 1, GridBagConstraints.WEST);
             logPanel.add(new JLabel(Language.getString("settings.customTabSettings.logInfo")), gbc);
             
             gbc = GuiUtil.makeGbc(0, 7, 3, 1);
@@ -260,7 +284,10 @@ public class RoutingSettingsTable<T extends RoutingTargetSettings> extends Table
                 openOnMessage.setSettingValue((long) preset.openOnMessage);
                 exclusive.setSelected(preset.exclusive);
                 logEnabled.setSelected(preset.logEnabled);
-                logFile.setText(preset.logFile);
+                logFile.setText(preset.getRawLogFilename());
+                if (StringUtil.isNullOrEmpty(preset.getRawLogFilename())) {
+                    logFile.setText(preset.getName());
+                }
                 switch (preset.multiChannel) {
                     case 0:
                         multiChannelAll.setSelected(true);

@@ -54,20 +54,20 @@ public class RoutingTargetSettings {
     public final boolean exclusive;
     private final String id;
     public final boolean logEnabled;
-    public final String logFile;
+    private final String logFilename;
     public final int multiChannel;
     public final boolean channelFixed;
     public final boolean showAll;
     
     public RoutingTargetSettings(String targetName, int openOnMessage,
-            boolean exlusive, boolean logEnabled, String logFile,
+            boolean exlusive, boolean logEnabled, String logFilename,
             int multiChannel, boolean channelFixed, boolean showAll) {
         this.targetName = targetName;
         this.openOnMessage = openOnMessage;
         this.exclusive = exlusive;
         this.id = RoutingManager.toId(targetName);
         this.logEnabled = logEnabled;
-        this.logFile = logFile;
+        this.logFilename = logFilename;
         this.multiChannel = multiChannel;
         this.channelFixed = channelFixed;
         this.showAll = showAll;
@@ -82,19 +82,46 @@ public class RoutingTargetSettings {
     }
     
     public boolean shouldLog() {
-        return logEnabled && logFile != null && !logFile.isEmpty();
+        return logEnabled && logFilename != null && !logFilename.isEmpty();
     }
     
-    public String makeInfo() {
+    /**
+     * The part of the name chosen by the user.
+     * 
+     * @return 
+     */
+    public String getRawLogFilename() {
+        return logFilename;
+    }
+    
+    /**
+     * The filename including the prefix. May also be used as directory name.
+     * The ".log" suffix for chat log files (not directories) will get added
+     * when actually writing the file.
+     *
+     * @return
+     */
+    public String getPrefixedLogFilename() {
+        return shouldLog() ? "customTab-"+logFilename : null;
+    }
+    
+    /**
+     * The filename including the prefix and suffix added when writing the file.
+     * Used for display only.
+     *
+     * @return
+     */
+    public String getFullLogFilename() {
+        return shouldLog() ? "customTab-"+logFilename+".log" : null;
+    }
+    
+    public String makeSettingsInfo() {
         String info = openOnMessageValues.get((long) openOnMessage);
         if (multiChannel == 1) {
             info += ", by channel";
         }
         else if (multiChannel == 2) {
             info += ", by channel/all";
-        }
-        if (shouldLog()) {
-            info += ", write to "+logFile+".log";
         }
         return info;
     }
@@ -109,14 +136,14 @@ public class RoutingTargetSettings {
         if (channelFixed == newValue) {
             return this;
         }
-        return new RoutingTargetSettings(targetName, openOnMessage, exclusive, logEnabled, logFile, multiChannel, newValue, showAll);
+        return new RoutingTargetSettings(targetName, openOnMessage, exclusive, logEnabled, logFilename, multiChannel, newValue, showAll);
     }
     
     public RoutingTargetSettings setShowAll(boolean newValue) {
         if (showAll == newValue) {
             return this;
         }
-        return new RoutingTargetSettings(targetName, openOnMessage, exclusive, logEnabled, logFile, multiChannel, channelFixed, newValue);
+        return new RoutingTargetSettings(targetName, openOnMessage, exclusive, logEnabled, logFilename, multiChannel, channelFixed, newValue);
     }
     
     public List toList() {
@@ -125,7 +152,7 @@ public class RoutingTargetSettings {
         result.add(openOnMessage);
         result.add(exclusive ? 1 : 0);
         result.add(logEnabled ? 1 : 0);
-        result.add(logFile);
+        result.add(logFilename);
         result.add(multiChannel);
         result.add(channelFixed ? 1 : 0);
         result.add(showAll ? 1 : 0);
