@@ -82,13 +82,6 @@ public final class Channel extends JPanel {
         //System.out.println(west.getVerticalScrollBarPolicy());
         //System.out.println(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         west.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        
-        // PageUp/Down hotkeys / Scrolling
-        InputMap westScrollInputMap = west.getInputMap(WHEN_IN_FOCUSED_WINDOW);
-        westScrollInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0), "pageUp");
-        west.getActionMap().put("pageUp", new ScrollAction("pageUp", west.getVerticalScrollBar()));
-        westScrollInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0), "pageDown");
-        west.getActionMap().put("pageDown", new ScrollAction("pageDown", west.getVerticalScrollBar()));
         west.getVerticalScrollBar().setUnitIncrement(40);
 
         
@@ -108,12 +101,9 @@ public final class Channel extends JPanel {
         input.addActionListener(main.getActionListener());
         input.setCompletionServer(new ChannelCompletion(this, main, input, users));
         input.setCompletionEnabled(main.getSettings().getBoolean("completionEnabled"));
-        // Remove PAGEUP/DOWN so it can scroll chat (as before JTextArea)
-        input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0), "-");
-        input.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0), "-");
         installLimits(input);
         TextSelectionMenu.install(input);
-
+        
         // Add components
         add(mainPane, BorderLayout.CENTER);
         add(input, BorderLayout.SOUTH);
@@ -350,28 +340,24 @@ public final class Channel extends JPanel {
         input.insertAtCaret(text, withSpace);
     }
     
-    private static class ScrollAction extends AbstractAction {
-        
-        private final String action;
-        private final JScrollBar scrollbar;
-        
-        ScrollAction(String action, JScrollBar scrollbar) {
-            this.scrollbar = scrollbar;
-            this.action = action;
+    public void scroll(String action) {
+        scroll(west.getVerticalScrollBar(), action);
+    }
+    
+    public static void scroll(JScrollBar scrollbar, String action) {
+        int now = scrollbar.getValue();
+        int height = scrollbar.getVisibleAmount();
+        height = height - height / 10;
+        int newValue = 0;
+        switch (action) {
+            case "pageUp":
+                newValue = now - height;
+                break;
+            case "pageDown":
+                newValue = now + height;
+                break;
         }
-        
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            int now = scrollbar.getValue();
-            int height = scrollbar.getVisibleAmount();
-            height = height - height / 10;
-            int newValue = 0;
-            switch (action) {
-                case "pageUp": newValue = now - height; break;
-                case "pageDown": newValue = now + height; break;
-            }
-            scrollbar.setValue(newValue);
-        }
+        scrollbar.setValue(newValue);
     }
     
     public final void setUserlistWidth(int width, int minWidth) {

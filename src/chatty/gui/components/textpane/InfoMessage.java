@@ -1,6 +1,7 @@
 
 package chatty.gui.components.textpane;
 
+import chatty.User;
 import chatty.gui.Highlighter.Match;
 import chatty.util.Pair;
 import chatty.util.irc.MsgTags;
@@ -56,6 +57,7 @@ public class InfoMessage {
     public Object ignoreSource;
     public Object routingSource;
     public Object objectId;
+    public User localUser;
     
     public InfoMessage(Type msgType, String text) {
         this(msgType, text, MsgTags.EMPTY);
@@ -67,19 +69,25 @@ public class InfoMessage {
         this.tags = tags;
     }
     
+    public InfoMessage(InfoMessage other) {
+        msgType = other.msgType;
+        text = other.text;
+        tags = other.tags;
+        highlighted = other.highlighted;
+        hidden = other.hidden;
+        color = other.color;
+        bgColor = other.bgColor;
+        highlightMatches = other.highlightMatches;
+        colorSource = other.colorSource;
+        highlightSource = other.highlightSource;
+        ignoreSource = other.ignoreSource;
+        routingSource = other.routingSource;
+        objectId = other.objectId;
+        localUser = other.localUser;
+    }
+    
     public InfoMessage copy() {
-        InfoMessage result = new InfoMessage(msgType, text, tags);
-        result.highlighted = highlighted;
-        result.hidden = hidden;
-        result.color = color;
-        result.bgColor = bgColor;
-        result.highlightMatches = highlightMatches;
-        result.colorSource = colorSource;
-        result.highlightSource = highlightSource;
-        result.ignoreSource = ignoreSource;
-        result.routingSource = routingSource;
-        result.objectId = objectId;
-        return result;
+        return new InfoMessage(this);
     }
     
     public static InfoMessage createInfo(String text) {
@@ -133,7 +141,8 @@ public class InfoMessage {
     
     public Pair<String, String> getLink() {
         if (tags != null) {
-            if (tags.getChannelJoin() != null) {
+            // When indicdes are set the join link is added differently
+            if (tags.getChannelJoin() != null && tags.getChannelJoinIndices() == null) {
                 return new Pair<>("Join", "join."+tags.getChannelJoin());
             }
         }

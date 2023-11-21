@@ -204,7 +204,8 @@ class NotificationEditor extends TableEditor<Notification> {
                         cooldown,
                         n.soundFile == null ? "No sound file" : n.soundFile);
             } else {
-                text = String.format("%s\n%s",
+                text = String.format("%s%s\n%s",
+                        n.messageOverrideDefault ? "[!] " : "",
                         n.getMessageState(),
                         n.messageTarget);
             }
@@ -269,6 +270,7 @@ class NotificationEditor extends TableEditor<Notification> {
         private final JButton playSound;
         private final SimpleStringSetting messageTarget;
         private final JCheckBox messageUseColor;
+        private final JCheckBox messageOverrideDefault;
 
         // State
         private JLabel description;
@@ -389,6 +391,7 @@ class NotificationEditor extends TableEditor<Notification> {
             
             messageTarget = new SimpleStringSetting(20, true, DataFormatter.TRIM);
             messageUseColor = new JCheckBox(Language.getString("settings.notifications.messageUseColor"));
+            messageOverrideDefault = new JCheckBox(Language.getString("settings.notifications.messageOverrideDefault"));
 
             GridBagConstraints gbc;
 
@@ -478,6 +481,10 @@ class NotificationEditor extends TableEditor<Notification> {
             gbc = GuiUtil.makeGbc(0, 3, 4, 1);
             gbc.anchor = GridBagConstraints.WEST;
             message.add(messageUseColor, gbc);
+            
+            gbc = GuiUtil.makeGbc(0, 4, 4, 1);
+            gbc.anchor = GridBagConstraints.WEST;
+            message.add(messageOverrideDefault, gbc);
             
             //### Dialog ###
             
@@ -637,6 +644,8 @@ class NotificationEditor extends TableEditor<Notification> {
                 // Message
                 messageState.setSettingValue(preset.messageState);
                 messageTarget.setSettingValue(preset.messageTarget);
+                messageUseColor.setSelected(preset.messageUseColor);
+                messageOverrideDefault.setSelected(preset.messageOverrideDefault);
                 
                 updateSubTypes();
             } else {
@@ -659,6 +668,8 @@ class NotificationEditor extends TableEditor<Notification> {
                 // Message
                 messageState.setSettingValue(Notification.State.OFF);
                 messageTarget.setSettingValue(null);
+                messageUseColor.setSelected(false);
+                messageOverrideDefault.setSelected(false);
                 
                 updateSubTypes();
                 create();
@@ -713,6 +724,7 @@ class NotificationEditor extends TableEditor<Notification> {
             b.setOptions(getSubTypes());
             b.setMessageTarget(messageTarget.getSettingValue());
             b.setMessageUseColor(messageUseColor.isSelected());
+            b.setMessageOverrideDefault(messageOverrideDefault.isSelected());
             
             current = new Notification(b);
             return current;

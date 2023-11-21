@@ -341,7 +341,15 @@ public class NotificationSettings extends SettingsPanel {
         });
         
         notificationsPanel.add(d.addSimpleBooleanSetting("nHideOnStart"),
-                d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
+        
+        notificationsPanel.add(d.addSimpleBooleanSetting("nInfoMsgEnabled"),
+                d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
+        
+        gbc = d.makeGbcStretchHorizontal(1, 2, 1, 1);
+        gbc.insets = new Insets(5, 3, 5, 30);
+        notificationsPanel.add(d.addSimpleStringSetting("nInfoMsgTarget", 5, true),
+                gbc);
         
         String tip = StringUtil.randomString(new String[]{
             "Tip: Double-click on Sound column to directly open on the 'Sound' tab.",
@@ -350,7 +358,7 @@ public class NotificationSettings extends SettingsPanel {
         });
         GuiUtil.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST);
         notificationsPanel.add(new JLabel(tip),
-                d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
         
         //=======
         // Other

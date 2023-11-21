@@ -212,13 +212,18 @@ public class UsericonManager {
                 icons.add(0, icon);
             }
         }
-        if (channelLogoSize > 0) {
-            Usericon icon = getChannelLogo(user.getChannel(), channelLogoSize);
-            if (icon != null) {
-                icons.add(0, icon);
-            }
+        Usericon channelIcon = getChannelIcon(user, channelLogoSize);
+        if (channelIcon != null) {
+            icons.add(0, channelIcon);
         }
         return icons;
+    }
+    
+    public synchronized Usericon getChannelIcon(User user, int channelLogoSize) {
+        if (channelLogoSize > 0) {
+            return getChannelLogo(user.getChannel(), channelLogoSize);
+        }
+        return null;
     }
 
     private List<Usericon> getTwitchBadges(IrcBadges badgesDef, User user, MsgTags tags) {

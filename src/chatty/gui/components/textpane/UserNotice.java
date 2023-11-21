@@ -42,15 +42,20 @@ public class UserNotice extends InfoMessage {
         }
     }
     
-    /**
-     * Create a new UserNotice similiar to the given one, but with different
-     * tags.
-     *
-     * @param other
-     * @param tags 
-     */
-    public UserNotice(UserNotice other, MsgTags tags) {
-        this(other.type, other.user, other.infoText, other.attachedMessage, tags);
+    public UserNotice(UserNotice other) {
+        super(other);
+        type = other.type;
+        user = other.user;
+        attachedMessage = other.attachedMessage;
+        emotes = other.emotes;
+        infoText = other.infoText;
+        msgStart = other.msgStart;
+        msgEnd = other.msgEnd;
+    }
+    
+    @Override
+    public UserNotice copy() {
+        return new UserNotice(this);
     }
     
     @Override

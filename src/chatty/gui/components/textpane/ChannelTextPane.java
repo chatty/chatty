@@ -140,7 +140,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     private final RingBuffer<MentionCheck> lastUsers = new RingBuffer<>(300);
     
     protected static User hoveredUser;
-    
+
     public enum Attribute {
         BASE_STYLE, ORIGINAL_BASE_STYLE, TIMESTAMP_COLOR_INHERIT,
         TIME_CREATED,
@@ -548,6 +548,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     private void printUsernotice(UserNotice message, MutableAttributeSet style) {
         closeCompactMode();
         printTimestamp(style);
+        printChannelIcon(null, message.localUser);
         
         MutableAttributeSet userStyle;
         if (message.user.getName().isEmpty()) {
@@ -596,6 +597,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     private void printAutoModMessage(AutoModMessage message, AttributeSet style) {
         closeCompactMode();
         printTimestamp(style);
+        printChannelIcon(null, message.localUser);
         
         MutableAttributeSet userStyle = styles.user(message.user, style);
         userStyle.addAttribute(Attribute.ID_AUTOMOD, message.msgId);
@@ -604,7 +606,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         String startText = "[AutoMod] <"+message.user.getDisplayNick()+"> ";
         printSpecials(message.user, startText, userStyle, message.highlightMatches);
         printSpecialsInfo(message.message, style,
-                Match.shiftMatchList(message.highlightMatches, -startText.length()));
+                Match.shiftMatchList(message.highlightMatches, -startText.length()), message.tags);
         finishLine();
     }
 
@@ -758,7 +760,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     private void printInfoMessage2(InfoMessage message, AttributeSet style) {
         closeCompactMode();
         printTimestamp(style);
-        printSpecialsInfo(message.text, style, message.highlightMatches);
+        printChannelIcon(null, message.localUser);
+        printSpecialsInfo(message.text, style, message.highlightMatches, message.tags);
         Pair<String, String> link = message.getLink();
         if (link != null) {
             print(" ", style);
@@ -2208,20 +2211,38 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         }
     }
     
+    private void printChannelIcon(User user, User localUser) {
+        if (user == null) {
+            user = localUser;
+        }
+        if (user != null && user.getUsericonManager() != null) {
+            Usericon icon = user.getUsericonManager().getChannelIcon(user, styles.getInt(Setting.CHANNEL_LOGO_SIZE));
+            if (icon != null) {
+                print(icon.getSymbol(), styles.makeIconStyle(icon, user));
+            }
+        }
+    }
+    
     /**
      * Removes some chat lines from the top, depending on the current
      * scroll position.
      */
     private void clearSomeChat() {
-        if (scrollManager.fixedChat) {
-            return;
-        }
-        if (!scrollManager.isScrollPositionNearEnd()) {
-            return;
-        }
         int count = doc.getDefaultRootElement().getElementCount();
         int max = styles.bufferSize();
-        if (count > max) {
+        
+        boolean regularRequirement =
+                  !scrollManager.fixedChat
+                && scrollManager.isScrollPositionNearEnd()
+                && count > max;
+        
+        /**
+         * If not scrolled down for a long time (accidentally or on purpose)
+         * it could cause running out of memory, so remove stuff just in case.
+         */
+        boolean failsafe = count > max * 2;
+        
+        if (regularRequirement || failsafe) {
             removeFirstLines(2);
         }
     }
@@ -2412,10 +2433,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
      * For info messages. Only applys links and mentions.
      */
     private void printSpecialsInfo(String text, AttributeSet style,
-            java.util.List<Match> highlightMatches) {
+            java.util.List<Match> highlightMatches, MsgTags tags) {
         TreeMap<Integer,Integer> ranges = new TreeMap<>();
         HashMap<Integer,MutableAttributeSet> rangesStyle = new HashMap<>();
         
+        findSpecialLinks(ranges, rangesStyle, tags, style);
         findLinks(text, ranges, rangesStyle, styles.isEnabled(Setting.LINKS_CUSTOM_COLOR)
                                                  ? style : styles.info());
         
@@ -2644,6 +2666,28 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                     rangesStyle.put(start, styles.url(foundUrl, baseStyle));
                 }
             }
+        }
+    }
+    
+    private void findSpecialLinks(TreeMap<Integer, Integer> ranges, HashMap<Integer, MutableAttributeSet> rangesStyle, MsgTags tags, AttributeSet baseStyle) {
+        if (tags == null) {
+            return;
+        }
+        if (tags.getChannelJoin() == null || tags.getChannelJoinIndices() == null) {
+            return;
+        }
+        /**
+         * This only allows one link per message, just extending the existing
+         * join link functionality a bit, but should be good enough for now.
+         */
+        String chan = tags.getChannelJoin();
+        String indices = tags.getChannelJoinIndices();
+        String[] split = indices.split("-");
+        int start = Integer.parseInt(split[0]);
+        int end =  Integer.parseInt(split[1]);
+        if (!inRanges(start, ranges) && !inRanges(end, ranges)) {
+            ranges.put(start, end);
+            rangesStyle.put(start, styles.generalLink(baseStyle, "join."+chan));
         }
     }
     

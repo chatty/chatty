@@ -143,6 +143,8 @@ public class SettingsManager {
         addDefaultHotkey("0.7.3", "selection.toggle", "ctrl SPACE");
         addDefaultHotkey("0.7.3", "selection.toggle", "ctrl S");
         addDefaultHotkeyAppWide("0.9b1", "about", "F1");
+        addDefaultHotkeyAppWide("0.26-b3", "scroll.pageUp", "PAGE_UP");
+        addDefaultHotkeyAppWide("0.26-b3", "scroll.pageDown", "PAGE_DOWN");
         settings.addList("hotkeys", getDefaultHotkeySettingValue(), Setting.LIST);
         settings.addBoolean("globalHotkeysEnabled", true);
         settings.addBoolean("inputHistoryMultirowRequireCtrl", true);
@@ -574,6 +576,8 @@ public class SettingsManager {
         settings.addLong("nActivityTime", 10);
         settings.addString("nCommand", "");
         settings.addBoolean("nHideOnStart", false);
+        settings.addBoolean("nInfoMsgEnabled", false);
+        settings.addString("nInfoMsgTarget", "Notifications");
 
         settings.addList("notifications", getDefaultNotificationSettingValue(), Setting.LIST);
         settings.addList("nColorPresets", new ArrayList<>(), Setting.LIST);

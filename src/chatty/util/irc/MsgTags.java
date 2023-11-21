@@ -55,6 +55,10 @@ public class MsgTags extends IrcMsgTags {
         return get("chatty-channel-join");
     }
     
+    public String getChannelJoinIndices() {
+        return get("chatty-channel-join-indices");
+    }
+    
     public boolean isRestrictedMessage() {
         return isValue("chatty-is-restricted", "1");
     }

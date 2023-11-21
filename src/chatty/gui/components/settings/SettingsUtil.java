@@ -9,13 +9,16 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Arrays;
 import java.util.function.Function;
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.border.Border;
 
 /**
@@ -44,6 +47,34 @@ public class SettingsUtil {
                 sub.setEnabled(false);
             }
         }
+    }
+    
+    public static void addSubsettings(JRadioButton[] radioButtons, Component... subs) {
+        Runnable update = () -> {
+            boolean enabled = false;
+            for (JRadioButton button : radioButtons) {
+                if (button.isSelected() && button.isEnabled()) {
+                    enabled = true;
+                    break;
+                }
+            }
+            for (Component comp : subs) {
+                if (!Arrays.asList(radioButtons).contains(comp)) {
+                    comp.setEnabled(enabled);
+                }
+            }
+        };
+        for (JRadioButton button : radioButtons) {
+            button.addItemListener(e -> {
+                update.run();
+            });
+        }
+        for (JRadioButton button : radioButtons) {
+            button.addPropertyChangeListener("enabled", e -> {
+                update.run();
+            });
+        }
+        update.run();
     }
 
     public static void addSubsettings(ComboStringSetting control, Function<String, Boolean> req, Component... subs) {
@@ -154,6 +185,11 @@ public class SettingsUtil {
             gbc.fill = GridBagConstraints.BOTH;
         }
         panel.add(component, gbc);
+    }
+    
+    public static void setTextAndTooltip(AbstractButton button, String langKey) {
+        button.setText(Language.getString(langKey));
+        button.setToolTipText(SettingsUtil.addTooltipLinebreaks(Language.getString(langKey+".tip")));
     }
     
     public static void addStandardSetting(JPanel panel, String name, int y, JComponent component) {

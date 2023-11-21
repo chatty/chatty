@@ -343,6 +343,7 @@ public class AdminDialog extends JDialog {
      */
     private void changeChannel(String channel) {
         this.currentChannel = channel;
+        helper.setCurrentChannel(channel);
         commercialPanel.changeChannel(channel);
         if (tabs.getSelectedIndex() == 0) {
             statusPanel.changeChannel(channel);

@@ -327,6 +327,8 @@ public class NotificationManager {
         boolean shown = false;
         boolean played = false;
         boolean msgShown = false;
+        Notification shownNotifiction = null;
+        NotificationData shownData = null;
         for (Notification n : properties) {
             if (n.hasEnabled()
                     && (type == n.type || type == null)
@@ -341,6 +343,8 @@ public class NotificationManager {
                             && !noNotify
                             && checkRequirements(n.desktopState, channel)) {
                         shown = true;
+                        shownNotifiction = n;
+                        shownData = d;
                         showNotification(n, d.title, d.message, channel, channel);
                     }
                     if (!played
@@ -358,22 +362,18 @@ public class NotificationManager {
                             && checkRequirements(n.messageState, channel)
                             && !StringUtil.isNullOrEmpty(n.messageTarget)) {
                         msgShown = true;
-                        InfoMessage msg = InfoMessage.createSystem(String.format("%s: %s", d.title, d.message));
-                        msg.routingSource = n;
-                        if (n.messageUseColor) {
-                            msg.color = n.foregroundColor;
-                            msg.bgColor = n.backgroundColor;
-                            msg.colorSource = n;
-                        }
-                        for (String target : StringUtil.split(n.messageTarget, ',', '"', '"', 0, 2)) {
-                            if (!StringUtil.isNullOrEmpty(target)) {
-                                main.routingManager.addNotification(target, msg);
-                            }
-                        }
+                        addInfoMsg(n, d, channel, n.messageTarget);
                     }
                     n.setMatched();
                 }
             }
+        }
+        String msgTarget = settings.getString("nInfoMsgTarget");
+        if (settings.getBoolean("nInfoMsgEnabled")
+                && !StringUtil.isNullOrEmpty(msgTarget)
+                && shownNotifiction != null
+                && !shownNotifiction.messageOverrideDefault) {
+            addInfoMsg(shownNotifiction, shownData, channel, msgTarget);
         }
     }
     
@@ -405,6 +405,34 @@ public class NotificationManager {
             // Do nothing further (already logged)
         }
         return true;
+    }
+    
+    private void addInfoMsg(Notification n, NotificationData d, String channel, String targets) {
+        
+        MsgTags tags = MsgTags.EMPTY;
+        String stream = Helper.toValidStream(channel);
+        if (!StringUtil.isNullOrEmpty(stream)) {
+            int start = StringUtil.toLowerCase(d.title).indexOf(stream);
+            if (start != -1) {
+                int end = start + stream.length() - 1;
+                tags = MsgTags.create(
+                        "chatty-channel-join", stream,
+                        "chatty-channel-join-indices", start+"-"+end);
+            }
+        }
+        
+        InfoMessage msg = new InfoMessage(InfoMessage.Type.INFO, String.format("%s: %s", d.title, d.message), tags);
+        msg.routingSource = n;
+        if (n.messageUseColor) {
+            msg.color = n.foregroundColor;
+            msg.bgColor = n.backgroundColor;
+            msg.colorSource = n;
+        }
+        for (String target : StringUtil.split(targets, ',', '"', '"', 0, 2)) {
+            if (!StringUtil.isNullOrEmpty(target)) {
+                main.routingManager.addNotification(target, channel, msg);
+            }
+        }
     }
     
     private boolean hideOnStart(Notification n) {

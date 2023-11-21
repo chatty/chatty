@@ -8,11 +8,13 @@ import chatty.gui.Highlighter;
 import chatty.gui.Highlighter.HighlightItem;
 import chatty.gui.MainGui;
 import chatty.gui.StyleManager;
+import chatty.gui.components.Channel;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.textpane.InfoMessage;
 import chatty.gui.components.textpane.UserMessage;
 import chatty.util.Pair;
 import chatty.util.StringUtil;
+import chatty.util.chatlog.ChatLog;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,20 +32,22 @@ public class RoutingManager {
     
     private static final Logger LOGGER = Logger.getLogger(RoutingManager.class.getName());
 
-    private final Map<String, RoutingEntry> entries = new HashMap<>();
+    private final Map<String, RoutingTargetSettings> entries = new HashMap<>();
     private final Map<String, RoutingTarget> targets = new HashMap<>();
     private final List<HighlightItem> routing = new ArrayList<>();
     private final MainGui main;
     private final StyleManager styles;
     private final Channels channels;
+    private final ChatLog chatLog;
     private final ContextMenuListener contextMenuListener;
     
     public RoutingManager(MainGui main, Channels channels, StyleManager styles,
-            ContextMenuListener contextMenuListener) {
+            ContextMenuListener contextMenuListener, ChatLog chatLog) {
         this.main = main;
         this.styles = styles;
         this.channels = channels;
         this.contextMenuListener = contextMenuListener;
+        this.chatLog = chatLog;
         main.getSettings().addSettingChangeListener((setting, type, value) -> {
             if (setting.equals("tabsMessage")) {
                 SwingUtilities.invokeLater(() -> loadTabSettings());
@@ -60,7 +64,7 @@ public class RoutingManager {
                     entry.getValue().getNumMessages()));
             System.out.println(entry.getValue().getNumMessages()+" "+entry.getKey());
         }
-        for (Map.Entry<String, RoutingEntry> entry : entries.entrySet()) {
+        for (Map.Entry<String, RoutingTargetSettings> entry : entries.entrySet()) {
             if (!byId.containsKey(entry.getKey())) {
                 byId.put(entry.getKey(), new RoutingTargetInfo(entry.getValue().getName(), -1));
             }
@@ -70,17 +74,18 @@ public class RoutingManager {
         return result;
     }
     
-    public List<RoutingEntry> getData() {
+    public List<RoutingTargetSettings> getData() {
         return new ArrayList<>(entries.values());
     }
     
-    public void setData(List<RoutingEntry> data) {
+    public void setData(List<RoutingTargetSettings> data) {
         entries.clear();
-        for (RoutingEntry entry : data) {
+        for (RoutingTargetSettings entry : data) {
             entries.put(entry.getId(), entry);
             RoutingTarget target = targets.get(entry.getId());
             if (target != null) {
                 target.setName(entry.getName());
+                target.settingsUpdated();
             }
         }
         saveSettings();
@@ -102,6 +107,12 @@ public class RoutingManager {
         }
     }
     
+    public void setChannel(Channel channel) {
+        for (RoutingTarget target : targets.values()) {
+            target.setChannel(channel.getChannel(), false);
+        }
+    }
+    
     public void addUserMessage(RoutingTargets targets, UserMessage message, User localUser) {
         if (!filterTargets(targets)) {
             addRoutingTargets(targets, message, localUser);
@@ -118,12 +129,19 @@ public class RoutingManager {
             RoutingTarget target = getTarget(name);
             UserMessage thisMessage = message.copy();
             thisMessage.routingSource = hlItem;
-            target.addMessage(thisMessage);
+            target.addMessage(localUser.getChannel(), thisMessage);
             
-            switch (getEntry(name).openOnMessage) {
+            
+            RoutingTargetSettings ts = getSettings(name);
+            
+            switch (ts.openOnMessage) {
                 case 1: // Any message
                 case 2: // Regular chat message
                     channels.addContent(target.getContent());
+            }
+            
+            if (ts.shouldLog()) {
+                chatLog.message(ts.logFile, message.user, message.text, message.action, message.user.getChannel());
             }
         }
     }
@@ -144,24 +162,49 @@ public class RoutingManager {
             RoutingTarget target = getTarget(name);
             InfoMessage thisMessage = message.copy();
             thisMessage.routingSource = hlItem;
-            target.addInfoMessage(thisMessage);
+            thisMessage.localUser = localUser;
+            target.addInfoMessage(localUser.getChannel(), thisMessage);
             
-            switch (getEntry(name).openOnMessage) {
+            RoutingTargetSettings ts = getSettings(name);
+            
+            switch (ts.openOnMessage) {
                 case 1: // Any message
                 case 3: // Info message
                     channels.addContent(target.getContent());
             }
+            
+            if (ts.shouldLog()) {
+                chatLog.info(ts.logFile, message.text, localUser != null ? localUser.getChannel() : null);
+            }
         }
     }
     
-    public void addNotification(String targetName, InfoMessage msg) {
+    public void addBan(User user, long duration, String reason, String targetMsgId) {
+        for (RoutingTarget target : targets.values()) {
+            target.addBan(user, duration, reason, targetMsgId);
+        }
+    }
+    
+    /**
+     * 
+     * @param targetName
+     * @param channel May be null
+     * @param msg 
+     */
+    public void addNotification(String targetName, String channel, InfoMessage msg) {
         RoutingTarget target = getTarget(targetName);
-        target.addInfoMessage(msg);
+        target.addInfoMessage(channel, msg);
         
-        switch (getEntry(targetName).openOnMessage) {
+        RoutingTargetSettings ts = getSettings(targetName);
+        
+        switch (ts.openOnMessage) {
             case 1: // Any message
             case 3: // Info message
                 channels.addContent(target.getContent());
+        }
+        
+        if (ts.shouldLog()) {
+            chatLog.info(ts.logFile, msg.text, null);
         }
     }
     
@@ -195,12 +238,6 @@ public class RoutingManager {
         return false;
     }
     
-    public void addBan(User user, long duration, String reason, String targetMsgId) {
-        for (RoutingTarget target : targets.values()) {
-            target.addBan(user, duration, reason, targetMsgId);
-        }
-    }
-    
     private boolean isRoutingMulti() {
         return main.getSettings().getBoolean("routingMulti");
     }
@@ -217,34 +254,45 @@ public class RoutingManager {
     
     private RoutingTarget getTarget(String targetName) {
         String targetId = toId(targetName);
-        RoutingEntry entry = getEntry(targetName);
+        RoutingTargetSettings ts = getSettings(targetName);
         RoutingTarget target = targets.get(targetId);
         if (target == null) {
-            target = new RoutingTarget("'"+targetId+"'", entry.getName(), main, styles, channels.getDock(), contextMenuListener);
+            target = new RoutingTarget(targetId, ts.getName(),
+                    main, styles, channels, contextMenuListener, this);
             targets.put(targetId, target);
             loadTabSettings(target.getContent());
         }
         return target;
     }
     
+    protected void updateSettings(String targetId, RoutingTargetSettings settings) {
+        entries.put(targetId, settings);
+        targets.get(targetId).settingsUpdated();
+    }
+    
     public static String toId(String name) {
         return StringUtil.toLowerCase(name);
     }
     
-    private RoutingEntry getEntry(String targetName) {
+    private static String contentIdToTargetId(String id) {
+        return id.substring(1, id.length() - 1);
+    }
+    
+    protected RoutingTargetSettings getSettings(String targetName) {
         String targetId = toId(targetName);
-        RoutingEntry entry = entries.get(targetId);
+        RoutingTargetSettings entry = entries.get(targetId);
         if (entry == null) {
-            entry = new RoutingEntry(targetName, 1, true);
+            entry = new RoutingTargetSettings(targetName, 1, true, false, "", 0, false, false);
             entries.put(targetId, entry);
         }
         return entry;
     }
     
     private void loadSettings() {
+        @SuppressWarnings("unchecked")
         Collection<Object> settingsList = main.getSettings().getList("routingTargets");
         for (Object item : settingsList) {
-            RoutingEntry entry = RoutingEntry.fromList((List) item);
+            RoutingTargetSettings entry = RoutingTargetSettings.fromList((List) item);
             if (entry != null) {
                 entries.put(entry.getId(), entry);
             }
@@ -253,7 +301,7 @@ public class RoutingManager {
     
     private void saveSettings() {
         List<Object> settingsData = new ArrayList<>();
-        for (RoutingEntry entry : entries.values()) {
+        for (RoutingTargetSettings entry : entries.values()) {
             settingsData.add(entry.toList());
         }
         main.getSettings().putList("routingTargets", settingsData);
@@ -274,6 +322,13 @@ public class RoutingManager {
     public void refreshStyles() {
         for (RoutingTarget target : targets.values()) {
             target.refreshStyles();
+        }
+    }
+
+    public void scroll(String contentId, String action) {
+        RoutingTarget target = targets.get(contentIdToTargetId(contentId));
+        if (target != null) {
+            target.scroll(action);
         }
     }
     
