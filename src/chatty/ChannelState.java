@@ -201,41 +201,82 @@ public class ChannelState {
      * Update the info text once a state has been updated.
      */
     private void updateInfo() {
-        String result = "";
-        String sep = "|";
-        if (shieldMode) {
-            result = StringUtil.append(result, sep, "Shield");
-        }
-        if (slowMode == SLOWMODE_ON_INVALID || slowMode > 86400) {
-            result = StringUtil.append(result, sep, "Slow: >day");
-        } else if (slowMode > 999) {
-            result = StringUtil.append(result, sep, "Slow: "+DateTime.duration(slowMode*1000, 1, 0));
-        } else if (slowMode > 0) {
-            result  = StringUtil.append(result, sep, "Slow: "+slowMode);
-        }
-        if (subMode) {
-            result = StringUtil.append(result, sep, "Sub");
-        }
-        if (followersOnly == SLOWMODE_ON_INVALID) {
-            result = StringUtil.append(result, sep, "Followers: ?");
-        } else if (followersOnly > 0) {
-            result = StringUtil.append(result, sep, "Followers: "+DateTime.duration((long)followersOnly*60*1000, 1, DateTime.S, DateTime.Formatting.COMPACT));
-        } else if (followersOnly == 0) {
-            result = StringUtil.append(result, sep, "Followers");
-        }
-        if (r9kMode) {
-            result = StringUtil.append(result, sep, "r9k");
-        }
-        if (emoteOnly) {
-            result = StringUtil.append(result, sep, "EmoteOnly");
-        }
-        if (lang != null && !lang.isEmpty()) {
-            result = StringUtil.append(result, sep, lang);
-        }
+        StringBuilder resultBuilder = new StringBuilder();
+
+        appendShieldMode(resultBuilder);
+        appendSlowMode(resultBuilder);
+        appendSubMode(resultBuilder);
+        appendFollowersOnly(resultBuilder);
+        appendR9kMode(resultBuilder);
+        appendEmoteOnly(resultBuilder);
+        appendLanguage(resultBuilder);
+
+        String result = resultBuilder.toString();
         if (!result.isEmpty()) {
-            result = "["+result+"]";
+            info = "[" + result + "]";
+        } else {
+            info = ""; // Reset info if result is empty
         }
-        info = result;
     }
-    
+
+    private void appendShieldMode(StringBuilder resultBuilder) {
+        if (shieldMode) {
+            StringUtil.append(String.valueOf(resultBuilder), "|", "Shield");
+        }
+    }
+
+    private void appendSlowMode(StringBuilder resultBuilder) {
+        String sep = "|";
+        if (slowMode == SLOWMODE_ON_INVALID || slowMode > 86400) {
+            StringUtil.append(String.valueOf(resultBuilder), sep, "Slow: >day");
+        } else if (slowMode > 999) {
+            StringUtil.append(String.valueOf(resultBuilder), sep, "Slow: " + DateTime.duration(slowMode * 1000, 1, 0));
+        } else if (slowMode > 0) {
+            StringUtil.append(String.valueOf(resultBuilder), sep, "Slow: " + slowMode);
+        }
+    }
+
+    private void appendSubMode(StringBuilder resultBuilder) {
+        if (subMode) {
+            StringUtil.append(String.valueOf(resultBuilder), "|", "Sub");
+        }
+    }
+
+    private void appendFollowersOnly(StringBuilder resultBuilder) {
+        String sep = "|";
+        if (followersOnly == SLOWMODE_ON_INVALID) {
+            StringUtil.append(String.valueOf(resultBuilder), sep, "Followers: ?");
+        } else if (followersOnly > 0) {
+            StringUtil.append(String.valueOf(resultBuilder), sep, "Followers: " +
+                    DateTime.duration((long) followersOnly * 60 * 1000, 1, DateTime.S, DateTime.Formatting.COMPACT));
+        } else if (followersOnly == 0) {
+            StringUtil.append(String.valueOf(resultBuilder), sep, "Followers");
+        }
+    }
+
+    private void appendR9kMode(StringBuilder resultBuilder) {
+        if (r9kMode) {
+            StringUtil.append(String.valueOf(resultBuilder), "|", "r9k");
+        }
+    }
+
+    private void appendEmoteOnly(StringBuilder resultBuilder) {
+        if (emoteOnly) {
+            StringUtil.append(String.valueOf(resultBuilder), "|", "EmoteOnly");
+        }
+    }
+
+    private void appendLanguage(StringBuilder resultBuilder) {
+        if (lang != null && !lang.isEmpty()) {
+            StringUtil.append(String.valueOf(resultBuilder), "|", lang);
+        }
+    }
+
+
+
 }
+
+
+
+
+
