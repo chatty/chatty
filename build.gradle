@@ -100,6 +100,7 @@ task allPlatformsZip(type: Zip, group: 'build') {
     from tasks.shadowJar.archivePath
     from ('assets') {
         exclude 'lib'
+        exclude 'linux'
     }
 
     destinationDirectory = releasesDir
