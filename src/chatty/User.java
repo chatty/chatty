@@ -806,6 +806,16 @@ public class User implements Comparable<User> {
         }
         return color;
     }
+
+    public static User createTestUser(String name, String channel) {
+        User testUser = new User(name, name, Room.createRegular(channel));
+        testUser.setColor(new Color(94, 0, 211));
+        // Force color correction for longer userinfo color label
+        testUser.setColor(new Color(255, 255, 255));
+        testUser.setModerator(true);
+        testUser.setSubscriber(true);
+        return testUser;
+    }
     
     /**
      * Only return custom or corrected color.

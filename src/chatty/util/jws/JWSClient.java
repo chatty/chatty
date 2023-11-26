@@ -38,7 +38,8 @@ public class JWSClient implements MessageHandler {
     private final ElapsedTime lastConnectionAttempt = new ElapsedTime();
     private final ElapsedTime lastActivity = new ElapsedTime();
     private final MessageHandler handler;
-    
+    protected volatile int connectionTimeoutSeconds;
+
     private volatile String debugPrefix = "";
     private volatile boolean requestedClose = false;
     private volatile Thread readerThread;
@@ -318,6 +319,20 @@ public class JWSClient implements MessageHandler {
 
     @Override
     public void handleSent(String text) {
+    }
+
+    public void checkTimeout() {
+        if (!isOpen() && getConnectionSeconds() > 30) {
+            return;
+        }
+        if (connectionTimeoutSeconds > 0) {
+            if (getLastReceivedSecondsAgo() > connectionTimeoutSeconds * 2) {
+                forceReconnect();
+            }
+            else if (getLastReceivedSecondsAgo() > connectionTimeoutSeconds) {
+                reconnect();
+            }
+        }
     }
 
     @Override

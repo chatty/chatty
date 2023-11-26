@@ -37,7 +37,8 @@ public class TwitchConnection {
     public enum JoinError {
         NOT_REGISTERED, ALREADY_JOINED, INVALID_NAME, ROOM
     }
-    
+
+    private ModsHandler modsHandler;
     private static final Logger LOGGER = Logger.getLogger(TwitchConnection.class.getName());
 
     private final ConnectionListener listener;
@@ -102,6 +103,7 @@ public class TwitchConnection {
         irc = new IrcConnection(label);
         this.listener = listener;
         this.settings = settings;
+        this.modsHandler = new ModsHandler(this);
         this.twitchCommands = new TwitchCommands(this);
         this.rooms = rooms;
         spamProtection = new SpamProtection();
@@ -1300,8 +1302,7 @@ public class TwitchConnection {
              * a) has to be checked first, because b) might remove the channel,
              * so a) might be true even if it shouldn't be
              */
-            if (!twitchCommands.waitingForModsSilent()
-                    || (channel != null && !twitchCommands.removeModsSilent(channel))) {
+            if (!modsHandler.waitingForModsSilent() || (channel != null && !modsHandler.removeModsSilent(channel))) {
                 info(channel, "[Info] " + text, null);
 
                 // Output appropriate message
