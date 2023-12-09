@@ -97,6 +97,8 @@ public class RoutingSettingsTable<T extends RoutingTargetSettings> extends Table
     
     public static class MyItemEditor<T extends RoutingTargetSettings> implements TableEditor.ItemEditor<RoutingTargetSettings> {
         
+        private static final String HTML_PREFIX = "<html><body style='width:200px;'>";
+        
         private final JDialog dialog;
         private final JTextField name = new JTextField(10);
         private final JCheckBox logEnabled = new JCheckBox(Language.getString("settings.customTabSettings.logEnabled"));
@@ -127,7 +129,7 @@ public class RoutingSettingsTable<T extends RoutingTargetSettings> extends Table
             SettingsUtil.setTextAndTooltip(multiChannelSepAndAll, "settings.customTabSettings.multiChannelSepAndAll");
             SettingsUtil.setTextAndTooltip(channelFixed, "settings.customTabSettings.channelFixed");
             
-            ((AbstractDocument) logFile.getDocument()).setDocumentFilter(new RegexDocumentFilter(FileUtil.ILLEGAL_FILENAME_CHARACTERS_PATTERN.pattern()));
+            ((AbstractDocument) logFile.getDocument()).setDocumentFilter(new RegexDocumentFilter(FileUtil.ILLEGAL_FILENAME_CHARACTERS_PATTERN.pattern(), logFile));
             
             name.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -204,7 +206,7 @@ public class RoutingSettingsTable<T extends RoutingTargetSettings> extends Table
             multiChannelPanel.add(channelFixed, gbc);
             
             gbc = SettingsDialog.makeGbc(0, 4, 2, 1, GridBagConstraints.CENTER);
-            multiChannelPanel.add(new JLabel("<html><body style='width:200px;'>Switch channels through the context menu. Changing this setting only applies to new messages."), gbc);
+            multiChannelPanel.add(new JLabel(HTML_PREFIX+"Switch channels through the context menu. Changing this setting only applies to new messages."), gbc);
             
             SettingsUtil.addSubsettings(
                     new JRadioButton[]{multiChannelSep, multiChannelSepAndAll},
@@ -242,7 +244,7 @@ public class RoutingSettingsTable<T extends RoutingTargetSettings> extends Table
             
             // Log info
             gbc = GuiUtil.makeGbc(0, 2, 4, 1, GridBagConstraints.WEST);
-            logPanel.add(new JLabel(Language.getString("settings.customTabSettings.logInfo")), gbc);
+            logPanel.add(new JLabel(HTML_PREFIX+Language.getString("settings.customTabSettings.logInfo")), gbc);
             
             gbc = GuiUtil.makeGbc(0, 7, 3, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;

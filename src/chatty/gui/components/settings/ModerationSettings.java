@@ -177,7 +177,7 @@ public class ModerationSettings extends SettingsPanel {
          * Remove all characters that are not in the BMP (except surrogates, so
          * do remove those).
          */
-        public static DocumentFilter IGNORED_CHARS_FILTER = new RegexDocumentFilter("[^\u0000-\uD7FF\uE000-\uFFFF]");
+        public static DocumentFilter IGNORED_CHARS_FILTER = new RegexDocumentFilter("[^\u0000-\uD7FF\uE000-\uFFFF]", null);
         
         private static final String DEFAULT_EXAMPLE_A = "Have you already checked out Chatty's YouTube channel? Might have some useful video guides.";
         private static final String DEFAULT_EXAMPLE_B = "Chatty's YouTube channel might have some useful video guides. Have you checked it out yet?";

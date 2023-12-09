@@ -14,7 +14,7 @@ public class DurationSetting extends JTextField implements LongSetting {
     public DurationSetting(int size, boolean editable) {
         super(size);
         setEditable(editable);
-        ((AbstractDocument)getDocument()).setDocumentFilter(new RegexDocumentFilter("[^\\dms]+"));
+        ((AbstractDocument)getDocument()).setDocumentFilter(new RegexDocumentFilter("[^\\dms]+", this));
     }
     
     @Override

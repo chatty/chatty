@@ -68,14 +68,14 @@ public abstract class SimpleTableEditor<T> extends TableEditor<MapItem<T>> imple
     protected abstract T valueFromString(String input);
     
     public void setKeyFilter(String p) {
-        keyFilter = new RegexDocumentFilter(p);
+        keyFilter = new RegexDocumentFilter(p, this);
         if (editor != null) {
             editor.setKeyFilter(keyFilter);
         }
     }
     
     public void setValueFilter(String p) {
-        valueFilter = new RegexDocumentFilter(p);
+        valueFilter = new RegexDocumentFilter(p, this);
         if (editor != null) {
             editor.setValueFilter(valueFilter);
         }
@@ -316,11 +316,20 @@ public abstract class SimpleTableEditor<T> extends TableEditor<MapItem<T>> imple
         }
         
         public void setKeyFilter(DocumentFilter keyFilter) {
-            ((AbstractDocument)key.getDocument()).setDocumentFilter(keyFilter);
+            setFilter(key, keyFilter);
         }
         
-        public void setValueFilter(DocumentFilter keyFilter) {
-            ((AbstractDocument)value.getDocument()).setDocumentFilter(keyFilter);
+        public void setValueFilter(DocumentFilter valueFilter) {
+            setFilter(value, valueFilter);
         }
+        
+        private void setFilter(JTextField textField, DocumentFilter filter) {
+            if (filter instanceof RegexDocumentFilter) {
+                // Set owner for invalid input popups for this type of filter
+                filter = new RegexDocumentFilter(((RegexDocumentFilter) filter).getRegex(), textField);
+            }
+            ((AbstractDocument)textField.getDocument()).setDocumentFilter(filter);
+        }
+        
     }
 }

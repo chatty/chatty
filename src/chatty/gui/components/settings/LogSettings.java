@@ -214,6 +214,8 @@ public class LogSettings extends SettingsPanel {
                 d.makeGbcCloser(0, 0, 1, 1, GridBagConstraints.WEST));
         extraPanel.add(d.addSimpleBooleanSetting("logIgnored2"),
                 d.makeGbcCloser(0, 1, 1, 1, GridBagConstraints.WEST));
+        extraPanel.add(new JLabel("<html><body style='width:140px;'>"+Language.getString("settings.customTabSettings.logInfo2")),
+                d.makeGbc(0, 2, 1, 1, GridBagConstraints.WEST));
 
         JPanel otherSettings = createTitledPanel(Language.getString("settings.log.section.other"));
         

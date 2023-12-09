@@ -115,7 +115,7 @@ public class AddressbookEditor extends TableEditor<AddressbookEntry> {
             categories.getDocument().addDocumentListener(documentListener);
             
             // Prevents any whitespace from being entered in the name field
-            ((AbstractDocument)name.getDocument()).setDocumentFilter(new RegexDocumentFilter("\\s+"));
+            ((AbstractDocument)name.getDocument()).setDocumentFilter(new RegexDocumentFilter("\\s+", this));
             
             // Layout
             setLayout(new GridBagLayout());

@@ -25,7 +25,7 @@ public class LongTextField extends JTextField {
         
         setEditable(editable);
         setInputVerifier(new IntegerVerifier());
-        ((AbstractDocument)getDocument()).setDocumentFilter(new RegexDocumentFilter("\\D+"));
+        ((AbstractDocument)getDocument()).setDocumentFilter(new RegexDocumentFilter("\\D+", this));
         getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
