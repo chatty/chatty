@@ -41,6 +41,8 @@ import chatty.util.EmoticonListener;
 import chatty.util.IconManager;
 import chatty.util.ffz.FrankerFaceZ;
 import chatty.util.ffz.FrankerFaceZListener;
+import chatty.util.history.HistoryManager;
+import chatty.util.history.HistoryMessage;
 import chatty.util.ImageCache;
 import chatty.util.LogUtil;
 import chatty.util.MacAwtOptions;
@@ -186,6 +188,8 @@ public class TwitchClient {
     private final AutoModCommandHelper autoModCommandHelper;
     
     public final RoomManager roomManager;
+
+    public final HistoryManager historyManager;
     
     /**
      * Holds the UserManager instance, which manages all the user objects.
@@ -347,6 +351,8 @@ public class TwitchClient {
         
         roomManager = new RoomManager(new MyRoomUpdatedListener());
         channelFavorites = new ChannelFavorites(settings, roomManager);
+
+        historyManager = new HistoryManager(settings);
         
         c = new TwitchConnection(new Messages(), settings, "main", roomManager);
         c.setUserSettings(new User.UserSettings(
@@ -3257,7 +3263,35 @@ public class TwitchClient {
         }
 //        api.getEmotesByStreams(Helper.toStream(channel)); // Removed
     }
-    
+
+    /**
+     * Requests the chat history
+     *
+     * @param channel The name of the channel (can be stream or channel)
+     */
+    public void requestChannelHistory(String channel) {
+        // Check in Settings if active/channel in blacklist
+        //settings.
+        if(!historyManager.isEnabled()){
+            return;
+        }
+        if(historyManager.isChannelExcluded(channel)){
+            return;
+        }
+        Room room = Room.createRegular("#" + channel);
+        g.printInfo(room, "Pulling information from history service.", MsgTags.EMPTY);
+
+        // Get the actual list of messages
+        List<HistoryMessage> history = historyManager.getHistoricChatMessages(room);
+
+        for(int i = 0; i < history.size(); i++)
+        {
+            HistoryMessage currentMsg = history.get(i);
+            g.printMessage(currentMsg.User, currentMsg.Message, currentMsg.Action, currentMsg.Tags);
+        }
+        g.printInfo(room, "Finished with history logs.", MsgTags.EMPTY);
+    }
+
     private class EmoteListener implements EmoticonListener {
 
         @Override
@@ -3443,6 +3477,7 @@ public class TwitchClient {
                 api.getEmotesByChannelId(stream, null, false);
                 requestChannelEmotes(stream);
                 frankerFaceZ.joined(stream);
+                requestChannelHistory(stream);
                 checkModLogListen(user);
                 checkPointsListen(user);
                 api.removeShieldModeCache(user.getRoom());

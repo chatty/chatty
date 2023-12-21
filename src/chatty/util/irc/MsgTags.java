@@ -42,13 +42,25 @@ public class MsgTags extends IrcMsgTags {
     public boolean isCustomReward() {
         return hasValue("custom-reward-id");
     }
-    
+
     public String getCustomRewardId() {
         return get("custom-reward-id");
     }
     
     public boolean isFromPubSub() {
         return isValue("chatty-source", "pubsub");
+    }
+
+    public boolean isHistoricMsg() {
+        return hasValue("historic-timestamp");
+    }
+
+    public long getHistoricTimeStamp() {
+        if (isHistoricMsg()) {
+            return Long.parseLong(get("historic-timestamp"));
+        } else {
+            return -1;
+        }
     }
     
     public String getChannelJoin() {

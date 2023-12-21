@@ -30,6 +30,7 @@ public class UserMessage extends Message {
     public Object ignoreSource;
     public Object routingSource;
     public User localUser;
+    public long historicTimeStamp;
     
     public UserMessage(User user, String text, Emoticons.TagEmotes emotes,
             String id, int bits, List<Match> highlightMatches,
@@ -39,6 +40,7 @@ public class UserMessage extends Message {
         this.emotes = emotes;
         this.bits = bits;
         this.tags = tags;
+        this.historicTimeStamp  = -1; // keep -1 as default for current timestamp
     }
     
     public UserMessage copy() {
