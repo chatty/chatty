@@ -5,6 +5,7 @@ import chatty.gui.laf.LaF;
 import chatty.gui.laf.LaF.LaFSettings;
 import chatty.gui.components.LinkLabel;
 import chatty.gui.laf.FlatLafUtil;
+import chatty.gui.laf.LaFChanger;
 import chatty.lang.Language;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -69,8 +70,7 @@ public class LookSettings extends SettingsPanel {
         
         JButton lafPreviewButton = new JButton("Preview");
         lafPreviewButton.addActionListener(e -> {
-            LaF.setLookAndFeel(LaFSettings.fromSettingsDialog(d, d.settings));
-            LaF.updateLookAndFeel();
+            LaFChanger.changeLookAndFeel(LaFSettings.fromSettingsDialog(d, d.settings), this);
             d.lafPreviewed = true;
             d.pack();
         });

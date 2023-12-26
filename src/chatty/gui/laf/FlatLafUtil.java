@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Properties;
 import java.util.logging.Logger;
+import javax.swing.UIManager;
 
 /**
  *
@@ -23,7 +24,7 @@ public class FlatLafUtil {
     
     private static final Logger LOGGER = Logger.getLogger(FlatLafUtil.class.getName());
 
-    protected static void loadFlatLaf(String baseTheme, LaF.LaFSettings settings) throws IOException {
+    protected static void loadFlatLaf(String baseTheme, LaF.LaFSettings settings) throws Exception {
         Properties pCustom = new Properties();
         pCustom.load(new ByteArrayInputStream(settings.flatProperties.getBytes(Charset.forName("ISO-8859-1"))));
         boolean loadChattyProperties = !pCustom.getOrDefault("chattyProperties", "true").equals("false");
@@ -41,7 +42,7 @@ public class FlatLafUtil {
         p.put("TitlePane.useWindowDecorations", String.valueOf(settings.flatStyledWindow));
         p.put("@baseTheme", baseTheme);
         p.putAll(pCustom);
-        FlatPropertiesLaf l = new FlatPropertiesLaf("Customized Flat LaF", p) {
+        FlatPropertiesLaf lookAndFeel = new FlatPropertiesLaf("Customized Flat LaF", p) {
             
             @Override
             public void provideErrorFeedback(Component component) {
@@ -51,7 +52,7 @@ public class FlatLafUtil {
             }
             
         };
-        FlatLaf.setup(l);
+        UIManager.setLookAndFeel(lookAndFeel);
     }
     
 }

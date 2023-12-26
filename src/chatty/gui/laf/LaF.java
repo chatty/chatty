@@ -38,12 +38,18 @@ public class LaF {
     
     private static final Logger LOGGER = Logger.getLogger(LaF.class.getName());
     
+    private static final Color TAB_FOREGROUND_HIGHLIGHT_LIGHT = new Color(255, 80, 0);
+    private static final Color TAB_FOREGROUND_UNREAD_LIGHT = new Color(200, 0, 0);
+    
+    private static final Color TAB_FOREGROUND_HIGHLIGHT_DARK = new Color(255, 180, 40);
+    private static final Color TAB_FOREGROUND_UNREAD_DARK = new Color(255, 80, 80);
+    
     private static LaFSettings settings;
     private static String linkColor = "#0000FF";
     private static boolean isDarkTheme;
     private static String lafClass;
-    private static Color tabForegroundUnread = new Color(200,0,0);
-    private static Color tabForegroundHighlight = new Color(255,80,0);
+    private static Color tabForegroundHighlight = TAB_FOREGROUND_HIGHLIGHT_LIGHT;
+    private static Color tabForegroundUnread = TAB_FOREGROUND_UNREAD_LIGHT;
     private static Border inputBorder;
     private static boolean defaultButtonInsets = false;
     
@@ -162,7 +168,22 @@ public class LaF {
         
     }
     
-    public static void setLookAndFeel(LaFSettings settings) {
+    /**
+     * Get the most recently set Look&Feel settings.
+     * 
+     * @return 
+     */
+    public static LaFSettings getSettings() {
+        return LaF.settings;
+    }
+    
+    /**
+     * Sets the Look&Feel to the given settings.
+     * 
+     * @param settings
+     * @return An error message if an error occured, {@code null} otherwise
+     */
+    public static String setLookAndFeel(LaFSettings settings) {
         LaFUtil.resetDefaults();
         inputBorder = null;
         LaF.settings = settings;
@@ -289,18 +310,22 @@ public class LaF {
             modifyDefaults();
         } catch (Exception ex) {
             LOGGER.warning("[LAF] Failed setting LAF: "+ex);
+            return ex.getLocalizedMessage();
         }
         
         isDarkTheme = determineDarkTheme();
         // Set some settings not directly used by the LAF, but based on LAF.
         if (isDarkTheme) {
             linkColor = "#EEEEEE";
-            tabForegroundHighlight = new Color(255,180,40);
-            tabForegroundUnread = new Color(255,80,80);
+            tabForegroundHighlight = TAB_FOREGROUND_HIGHLIGHT_DARK;
+            tabForegroundUnread = TAB_FOREGROUND_UNREAD_DARK;
         } else {
             linkColor = "#0000FF";
+            tabForegroundHighlight = TAB_FOREGROUND_HIGHLIGHT_LIGHT;
+            tabForegroundUnread = TAB_FOREGROUND_UNREAD_LIGHT;
         }
         loadOtherCustom();
+        return null;
     }
     
     private static boolean determineDarkTheme() {

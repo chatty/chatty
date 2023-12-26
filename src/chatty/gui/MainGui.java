@@ -75,6 +75,7 @@ import chatty.gui.components.textpane.UserNotice;
 import chatty.gui.components.userinfo.UserInfoManager;
 import chatty.gui.components.userinfo.UserNotes;
 import chatty.gui.emoji.EmojiUtil;
+import chatty.gui.laf.LaFChanger;
 import chatty.gui.notifications.Notification;
 import chatty.gui.notifications.NotificationActionListener;
 import chatty.gui.notifications.NotificationManager;
@@ -5310,8 +5311,7 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     private void updateLaF() {
-        LaF.setLookAndFeel(LaFSettings.fromSettings(client.settings));
-        LaF.updateLookAndFeel();
+        LaFChanger.changeLookAndFeel(LaFSettings.fromSettings(client.settings), this);
     }
 
     private class MySettingChangeListener implements SettingChangeListener {

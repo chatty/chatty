@@ -2,6 +2,7 @@
 package chatty;
 
 import chatty.Chatty.PathType;
+import chatty.gui.laf.LaFChanger;
 import chatty.util.RingBuffer;
 import java.io.File;
 import java.io.IOException;
@@ -91,8 +92,14 @@ public class Logging {
                 }
                 if (record.getLevel() == Level.SEVERE) {
                     if (client.g != null) {
-                        boolean compact = record.getMessage().startsWith("FlatLaf: Failed to parse:");
-                        client.g.error(record, compact ? new LinkedList<>() : lastMessages.getItems());
+                        String msg = record.getMessage();
+                        boolean flatLafError = msg.startsWith("FlatLaf: Failed to parse:");
+                        if (flatLafError) {
+                            LaFChanger.loggedFlatLookAndFeelError(msg+" "+record.getThrown().getLocalizedMessage());
+                        }
+                        else {
+                            client.g.error(record, lastMessages.getItems());
+                        }
                     }
                 } else if (record.getLevel() == USERINFO) {
                     client.warning(record.getMessage());
