@@ -82,9 +82,8 @@ public class HistorySettings extends SettingsPanel implements ActionListener {
 
         JPanel externalHistory = addTitledPanel("History service", 2);
 
-        externalHistory.add(new JLabel(/*SettingConstants.HTML_PREFIX
-                            +Language.getString("settings.streamHighlights.info")*/
-                                    "<html><body width=300>"
+
+        externalHistory.add(new JLabel("<html><body width=300>"
                                     + "Chatty uses recent-messages API from robotty go get messages while the user was offline.<br><br>"
                                     + "For more information please refer to https://recent-messages.robotty.de"),
                             SettingsDialog.makeGbc(0, 0, 2, 1, GridBagConstraints.NORTH));
@@ -101,11 +100,14 @@ public class HistorySettings extends SettingsPanel implements ActionListener {
                             SettingsDialog.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST));
         externalHistory.add(new JLabel("Excluded Channels:"),
                             SettingsDialog.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
-        externalHistory.add(d.addListSetting("externalHistoryExclusion",
-                                            "Channel to be excluded from history",
-                                            250, 200,
-                                            false, true),
-                            SettingsDialog.makeGbc(0, 4, 2, 1, GridBagConstraints.WEST));
+
+        ListSelector exclusionchannels = d.addListSetting("externalHistoryExclusion",
+                                                        "Channel to be excluded from history",
+                                                        250, 200,
+                                                        false, true);
+        final ChannelFormatter formatter = new ChannelFormatter();
+        exclusionchannels.setDataFormatter(formatter);
+        externalHistory.add(exclusionchannels, SettingsDialog.makeGbc(0, 4, 2, 1, GridBagConstraints.WEST));
     }
 
     @Override

@@ -1,6 +1,5 @@
 package chatty.util.history;
 
-import chatty.User;
 import chatty.util.irc.MsgTags;
 
 /**
@@ -9,29 +8,21 @@ import chatty.util.irc.MsgTags;
  */
 
 public class HistoryMessage {
-    public User User;
-    public String Message;
-    public Boolean Action;
-    public MsgTags Tags;
-    public long Timestamp;
-    public String UserColor;
+    public String userName;
+    public String message;
+    public boolean action;
+    public MsgTags tags;
+    public long timeStamp;
+    public String userColor;
 
     /**
      * Create a new History Message
      */
-    public HistoryMessage(){
-        Message = "";
-        Action = false;
-        Timestamp = -1;
-        UserColor = "";
-    }
-
-    /**
-     * Updates the user object with the setted color if possible
-     */
-    public void updateUserColor(){
-        if(User != null && !UserColor.isEmpty()){
-            User.setColor(UserColor);
-        }
+    public HistoryMessage() {
+        message = "";
+        userName = "";
+        action = false;
+        timeStamp = -1;
+        userColor = "";
     }
 }

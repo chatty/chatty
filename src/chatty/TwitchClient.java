@@ -84,11 +84,6 @@ import chatty.util.api.eventsub.payloads.PollPayload;
 import chatty.util.api.eventsub.payloads.RaidPayload;
 import chatty.util.api.eventsub.payloads.ShieldModePayload;
 import chatty.util.api.eventsub.payloads.ShoutoutPayload;
-import chatty.util.api.pubsub.RewardRedeemedMessageData;
-import chatty.util.api.pubsub.Message;
-import chatty.util.api.pubsub.ModeratorActionData;
-import chatty.util.api.pubsub.PubSubListener;
-import chatty.util.api.pubsub.UserModerationMessageData;
 import chatty.util.chatlog.ChatLog;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
@@ -3272,10 +3267,10 @@ public class TwitchClient {
     public void requestChannelHistory(String channel) {
         // Check in Settings if active/channel in blacklist
         //settings.
-        if(!historyManager.isEnabled()){
+        if (!historyManager.isEnabled()) {
             return;
         }
-        if(historyManager.isChannelExcluded(channel)){
+        if (historyManager.isChannelExcluded(channel)) {
             return;
         }
         Room room = Room.createRegular("#" + channel);
@@ -3284,10 +3279,12 @@ public class TwitchClient {
         // Get the actual list of messages
         List<HistoryMessage> history = historyManager.getHistoricChatMessages(room);
 
-        for(int i = 0; i < history.size(); i++)
-        {
+        for (int i = 0; i < history.size(); i++) {
             HistoryMessage currentMsg = history.get(i);
-            g.printMessage(currentMsg.User, currentMsg.Message, currentMsg.Action, currentMsg.Tags);
+            User user  = c.getUser("#"+channel, currentMsg.userName);
+            user.setColor(currentMsg.userColor);
+            user.setCustomNick(currentMsg.userName);
+            g.printMessage(user, currentMsg.message, currentMsg.action, currentMsg.tags);
         }
         g.printInfo(room, "Finished with history logs.", MsgTags.EMPTY);
     }
