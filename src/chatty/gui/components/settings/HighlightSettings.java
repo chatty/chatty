@@ -158,7 +158,7 @@ public class HighlightSettings extends SettingsPanel {
         base.add(highlightBlacklistButton, gbc);
         
         JButton presetsButton = new JButton("Presets");
-        presetsButton.setMargin(GuiUtil.SMALLER_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(presetsButton);
         presetsButton.addActionListener(e -> {
             d.showMatchingPresets();
         });
@@ -168,7 +168,7 @@ public class HighlightSettings extends SettingsPanel {
         base.add(presetsButton, gbc);
         
         JButton substitutesButton = new JButton("Substitutes / Lookalikes");
-        substitutesButton.setMargin(GuiUtil.SMALLER_BUTTON_INSETS);
+        GuiUtil.smallButtonInsets(substitutesButton);
         substitutesButton.addActionListener(e -> {
             substitutes.show(HighlightSettings.this);
         });

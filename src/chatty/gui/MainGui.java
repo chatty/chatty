@@ -3959,6 +3959,9 @@ public class MainGui extends JFrame implements Runnable {
         if (message instanceof UserNotice) {
             user = ((UserNotice)message).user;
         }
+        boolean noHighlightUser = user != null
+                && client.settings.listContains("noHighlightUsers", user.getName());
+
         MsgTags tags = message.tags;
         User localUser = client.getLocalUser(channel.getChannel());
         RoutingTargets routingTargets = new RoutingTargets();
@@ -3967,7 +3970,7 @@ public class MainGui extends JFrame implements Runnable {
         boolean ignoreCheck = !ignored
                 || highlighter.hasOverrideIgnored()
                 || client.settings.getBoolean("highlightOverrideIgnored");
-        if (ignoreCheck && !message.isHidden()) {
+        if (ignoreCheck && !message.isHidden() && !noHighlightUser) {
             boolean rejectIgnoredWithoutPrefix = client.settings.getBoolean("highlightOverrideIgnored") ? false : ignored;
             highlighted = checkInfoMsg(highlighter, "highlight", message.text, message.getMsgStart(), message.getMsgEnd(), user, tags, channel.getChannel(), client.addressbook, rejectIgnoredWithoutPrefix);
             if (highlighted) {
