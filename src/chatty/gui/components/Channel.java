@@ -1,6 +1,7 @@
 
 package chatty.gui.components;
 
+import chatty.ChannelState;
 import chatty.Room;
 import chatty.gui.MouseClickedListener;
 import chatty.gui.StyleManager;
@@ -15,19 +16,28 @@ import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.textpane.InfoMessage;
 import chatty.gui.components.textpane.Message;
 import chatty.util.StringUtil;
+import chatty.util.api.AccessChecker;
+import chatty.util.api.TokenInfo;
 import chatty.util.api.pubsub.LowTrustUserMessageData;
+import chatty.util.api.usericons.Usericon;
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
+import chatty.util.irc.MsgTags;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import javax.swing.AbstractAction;
-import javax.swing.InputMap;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.KeyStroke;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
 import javax.swing.Timer;
 import javax.swing.text.JTextComponent;
 
@@ -37,7 +47,7 @@ import javax.swing.text.JTextComponent;
  * @author tduva
  */
 public final class Channel extends JPanel {
-    
+
     public enum Type {
         NONE, CHANNEL, WHISPER, SPECIAL
     }
@@ -61,6 +71,10 @@ public final class Channel extends JPanel {
     private int userlistMinWidth;
 
     private Room room;
+    
+    private ModerationPanel modPanel;
+    private Popup modPanelPopup;
+    private final JButton modPanelButton;
 
     public Channel(final Room room, Type type, MainGui main, StyleManager styleManager,
             ContextMenuListener contextMenuListener) {
@@ -104,9 +118,92 @@ public final class Channel extends JPanel {
         installLimits(input);
         TextSelectionMenu.install(input);
         
+        JPanel inputPanel = new JPanel(new BorderLayout());
+        inputPanel.add(input, BorderLayout.CENTER);
+        
+        modPanelButton = new JButton("M");
+        modPanelButton.setToolTipText("Channel Modes");
+        modPanelButton.setVisible(false);
+        inputPanel.add(modPanelButton, BorderLayout.EAST);
+        modPanelButton.addActionListener(e -> {
+            openModPanel();
+        });
+        
         // Add components
         add(mainPane, BorderLayout.CENTER);
-        add(input, BorderLayout.SOUTH);
+        add(inputPanel, BorderLayout.SOUTH);
+    }
+    
+    public void updateModButton() {
+        boolean hasAccess = AccessChecker.instance().check(room.getChannel(), TokenInfo.Scope.MANAGE_CHAT, true, false);
+        modPanelButton.setVisible(hasAccess);
+        
+        // Not sure if this looks good
+//        Usericon icon = main.client.usericonManager.getIcon(Usericon.Type.TWITCH, "moderator", "1", main.client.getLocalUser(room.getChannel()), MsgTags.EMPTY);
+//        if (icon != null) {
+//            int height = input.getFontMetrics(input.getFont()).getHeight();
+//            modPanelButton.setIcon(icon.getIcon(2f, 2, height, (oldImage, newImage, sizeChanged) -> {
+//                     modPanelButton.repaint();
+//                 }).getImageIcon());
+//            modPanelButton.setText(null);
+//            modPanelButton.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+//        }
+    }
+    
+    public void updateModPanel() {
+        if (modPanel != null) {
+            ChannelState state = main.getChannelState(room.getChannel());
+            modPanel.updateState(state);
+        }
+    }
+    
+    private void closeModPanel() {
+        if (modPanelPopup != null) {
+            modPanelPopup.hide();
+            modPanelPopup = null;
+        }
+    }
+    private void openModPanel() {
+        if (modPanelPopup != null) {
+            closeModPanel();
+            return;
+        }
+        if (modPanel == null) {
+            modPanel = new ModerationPanel(main, main.getSettings());
+            modPanel.setBorder(BorderFactory.createRaisedSoftBevelBorder());
+            modPanel.addCommandListener(s -> {
+                main.anonCustomCommand(room, CustomCommand.parse(s), Parameters.create(""));
+            });
+            
+            text.addFocusListener(new FocusAdapter() {
+
+                @Override
+                public void focusGained(FocusEvent e) {
+                    closeModPanel();
+                }
+
+            });
+
+            input.addFocusListener(new FocusAdapter() {
+
+                @Override
+                public void focusGained(FocusEvent e) {
+                    closeModPanel();
+                }
+
+            });
+        }
+        updateModPanel();
+        Point inputLocation = input.getLocationOnScreen();
+        Dimension panelSize = modPanel.getPreferredSize();
+        int buttonWidth = modPanelButton.getSize().width;
+        Popup popup = PopupFactory.getSharedInstance().getPopup(
+                input,
+                modPanel,
+                inputLocation.x + input.getWidth() - panelSize.width + buttonWidth,
+                inputLocation.y - panelSize.height);
+        popup.show();
+        modPanelPopup = popup;
     }
     
     /**

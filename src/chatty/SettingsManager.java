@@ -426,6 +426,10 @@ public class SettingsManager {
         settings.addString("commercialHotkey","");
         settings.addBoolean("adDelay", false);
         settings.addLong("adDelayLength", 300);
+        
+        // Moderation Presets
+        settings.addString("slowmodeDurations", "3s\n5s\n10s\n20s\n30s\n60s\n120s");
+        settings.addString("followeronlyDurations", "0m\n10m\n30m\n1h\n1d\n7d\n30d\n90d");
 
         //=======
         // Window

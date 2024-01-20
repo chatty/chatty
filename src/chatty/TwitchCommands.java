@@ -241,7 +241,7 @@ public class TwitchCommands {
                         TwitchApi.CHAT_SETTINGS_FOLLOWER_MODE, true);
             }
             else {
-                updateChatSettings(client, p, " ("+formatDuration(minutes / 60)+")",
+                updateChatSettings(client, p, " ("+formatDuration(minutes * 60)+")",
                         TwitchApi.CHAT_SETTINGS_FOLLOWER_MODE, true,
                         TwitchApi.CHAT_SETTINGS_FOLLOWER_MODE_DURATION, minutes);
             }

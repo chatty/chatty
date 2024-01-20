@@ -188,6 +188,10 @@ public class ChannelState {
         return false;
     }
     
+    public synchronized int followersOnly() {
+        return followersOnly;
+    }
+    
     /**
      * Get the info text based on the current state.
      * 

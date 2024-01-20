@@ -409,6 +409,10 @@ public class Usericon implements Comparable {
     private int customScaleMode;
     
     public CachedImage<Usericon> getIcon(float scale, int customUsericonScaleMode, CachedImage.CachedImageUser user) {
+        return getIcon(scale, customUsericonScaleMode, 0, user);
+    }
+    
+    public CachedImage<Usericon> getIcon(float scale, int customUsericonScaleMode, int maxHeight, CachedImage.CachedImageUser user) {
         this.customScaleMode = customUsericonScaleMode;
         if (images == null) {
             images = new CachedImageManager<>(this, new CachedImage.CachedImageRequester() {
@@ -468,7 +472,7 @@ public class Usericon implements Comparable {
                 customKey = 1;
             }
         }
-        return images.getIcon(scale, 0, customKey, CachedImage.ImageType.STATIC, user);
+        return images.getIcon(scale, maxHeight, customKey, CachedImage.ImageType.STATIC, user);
     }
     
     private static Dimension toHeight(Dimension d, int targetHeight) {

@@ -6,6 +6,7 @@ import chatty.gui.laf.LaF;
 import chatty.util.api.pubsub.LowTrustUserMessageData;
 import chatty.util.colors.HtmlColors;
 import chatty.Addressbook;
+import chatty.ChannelState;
 import chatty.gui.components.textpane.UserMessage;
 import chatty.gui.components.DebugWindow;
 import chatty.gui.components.ChannelInfoDialog;
@@ -1500,6 +1501,25 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void run() {
                 updateUserInfoDialog(user);
+                updateModButtons(user);
+            }
+        });
+    }
+    
+    public void updateModButtons(User user) {
+        SwingUtilities.invokeLater(() -> {
+            if (user == null) {
+                for (Channel chan : channels.getChannelsOfType(Channel.Type.CHANNEL)) {
+                    chan.updateModButton();
+                }
+            }
+            else {
+                if (user.isLocalUser()) {
+                    Channel channel = channels.getExistingChannel(user.getChannel());
+                    if (channel != null) {
+                        channel.updateModButton();
+                    }
+                }
             }
         });
     }
@@ -4411,8 +4431,17 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    public void updateState() {
-        updateState(false);
+    public ChannelState getChannelState(String channel) {
+        return client.getChannelState(channel);
+    }
+    
+    public void channelStateUpdated(ChannelState state) {
+        SwingUtilities.invokeLater(() -> {
+            Channel channel = channels.getExistingChannel(state.getChannel());
+            if (channel != null) {
+                channel.updateModPanel();
+            }
+        });
     }
     
     public void updateState(final boolean forced) {

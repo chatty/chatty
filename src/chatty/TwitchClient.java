@@ -2837,6 +2837,7 @@ public class TwitchClient {
         @Override
         public void receivedUsericons(List<Usericon> icons) {
             usericonManager.addDefaultIcons(icons);
+            g.updateModButtons(null);
             if (refreshRequests.contains("badges2")) {
                 g.printLine("Badges2 updated.");
                 refreshRequests.remove("badges2");
@@ -3855,6 +3856,7 @@ public class TwitchClient {
         @Override
         public void channelStateUpdated(ChannelState state) {
             g.updateState(true);
+            g.channelStateUpdated(state);
         }
 
     }
