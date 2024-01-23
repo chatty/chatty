@@ -3609,7 +3609,12 @@ public class MainGui extends JFrame implements Runnable {
                             hasReplacements ? filter.getLastReplacement() : null,
                             tags);
                     message.localUser = localUser;
-                    
+
+                    // Message comes from a history service
+                    if (tags.isHistoricMsg()) {
+                        message.historicTimeStamp = tags.getHistoricTimeStamp();
+                    }
+
                     // Custom color
                     boolean hlByPoints = tags.isHighlightedMessage() && client.settings.getBoolean("highlightByPoints");
                     if (highlighted) {

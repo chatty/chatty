@@ -400,7 +400,12 @@ public class SettingsManager {
         settings.addLong("favoritesSorting", 20);
         
         settings.addList("gameFavorites", new ArrayList(), Setting.STRING);
-        
+
+        settings.addBoolean("historyEnableService", false);
+        settings.addBoolean("historyEnableRowLimit", false);
+        settings.addLong("historyCountMessages", 30);
+        settings.addList("externalHistoryExclusion", new ArrayList(), Setting.STRING);
+
         //=======================
         // Channel Admin Features
         //=======================

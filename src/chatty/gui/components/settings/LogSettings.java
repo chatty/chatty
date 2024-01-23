@@ -8,7 +8,6 @@ import chatty.User;
 import chatty.gui.GuiUtil;
 import static chatty.gui.components.settings.MessageSettings.addTimestampFormat;
 import chatty.lang.Language;
-import chatty.util.StringUtil;
 import chatty.util.chatlog.ChatLog;
 import chatty.util.commands.CustomCommand;
 import chatty.util.irc.IrcBadges;
@@ -317,30 +316,4 @@ public class LogSettings extends SettingsPanel {
         info.setText("<html><body style='width: 200px;text-align:center;'>"+infoText);
         cardManager.show(cards, switchTo);
     }
-    
-    private static class ChannelFormatter implements DataFormatter<String> {
-
-        /**
-         * Prepends the input with a "#" if not already present. Returns
-         * {@code null} if the length after prepending is only 1, which means
-         * it only consists of the "#" and is invalid.
-         * 
-         * @param input The input to be formatted
-         * @return The formatted input, which has the "#" prepended, or
-         * {@code null} or any empty String if the input was invalid
-         */
-        @Override
-        public String format(String input) {
-            if (input != null && !input.isEmpty() && !input.startsWith("#")
-                    && !input.startsWith("$")) {
-                input = "#"+input;
-            }
-            if (input.length() == 1) {
-                input = null;
-            }
-            return StringUtil.toLowerCase(input);
-        }
-        
-    }
-    
 }

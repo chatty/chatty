@@ -41,6 +41,8 @@ import chatty.util.EmoticonListener;
 import chatty.util.IconManager;
 import chatty.util.ffz.FrankerFaceZ;
 import chatty.util.ffz.FrankerFaceZListener;
+import chatty.util.history.HistoryManager;
+import chatty.util.history.HistoryMessage;
 import chatty.util.ImageCache;
 import chatty.util.LogUtil;
 import chatty.util.MacAwtOptions;
@@ -82,11 +84,6 @@ import chatty.util.api.eventsub.payloads.PollPayload;
 import chatty.util.api.eventsub.payloads.RaidPayload;
 import chatty.util.api.eventsub.payloads.ShieldModePayload;
 import chatty.util.api.eventsub.payloads.ShoutoutPayload;
-import chatty.util.api.pubsub.RewardRedeemedMessageData;
-import chatty.util.api.pubsub.Message;
-import chatty.util.api.pubsub.ModeratorActionData;
-import chatty.util.api.pubsub.PubSubListener;
-import chatty.util.api.pubsub.UserModerationMessageData;
 import chatty.util.chatlog.ChatLog;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
@@ -186,6 +183,8 @@ public class TwitchClient {
     private final AutoModCommandHelper autoModCommandHelper;
     
     public final RoomManager roomManager;
+
+    public final HistoryManager historyManager;
     
     /**
      * Holds the UserManager instance, which manages all the user objects.
@@ -347,6 +346,8 @@ public class TwitchClient {
         
         roomManager = new RoomManager(new MyRoomUpdatedListener());
         channelFavorites = new ChannelFavorites(settings, roomManager);
+
+        historyManager = new HistoryManager(settings);
         
         c = new TwitchConnection(new Messages(), settings, "main", roomManager);
         c.setUserSettings(new User.UserSettings(
@@ -3258,7 +3259,37 @@ public class TwitchClient {
         }
 //        api.getEmotesByStreams(Helper.toStream(channel)); // Removed
     }
-    
+
+    /**
+     * Requests the chat history
+     *
+     * @param channel The name of the channel (can be stream or channel)
+     */
+    public void requestChannelHistory(String channel) {
+        // Check in Settings if active/channel in blacklist
+        //settings.
+        if (!historyManager.isEnabled()) {
+            return;
+        }
+        if (historyManager.isChannelExcluded(channel)) {
+            return;
+        }
+        Room room = Room.createRegular("#" + channel);
+        g.printInfo(room, "Pulling information from history service.", MsgTags.EMPTY);
+
+        // Get the actual list of messages
+        List<HistoryMessage> history = historyManager.getHistoricChatMessages(room);
+
+        for (int i = 0; i < history.size(); i++) {
+            HistoryMessage currentMsg = history.get(i);
+            User user  = c.getUser("#"+channel, currentMsg.userName);
+            user.setColor(currentMsg.userColor);
+            user.setCustomNick(currentMsg.userName);
+            g.printMessage(user, currentMsg.message, currentMsg.action, currentMsg.tags);
+        }
+        g.printInfo(room, "Finished with history logs.", MsgTags.EMPTY);
+    }
+
     private class EmoteListener implements EmoticonListener {
 
         @Override
@@ -3444,6 +3475,7 @@ public class TwitchClient {
                 api.getEmotesByChannelId(stream, null, false);
                 requestChannelEmotes(stream);
                 frankerFaceZ.joined(stream);
+                requestChannelHistory(stream);
                 checkModLogListen(user);
                 checkPointsListen(user);
                 api.removeShieldModeCache(user.getRoom());
