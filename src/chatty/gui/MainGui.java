@@ -3671,7 +3671,7 @@ public class MainGui extends JFrame implements Runnable {
                     user.addSub(processMessage(text), tags.getHypeChatInfo(), tags.getId());
                 }
                 else {
-                    user.addMessage(processMessage(text), action, tags.getId());
+                    user.addMessage(processMessage(text), action, tags.getId(), tags.getHistoricTimeStamp());
                 }
                 if (highlighted) {
                     user.setHighlighted();

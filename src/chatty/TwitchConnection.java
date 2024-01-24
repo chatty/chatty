@@ -12,6 +12,7 @@ import chatty.util.irc.MsgTags;
 import chatty.util.StringUtil;
 import chatty.util.api.Emoticons;
 import chatty.util.irc.IrcBadges;
+import chatty.util.irc.UserTagsUtil;
 import chatty.util.settings.Settings;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -945,81 +946,7 @@ public class TwitchConnection {
         }
         
         private void updateUserFromTags(User user, MsgTags tags) {
-            if (tags.isEmpty()) {
-                return;
-            }
-            /**
-             * Any and all tag values may be null, so account for that when
-             * checking against them.
-             */
-            // Whether anything in the user changed to warrant an update
-            boolean changed = false;
-            
-            IrcBadges badges = IrcBadges.parse(tags.get("badges"));
-            if (user.setTwitchBadges(badges)) {
-                changed = true;
-            }
-            
-            IrcBadges badgeInfo = IrcBadges.parse(tags.get("badge-info"));
-            String subMonths = badgeInfo.get("subscriber");
-            if (subMonths == null) {
-                subMonths = badgeInfo.get("founder");
-            }
-            if (subMonths != null) {
-                user.setSubMonths(Helper.parseShort(subMonths, (short)0));
-            }
-            
-            if (settings.getBoolean("ircv3CapitalizedNames")) {
-                if (user.setDisplayNick(StringUtil.trim(tags.get("display-name")))) {
-                    changed = true;
-                }
-            }
-            
-            // Update color
-            String color = tags.get("color");
-            if (color != null && !color.isEmpty()) {
-                user.setColor(color);
-            }
-            
-            // Update user status
-            boolean turbo = tags.isTrue("turbo") || badges.hasId("turbo") || badges.hasId("premium");
-            if (user.setTurbo(turbo)) {
-                changed = true;
-            }
-            boolean subscriber = badges.hasId("subscriber") || badges.hasId("founder");
-            if (user.setSubscriber(subscriber)) {
-                changed = true;
-            }
-            if (user.setVip(badges.hasId("vip"))) {
-                changed = true;
-            }
-            if (user.setModerator(badges.hasId("moderator"))) {
-                changed = true;
-            }
-            if (user.setAdmin(badges.hasId("admin"))) {
-                changed = true;
-            }
-            if (user.setStaff(badges.hasId("staff"))) {
-                changed = true;
-            }
-            
-            // Temporarily check both for containing a value as Twitch is
-            // changing it
-//            String userType = tags.get("user-type");
-//            if (user.setModerator("mod".equals(userType))) {
-//                changed = true;
-//            }
-//            if (user.setStaff("staff".equals(userType))) {
-//                changed = true;
-//            }
-//            if (user.setAdmin("admin".equals(userType))) {
-//                changed = true;
-//            }
-//            if (user.setGlobalMod("global_mod".equals(userType))) {
-//                changed = true;
-//            }
-            
-            user.setId(tags.get("user-id"));
+            boolean changed = UserTagsUtil.updateUserFromTags(user, tags);
             
             if (changed && user != users.specialUser) {
                 listener.onUserUpdated(user);

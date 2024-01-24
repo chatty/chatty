@@ -88,6 +88,7 @@ import chatty.util.chatlog.ChatLog;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
 import chatty.util.irc.MsgTags;
+import chatty.util.irc.UserTagsUtil;
 import chatty.util.settings.FileManager;
 import chatty.util.settings.Settings;
 import chatty.util.settings.SettingsListener;
@@ -3275,7 +3276,7 @@ public class TwitchClient {
             return;
         }
         Room room = Room.createRegular("#" + channel);
-        g.printInfo(room, "Pulling information from history service.", MsgTags.EMPTY);
+        g.printSystem(room, "### Pulling information from history service. ###");
 
         // Get the actual list of messages
         List<HistoryMessage> history = historyManager.getHistoricChatMessages(room);
@@ -3283,11 +3284,10 @@ public class TwitchClient {
         for (int i = 0; i < history.size(); i++) {
             HistoryMessage currentMsg = history.get(i);
             User user  = c.getUser("#"+channel, currentMsg.userName);
-            user.setColor(currentMsg.userColor);
-            user.setCustomNick(currentMsg.userName);
+            UserTagsUtil.updateUserFromTags(user, currentMsg.tags);
             g.printMessage(user, currentMsg.message, currentMsg.action, currentMsg.tags);
         }
-        g.printInfo(room, "Finished with history logs.", MsgTags.EMPTY);
+        g.printSystem(room, "### Finished with history logs. ###");
     }
 
     private class EmoteListener implements EmoticonListener {

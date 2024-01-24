@@ -237,7 +237,6 @@ public class SettingsManager {
         settings.addString("timestamp","HH:mm");
         settings.addString("timestampTimezone", "");
         settings.addBoolean("capitalizedNames", true);
-        settings.addBoolean("ircv3CapitalizedNames", true);
         settings.addBoolean("correctlyCapitalizedNames", false);
         settings.addMap("customNames", new HashMap<>(), Setting.STRING);
         settings.addBoolean("actionColored", false);
@@ -951,9 +950,6 @@ public class SettingsManager {
                 settings.setString("portDefault", "6697,6667,443,80");
             }
             settings.setAdd("securedPorts", (long)443);
-        }
-        if (switchedFromVersionBefore("0.8.4")) {
-            settings.setBoolean("ircv3CapitalizedNames", true);
         }
         if (switchedFromVersionBefore("0.8.5b4")) {
             String currentValue = settings.getString("timeoutButtons");

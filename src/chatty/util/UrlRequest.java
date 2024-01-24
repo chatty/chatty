@@ -25,8 +25,6 @@ public class UrlRequest {
     private static final Logger LOGGER = Logger.getLogger(UrlRequest.class.getName());
     
     private static final Charset CHARSET = Charset.forName("UTF-8");
-    private static final int CONNECT_TIMEOUT = 10000;
-    private static final int READ_TIMEOUT = 10000;
     
     private static final String VERSION = "Chatty "+Chatty.VERSION;
     
@@ -36,6 +34,9 @@ public class UrlRequest {
      * Label used for debug messages, which can be set by the user.
      */
     private String label = "";
+    
+    private int connectTimeout = 10000;
+    private int readTimeout = 10000;
     
     /**
      * Construct without URL. The URL should be set via {@link setUrl(String)}.
@@ -65,6 +66,11 @@ public class UrlRequest {
      */
     public final void setLabel(String label) {
         this.label = "["+label+"]";
+    }
+    
+    public final void setTimeouts(int connectTimeout, int readTimeout) {
+        this.connectTimeout = connectTimeout;
+        this.readTimeout = readTimeout;
     }
 
     public void async(ResultListener listener) {
@@ -112,8 +118,8 @@ public class UrlRequest {
             connection.setRequestProperty("User-Agent", VERSION);
             connection.setRequestProperty("Accept-Encoding", "gzip");
             
-            connection.setConnectTimeout(CONNECT_TIMEOUT);
-            connection.setReadTimeout(READ_TIMEOUT);
+            connection.setConnectTimeout(connectTimeout);
+            connection.setReadTimeout(readTimeout);
             String encoding = connection.getContentEncoding();
             
             // Read response

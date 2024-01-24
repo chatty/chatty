@@ -330,16 +330,21 @@ public class User implements Comparable<User> {
         return numLines == userSettings.maxLines && numLines < numberOfLines;
     }
     
+    public synchronized void addMessage(String line, boolean action, String id) {
+        addMessage(line, action, id, System.currentTimeMillis());
+    }
+    
     /**
      * Adds a single chatmessage with the current time.
      * 
      * @param line 
      * @param action 
      * @param id 
+     * @param timestamp 
      */
-    public synchronized void addMessage(String line, boolean action, String id) {
+    public synchronized void addMessage(String line, boolean action, String id, long timestamp) {
         setFirstSeen();
-        addLine(new TextMessage(System.currentTimeMillis(), line, action, id, null));
+        addLine(new TextMessage(timestamp, line, action, id, null));
         replayCachedLowTrust();
         numberOfMessages++;
     }
