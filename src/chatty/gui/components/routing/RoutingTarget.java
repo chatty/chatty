@@ -150,7 +150,8 @@ public class RoutingTarget {
         };
         this.content.setId(contentId);
         this.content.setTitle(title);
-        createTextPane(ALL_CHANNEL_KEY);
+        // Also adds to "textPanes"
+        getTextPane(ALL_CHANNEL_KEY);
         showChannel(null, ALL_CHANNEL_KEY);
     }
     
