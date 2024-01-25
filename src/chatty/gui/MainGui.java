@@ -4065,7 +4065,7 @@ public class MainGui extends JFrame implements Runnable {
             }
         }
         
-        routingManager.addInfoMessage(routingTargets, message, user, localUser);
+        routingManager.addInfoMessage(routingTargets, message, user, localUser, channel);
         
         //----------
         // Chat Log
