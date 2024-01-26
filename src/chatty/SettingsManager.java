@@ -219,6 +219,8 @@ public class SettingsManager {
         settings.addString("locale", "");
         settings.addString("timezone", "");
         
+        settings.addBoolean("disableInputLimits", false);
+        
         settings.addBoolean("macScreenMenuBar", true);
         settings.addBoolean("macSystemAppearance", true);
         

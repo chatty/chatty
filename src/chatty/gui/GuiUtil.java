@@ -663,6 +663,8 @@ public class GuiUtil {
         });
     }
     
+    public static boolean disableInputLimits;
+    
     /**
      * Set a DocumentFilter that limits the text length and allows or filters
      * linebreak characters.
@@ -703,15 +705,26 @@ public class GuiUtil {
                 String fullText = fb.getDocument().getText(0, offset)
                         + text
                         + fb.getDocument().getText(offset + delLength, fb.getDocument().getLength() - offset - delLength);
+                
                 int limit = defaultLimit;
-                for (Pair<Pattern, Integer> limitEntry : limits) {
-                    if (limitEntry.key != null
-                            && limitEntry.key.matcher(fullText).find()) {
-                        limit = limitEntry.value;
-                        break;
+                
+                if (disableInputLimits) {
+                    limit = 0;
+                }
+                else {
+                    for (Pair<Pattern, Integer> limitEntry : limits) {
+                        if (limitEntry.key != null
+                                && limitEntry.key.matcher(fullText).find()) {
+                            limit = limitEntry.value;
+                            break;
+                        }
                     }
                 }
+                
                 if (text == null || text.isEmpty() || limit <= 0) {
+                    if (!allowNewlines) {
+                        text = StringUtil.removeLinebreakCharacters(text);
+                    }
                     super.replace(fb, offset, delLength, text, attrs);
                 } else {
                     int currentLength = fb.getDocument().getLength();

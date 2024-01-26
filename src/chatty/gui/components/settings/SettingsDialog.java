@@ -106,7 +106,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
             "logLockFiles", "logMessageTemplate",
             "laf", "lafTheme", "lafFontScale", "language", "timezone", "locale",
             "userDialogMessageLimit", "cachePath", "imgPath", "exportPath",
-            "webp"
+            "webp", "disableInputLimits"
     ));
     
     private final Set<String> reconnectRequiredDef = new HashSet<>(Arrays.asList(

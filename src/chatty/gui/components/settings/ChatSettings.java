@@ -58,11 +58,6 @@ public class ChatSettings extends SettingsPanel {
         main.add(bufferSizesButton,
                 gbc);
         
-        gbc = d.makeGbc(0, 5, 3, 1, GridBagConstraints.WEST);
-        main.add(d.addSimpleBooleanSetting("inputHistoryMultirowRequireCtrl",
-                "On a multirow inputbox require Ctrl to navigate input history",
-                null), gbc);
-        
         gbc = d.makeGbc(0, 6, 3, 1, GridBagConstraints.WEST);
         main.add(d.addSimpleBooleanSetting("showImageTooltips"), gbc);
         
