@@ -1,26 +1,16 @@
 
 package chatty.gui;
 
+import chatty.gui.components.SimplePopup;
 import chatty.lang.Language;
-import chatty.util.Debugging;
 import chatty.util.StringUtil;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.BorderFactory;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.Popup;
-import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-import javax.swing.border.Border;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -34,9 +24,7 @@ import javax.swing.text.DocumentFilter;
 public class RegexDocumentFilter extends DocumentFilter {
     
     private final Pattern pattern;
-    private final Component popupOwner;
-    private Popup popup;
-    private Timer timer;
+    private final SimplePopup popup;
     private String latestFiltered = "";
     
     /**
@@ -48,7 +36,14 @@ public class RegexDocumentFilter extends DocumentFilter {
      */
     public RegexDocumentFilter(String regex, Component popupOwner) {
         pattern = Pattern.compile(regex);
-        this.popupOwner = popupOwner;
+        if (popupOwner != null) {
+            popup = new SimplePopup(popupOwner, () -> {
+                latestFiltered = "";
+            });
+        }
+        else {
+            popup = null;
+        }
     }
     
     public String getRegex() {
@@ -95,64 +90,16 @@ public class RegexDocumentFilter extends DocumentFilter {
         return input;
     }
     
-    private static final Border POPUP_BORDER = BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.RED),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5));
-    
     private void showPopup(String filtered) {
-        if (popupOwner == null) {
+        if (popup == null) {
             return;
         }
-        hidePopup();
         
         latestFiltered += filtered;
         
-        JLabel label = new JLabel(String.format("%s '%s'",
-                                                Language.getString("dialog.error.invalidInput"),
-                                                StringUtil.shortenTo(latestFiltered, 100)));
-        label.setOpaque(true);
-        label.setBorder(POPUP_BORDER);
-        label.addMouseMotionListener(new MouseAdapter() {
-            
-            private int movedCount;
-            
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                movedCount++;
-                /**
-                 * When the label appears with the mouse in it's location a
-                 * moved event is already triggered, however the popup should
-                 * only be removed when the mouse is actually actively moved.
-                 */
-                if (movedCount > 1) {
-                    latestFiltered = "";
-                    hidePopup();
-                }
-            }
-            
-        });
-        
-        Point location = popupOwner.getLocationOnScreen();
-        popup = PopupFactory.getSharedInstance().getPopup(popupOwner, label, location.x, location.y - label.getPreferredSize().height - 5);
-        popup.show();
-        
-        if (timer == null) {
-            timer = new Timer(2000, e -> {
-                          hidePopup();
-                          latestFiltered = "";
-                      });
-            timer.setRepeats(false);
-        }
-        timer.start();
-    }
-    
-    private void hidePopup() {
-        Debugging.edtLoud();
-        if (popup != null) {
-            popup.hide();
-            timer.stop();
-            popup = null;
-        }
+        popup.showPopup(String.format("%s '%s'",
+                                      Language.getString("dialog.error.invalidInput"),
+                                      StringUtil.shortenTo(latestFiltered, 100)));
     }
     
     // For testing

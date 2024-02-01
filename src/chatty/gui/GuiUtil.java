@@ -2,6 +2,7 @@
 package chatty.gui;
 
 import chatty.Helper;
+import chatty.gui.components.SimplePopup;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.laf.LaF;
 import chatty.util.Debugging;
@@ -60,6 +61,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
@@ -378,6 +380,9 @@ public class GuiUtil {
                 JButton button = new JButton("Shake");
                 button.addActionListener(e -> shake(dialog, 2, 2));
                 dialog.add(button, BorderLayout.NORTH);
+                JTextArea input = new JTextArea();
+                installLengthLimitDocumentFilter(input, 5, false);
+                dialog.add(input, BorderLayout.SOUTH);
                 dialog.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             } catch (Exception ex) {
                 Logger.getLogger(GuiUtil.class.getName()).log(Level.SEVERE, null, ex);
@@ -699,6 +704,8 @@ public class GuiUtil {
         
         DocumentFilter filter = new DocumentFilter() {
             
+            private final SimplePopup popup = new SimplePopup(comp, null);
+            
             @Override
             public void replace(DocumentFilter.FilterBypass fb, int offset,
                     int delLength, String text, AttributeSet attrs) throws BadLocationException {
@@ -736,6 +743,12 @@ public class GuiUtil {
                          */
                         int newLength = Math.max(text.length() - overLimit, 0);
                         text = text.substring(0, newLength);
+                        if (overLimit == 1) {
+                            popup.showPopup("Length limit reached");
+                        }
+                        else {
+                            popup.showPopup("Length limit reached ("+overLimit+" characters not added)");
+                        }
                     }
                     if (!allowNewlines) {
                         text = StringUtil.removeLinebreakCharacters(text);
