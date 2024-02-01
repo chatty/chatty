@@ -668,7 +668,7 @@ public class GuiUtil {
         });
     }
     
-    public static boolean disableInputLimits;
+    public static boolean inputLimitsEnabled;
     
     /**
      * Set a DocumentFilter that limits the text length and allows or filters
@@ -715,7 +715,7 @@ public class GuiUtil {
                 
                 int limit = defaultLimit;
                 
-                if (disableInputLimits) {
+                if (!inputLimitsEnabled) {
                     limit = 0;
                 }
                 else {

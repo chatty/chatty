@@ -101,7 +101,7 @@ public class WindowSettings extends SettingsPanel {
         other.add(d.addSimpleBooleanSetting("urlPrompt"),
                 d.makeGbc(0, 0, 1, 1, GridBagConstraints.WEST));
         
-        other.add(d.addSimpleBooleanSetting("disableInputLimits"),
+        other.add(d.addSimpleBooleanSetting("inputLimitsEnabled"),
                 d.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
         
         //--------

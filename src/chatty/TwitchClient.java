@@ -250,7 +250,7 @@ public class TwitchClient {
         settingsManager.startAutoSave(this);
         
         MacAwtOptions.setMacLookSettings(settings);
-        GuiUtil.disableInputLimits = settings.getBoolean("disableInputLimits");
+        GuiUtil.inputLimitsEnabled = settings.getBoolean("inputLimitsEnabled");
         
         Chatty.setSettings(settings);
         
