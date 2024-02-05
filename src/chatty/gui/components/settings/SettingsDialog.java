@@ -801,6 +801,17 @@ public class SettingsDialog extends JDialog implements ActionListener {
         return gbc;
     }
     
+    protected static GridBagConstraints makeGbcSub2(int x, int y, int w, int h, int anchor) {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = x;
+        gbc.gridy = y;
+        gbc.gridwidth = w;
+        gbc.gridheight = h;
+        gbc.insets = new Insets(3,18,3,5);
+        gbc.anchor = anchor;
+        return gbc;
+    }
+    
     protected static GridBagConstraints makeGbcStretchHorizontal(int x, int y, int w, int h) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = x;

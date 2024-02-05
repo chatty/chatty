@@ -12,6 +12,7 @@ import chatty.Room;
 import chatty.gui.components.settings.ChannelFormatter;
 import chatty.util.UrlRequest;
 import chatty.util.UrlRequest.FullResult;
+import chatty.util.api.Requests;
 
 import chatty.util.irc.MsgTags;
 import chatty.util.irc.ParsedMsg;
@@ -52,7 +53,7 @@ public class HistoryManager {
      * @return false if not excluded, true if
      */
     public boolean isChannelExcluded(String channel) {
-        return settings.listContains("externalHistoryExclusion", channelFormater.format(channel));
+        return settings.listContains("historyServiceExcluded", channelFormater.format(channel));
     }
 
     /**
@@ -62,7 +63,7 @@ public class HistoryManager {
      * @return true if enabled and configured correctly, false otherwise
      */
     public boolean isEnabled() {
-        return settings.getBoolean("historyEnableService");
+        return settings.getBoolean("historyServiceEnabled");
     }
 
     /**
@@ -113,19 +114,21 @@ public class HistoryManager {
 
         try {
             String url = STRHISTORYURL + channel;
-            if (settings.getBoolean("historyEnableRowLimit")) {
-                url += "?limit=" + settings.getLong("historyCountMessages");
-            } else {
-                url += "?limit=" + defaultLimitMessages;
+            
+            long limit = settings.getLong("historyServiceLimit");
+            if (limit <= 0) {
+                limit = 30;
             }
-            url += "&before=" + timeStampBefore;
-            url += "&after=" + timeStampAfter;
-
+            url = Requests.makeUrl(url,
+                             "limit", String.valueOf(limit),
+                             "before", String.valueOf(timeStampBefore),
+                             "after", String.valueOf(timeStampAfter));
+            
             UrlRequest request = new UrlRequest(url);
             request.setLabel("ChatHistory/");
             // Set lower timeout so the IRC thread isn't stuck for ages if the
             // server is slow/not reachable
-            request.setTimeouts(2000, 2000);
+            request.setTimeouts(4000, 2000);
             FullResult result = request.sync();
 
             if (result.getResponseCode() != 200) {

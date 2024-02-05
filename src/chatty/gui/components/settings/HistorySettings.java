@@ -1,6 +1,7 @@
 
 package chatty.gui.components.settings;
 
+import chatty.gui.components.LinkLabel;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -8,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -78,36 +80,40 @@ public class HistorySettings extends SettingsPanel implements ActionListener {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(0,20,5,5);
         presets.add(daysPresets, gbc);
+        
+        
+        JPanel externalHistory = addTitledPanel("History Service", 2);
 
-
-        JPanel externalHistory = addTitledPanel("History service", 2);
-
-
-        externalHistory.add(new JLabel("<html><body width=300>"
-                                    + "Chatty uses recent-messages API from robotty go get messages while the user was offline.<br><br>"
-                                    + "For more information please refer to https://recent-messages.robotty.de"),
+        externalHistory.add(new LinkLabel(SettingConstants.HTML_PREFIX
+                + "Chatty uses the [url:https://recent-messages.robotty.de recent-messages.robotty.de] API "
+                + "to get messages of the last 24 hours when joining a channel.",
+                d.getLinkLabelListener()),
                             SettingsDialog.makeGbc(0, 0, 2, 1, GridBagConstraints.NORTH));
 
-        externalHistory.add(d.addSimpleBooleanSetting("historyEnableService",
-                                                      "Enable history Service",
-                                                      "Use an external service to get the channel history"),
-                            SettingsDialog.makeGbc(0, 1, 1, 1, GridBagConstraints.WEST));
-        externalHistory.add(d.addSimpleBooleanSetting("historyEnableRowLimit",
-                                                      "Limit messages",
-                                                      "Limit the history message"),
-                            SettingsDialog.makeGbc(0, 2,1,1, GridBagConstraints.WEST));
-        externalHistory.add(d.addSimpleLongSetting("historyCountMessages",10, true),
-                            SettingsDialog.makeGbc(1, 2, 1, 1, GridBagConstraints.WEST));
-        externalHistory.add(new JLabel("Excluded Channels:"),
-                            SettingsDialog.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST));
-
-        ListSelector exclusionchannels = d.addListSetting("externalHistoryExclusion",
+        JCheckBox historyServiceEnabled = d.addSimpleBooleanSetting("historyServiceEnabled",
+                                                      "Enable History Service",
+                                                      "Use an external service to get the channel history");
+        externalHistory.add(historyServiceEnabled,
+                            SettingsDialog.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
+        
+        ComboLongSetting historyServiceLimit = d.addComboLongSetting("historyServiceLimit",
+                                                               5, 10, 15, 20,
+                                                               30, 40, 50, 60,
+                                                               70, 80, 90, 100);
+        SettingsUtil.addStandardSetting(externalHistory, "historyServiceLimit", 2, historyServiceLimit, true);
+        
+        externalHistory.add(new JLabel("Excluded channels:"),
+                            SettingsDialog.makeGbcSub2(0, 3, 2, 1, GridBagConstraints.WEST));
+        
+        ListSelector excludedChannels = d.addListSetting("historyServiceExcluded",
                                                         "Channel to be excluded from history",
                                                         250, 200,
                                                         false, true);
         final ChannelFormatter formatter = new ChannelFormatter();
-        exclusionchannels.setDataFormatter(formatter);
-        externalHistory.add(exclusionchannels, SettingsDialog.makeGbc(0, 4, 2, 1, GridBagConstraints.WEST));
+        excludedChannels.setDataFormatter(formatter);
+        externalHistory.add(excludedChannels, SettingsDialog.makeGbcSub2(0, 4, 2, 1, GridBagConstraints.WEST));
+        
+        SettingsUtil.addSubsettings(historyServiceEnabled, historyServiceLimit, excludedChannels);
     }
 
     @Override

@@ -177,10 +177,14 @@ public class SettingsUtil {
     }
     
     public static void addLabeledComponent(JPanel panel, String labelSettingName, int x, int y, int w, int labelAlign, JComponent component, boolean stretchComponent) {
+        addLabeledComponent(panel, labelSettingName, x, y, w, labelAlign, component, stretchComponent, false);
+    }
+    
+    public static void addLabeledComponent(JPanel panel, String labelSettingName, int x, int y, int w, int labelAlign, JComponent component, boolean stretchComponent, boolean sub) {
         JLabel label = createLabel(labelSettingName);
         label.setLabelFor(component);
-        panel.add(label, SettingsDialog.makeGbc(x, y, 1, 1, labelAlign));
-        GridBagConstraints gbc = SettingsDialog.makeGbc(x+1, y, w, 1, GridBagConstraints.WEST);
+        panel.add(label, SettingsDialog.makeGbcSub(x, y, 1, 1, labelAlign));
+        GridBagConstraints gbc = SettingsDialog.makeGbc(x + 1, y, w, 1, GridBagConstraints.WEST);
         if (stretchComponent) {
             gbc.fill = GridBagConstraints.BOTH;
         }
@@ -210,7 +214,7 @@ public class SettingsUtil {
             }
         }
         else {
-            addLabeledComponent(panel, name, 0, y, 1, GridBagConstraints.EAST, component);
+            addLabeledComponent(panel, name, 0, y, 1, GridBagConstraints.EAST, component, false, sub);
         }
     }
     
