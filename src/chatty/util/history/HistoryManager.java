@@ -17,6 +17,8 @@ import chatty.util.api.Requests;
 import chatty.util.irc.MsgTags;
 import chatty.util.irc.ParsedMsg;
 import chatty.util.settings.Settings;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -33,9 +35,7 @@ public class HistoryManager {
 
     private final static String STRHISTORYURL = "https://recent-messages.robotty.de/api/v2/recent-messages/";
 
-    private final int defaultLimitMessages = 30;
-    private long timeStampBefore = 0;
-    private long timeStampAfter = 0;
+    private final Map<String, Long> latestMessageSeen = new HashMap<>();
 
     /**
      * Default Constructor
@@ -44,6 +44,14 @@ public class HistoryManager {
      */
     public HistoryManager(Settings settings) {
         this.settings = settings;
+    }
+    
+    public void setMessageSeen(String stream) {
+        latestMessageSeen.put(stream, System.currentTimeMillis());
+    }
+    
+    public void resetMessageSeen(String stream) {
+        latestMessageSeen.remove(stream);
     }
 
     /**
@@ -106,23 +114,31 @@ public class HistoryManager {
     /**
      * Executes the actual HTTP request for historical Data
      *
-     * @param channel Channel to start the request for
+     * @param stream Channel to start the request for
      * @return A JSONObject with all messages requested accordingly to the parameters
      */
-    private JSONObject executeRequest(String channel) {
+    private JSONObject executeRequest(String stream) {
         JSONObject root = null;
 
         try {
-            String url = STRHISTORYURL + channel;
+            String url = STRHISTORYURL + stream;
             
             long limit = settings.getLong("historyServiceLimit");
             if (limit <= 0) {
                 limit = 30;
             }
+            
+            // -24h until now.
+            long timestampBefore = System.currentTimeMillis();
+            long timestampAfter = System.currentTimeMillis() - 24 * 60 * 60 * 1000;
+            if (latestMessageSeen.containsKey(stream)) {
+                timestampAfter = latestMessageSeen.get(stream);
+            }
+            
             url = Requests.makeUrl(url,
                              "limit", String.valueOf(limit),
-                             "before", String.valueOf(timeStampBefore),
-                             "after", String.valueOf(timeStampAfter));
+                             "before", String.valueOf(timestampBefore),
+                             "after", String.valueOf(timestampAfter));
             
             UrlRequest request = new UrlRequest(url);
             request.setLabel("ChatHistory/");
@@ -153,14 +169,10 @@ public class HistoryManager {
     public List<HistoryMessage> getHistoricChatMessages(Room room) {
         ArrayList<HistoryMessage> ret = new ArrayList<>();
 
-        String channelName = room.getChannel().replace("#", "");
+        String channelName = room.getStream();
         //?hide_moderation_messages=true/false: Omits CLEARCHAT and CLEARMSG messages from the response. Optional, defaults to false.
         //?hide_moderated_messages=true/false: Omits all messages from the response that have been deleted by a CLEARCHAT or CLEARMSG message. Optional, defaults to false.
         //?clearchat_to_notice=true/false: Converts CLEARCHAT messages into NOTICE messages with a user-presentable message.
-
-        // General settings, 30 messages, from -24h until now.
-        this.timeStampBefore = System.currentTimeMillis();
-        this.timeStampAfter  = System.currentTimeMillis() - 24*60*60*1000;
 
         JSONObject historyObject = this.executeRequest(channelName);
         if (historyObject == null) {

@@ -708,6 +708,7 @@ public class TwitchClient {
             chatLog.closeChannel(room.getFilename());
             updateStreamInfoChannelOpen(channel);
         }
+        historyManager.resetMessageSeen(Helper.toStream(channel));
     }
     
     private void closeChannelStuff(Room room) {
@@ -3265,18 +3266,18 @@ public class TwitchClient {
     /**
      * Requests the chat history
      *
-     * @param channel The name of the channel (can be stream or channel)
+     * @param stream The name of the channel
      */
-    public void requestChannelHistory(String channel) {
+    public void requestChannelHistory(String stream) {
         // Check in Settings if active/channel in blacklist
         //settings.
         if (!historyManager.isEnabled()) {
             return;
         }
-        if (historyManager.isChannelExcluded(channel)) {
+        if (historyManager.isChannelExcluded(stream)) {
             return;
         }
-        Room room = Room.createRegular("#" + channel);
+        Room room = Room.createRegular("#" + stream);
         g.printSystem(room, "### Pulling information from history service. ###");
 
         // Get the actual list of messages
@@ -3284,10 +3285,11 @@ public class TwitchClient {
 
         for (int i = 0; i < history.size(); i++) {
             HistoryMessage currentMsg = history.get(i);
-            User user  = c.getUser("#"+channel, currentMsg.userName);
+            User user  = c.getUser("#"+stream, currentMsg.userName);
             UserTagsUtil.updateUserFromTags(user, currentMsg.tags);
             g.printMessage(user, currentMsg.message, currentMsg.action, currentMsg.tags);
         }
+        historyManager.setMessageSeen(stream);
         g.printSystem(room, "### Finished with history logs. ###");
     }
 
@@ -3542,6 +3544,7 @@ public class TwitchClient {
                     addressbookCommands(user.getChannel(), user, text);
                     modCommandAddStreamHighlight(user, text, tags);
                 }
+                historyManager.setMessageSeen(user.getStream());
             }
         }
 
