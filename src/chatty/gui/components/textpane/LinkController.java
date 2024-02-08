@@ -41,6 +41,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -75,6 +76,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.html.HTML;
 import org.json.simple.JSONArray;
@@ -285,14 +287,15 @@ public class LinkController extends MouseAdapter {
     @Override
     public void mouseMoved(MouseEvent e) {
         Element element = getElement(e);
+        JTextPane textPane = (JTextPane)e.getSource();
         if (element == null) {
+            textPane.setCursor(NORMAL_CURSOR);
             return;
         }
         // Check for Element instead of e.g. EmoticonImage because the same one
         // can occur in several Element objects
         hidePopupIfDifferentElement(element);
         
-        JTextPane textPane = (JTextPane)e.getSource();
         if (Debugging.isEnabled("attr")) {
             popup.show(textPane, element, p -> debugElement(element, p), -1);
             return;
@@ -361,7 +364,7 @@ public class LinkController extends MouseAdapter {
         popup.hide();
     }
 
-    private String getUrl(Element e) {
+    private static String getUrl(Element e) {
         return (String)(e.getAttributes().getAttribute(HTML.Attribute.HREF));
     }
     
@@ -447,13 +450,39 @@ public class LinkController extends MouseAdapter {
                 if (e.getX() < rect.x && e.getY() < rect.y + rect.height && pos > 0) {
                     pos--;
                 }
+                
+                StyledDocument doc = text.getStyledDocument();
+                Element element = doc.getCharacterElement(pos);
+                
+                /**
+                 * If a link is broken into two lines then depending on how it
+                 * is broken up (the algorithm seems different depending on
+                 * which characters are present in the textpane) there may be a
+                 * large blank space at the end of the first line that still
+                 * counts as the link, which can be irritating for the user to
+                 * click accidentally.
+                 * 
+                 * Check that the mouse pointer isn't to the right of the link.
+                 * The x coordinate seems to represent the left side of the
+                 * closest letter, so the width of the letter is needed to
+                 * calculate the right side of the letter. Not sure if there's a
+                 * better way to get this, like getting the actual view bounding
+                 * box.
+                 */
+                if (getUrl(element) != null) {
+                    AttributeSet attr = element.getAttributes();
+                    // text.getFont() likely not the same as the attributes
+                    Font font = new Font(StyleConstants.getFontFamily(attr), Font.PLAIN, StyleConstants.getFontSize(attr));
+                    int textWidth = text.getFontMetrics(font).stringWidth(doc.getText(pos, 1));
+                    if (e.getX() - rect.x > textWidth) {
+                        element = null;
+                    }
+                }
+                return element;
+                
             } catch (BadLocationException ex) {
 
             }
-
-            StyledDocument doc = text.getStyledDocument();
-            Element element = doc.getCharacterElement(pos);
-            return element;
         }
         return null;
     }
@@ -465,60 +494,53 @@ public class LinkController extends MouseAdapter {
         if (!e.getComponent().isShowing()) {
             return;
         }
+        JPopupMenu m = null;
         Element element = getElement(e);
         if (element == null) {
-            return;
-        }
-        String selectedText = getSelectedText(e);
-        User user = getUser(element);
-        if (user == null) {
-            user = getMention(element);
-        }
-        String url = getUrl(element);
-        String link = getGeneralLink(element);
-        CachedImage<Emoticon> emoteImage = getEmoticonImage(element);
-        CachedImage<Usericon> usericonImage = getUsericonImage(element);
-        JPopupMenu m = null;
-        if (user != null) {
-            m = new UserContextMenu(user, getMsgId(element),
-                    getAutoModMsgId(element), contextMenuListener);
-        }
-        else if (url != null) {
-            m = new UrlContextMenu(url, isUrlDeleted(element), contextMenuListener);
-        }
-        else if (link != null) {
-            if (link.startsWith("join.")) {
-                String c = Helper.toStream(link.substring("join.".length()));
-                m = new StreamsContextMenu(Arrays.asList(new String[]{c}), contextMenuListener);
-            }
-        }
-        else if (emoteImage != null) {
-            m = new EmoteContextMenu(emoteImage, contextMenuListener);
-        }
-        else if (usericonImage != null) {
-            m = new UsericonContextMenu(usericonImage, contextMenuListener);
-        }
-        else if (!StringUtil.isNullOrEmpty(selectedText) && ((JTextPane) e.getSource()).hasFocus()) {
-            /**
-             * Text will stay selected when the focus shifts aways, but won't be
-             * selected visually anymore. This can be confusing when
-             * right-clicking directly back into the channel, since there won't
-             * be any text visibly selected but still open this menu. So check
-             * focus first.
-             */
-            m = new TextSelectionMenu((JTextComponent)e.getSource(), false);
+            m = createDefaultMenu(element);
         }
         else {
-            if (defaultContextMenuCreator == null) {
-                if (channel != null) {
-                    m = new ChannelContextMenu(contextMenuListener, channel);
-                }
-            } else {
-                ContextMenu menu = defaultContextMenuCreator.get();
-                menu.addContextMenuListener(contextMenuListener);
-                m = menu;
+            String selectedText = getSelectedText(e);
+            User user = getUser(element);
+            if (user == null) {
+                user = getMention(element);
             }
-            addMessageInfoItems(m, element);
+            String url = getUrl(element);
+            String link = getGeneralLink(element);
+            CachedImage<Emoticon> emoteImage = getEmoticonImage(element);
+            CachedImage<Usericon> usericonImage = getUsericonImage(element);
+            if (user != null) {
+                m = new UserContextMenu(user, getMsgId(element),
+                                        getAutoModMsgId(element), contextMenuListener);
+            }
+            else if (url != null) {
+                m = new UrlContextMenu(url, isUrlDeleted(element), contextMenuListener);
+            }
+            else if (link != null) {
+                if (link.startsWith("join.")) {
+                    String c = Helper.toStream(link.substring("join.".length()));
+                    m = new StreamsContextMenu(Arrays.asList(new String[]{c}), contextMenuListener);
+                }
+            }
+            else if (emoteImage != null) {
+                m = new EmoteContextMenu(emoteImage, contextMenuListener);
+            }
+            else if (usericonImage != null) {
+                m = new UsericonContextMenu(usericonImage, contextMenuListener);
+            }
+            else if (!StringUtil.isNullOrEmpty(selectedText) && ((JTextPane) e.getSource()).hasFocus()) {
+                /**
+                 * Text will stay selected when the focus shifts aways, but
+                 * won't be selected visually anymore. This can be confusing
+                 * when right-clicking directly back into the channel, since
+                 * there won't be any text visibly selected but still open this
+                 * menu. So check focus first.
+                 */
+                m = new TextSelectionMenu((JTextComponent) e.getSource(), false);
+            }
+            else {
+                m = createDefaultMenu(element);
+            }
         }
         if (m != null) {
             JPopupMenu m2 = m;
@@ -1016,6 +1038,26 @@ public class LinkController extends MouseAdapter {
             attrs = attrs.getResolveParent();
         }
         p.setText(result.toString());
+    }
+    
+    private JPopupMenu createDefaultMenu(Element element) {
+        JPopupMenu m = null;
+        // Create menu
+        if (defaultContextMenuCreator == null) {
+            if (channel != null) {
+                m = new ChannelContextMenu(contextMenuListener, channel);
+            }
+        }
+        else {
+            ContextMenu menu = defaultContextMenuCreator.get();
+            menu.addContextMenuListener(contextMenuListener);
+            m = menu;
+        }
+        // Add additional entries to menu if possible
+        if (element != null && m != null) {
+            addMessageInfoItems(m, element);
+        }
+        return m;
     }
     
     /**
