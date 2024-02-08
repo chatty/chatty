@@ -831,10 +831,12 @@ public class TwitchConnection {
                 joinChecker.cancel(channel);
                 debug("JOINED: " + channel);
                 User user = userJoined(channel, nick);
-                if (this == irc && !onChannel(channel)) {
+                boolean onChannel = onChannel(channel);
+                // Change before notifying listener
+                joinedChannels.add(channel);
+                if (this == irc && !onChannel) {
                     listener.onChannelJoined(user);
                 }
-                joinedChannels.add(channel);
             } else {
                 /**
                  * Another user has joined a channel we are currently in.
