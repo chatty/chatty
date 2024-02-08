@@ -3200,7 +3200,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
      * Makes the time prefix.
      * 
      * @param style
-     * @param long time as long epoch
+     * @param time as long epoch
      */
     protected void printTimestamp(AttributeSet style, long time) {
         Timestamp timestamp = styles.timestampFormat();

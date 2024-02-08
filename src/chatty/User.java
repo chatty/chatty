@@ -343,6 +343,9 @@ public class User implements Comparable<User> {
      * @param timestamp 
      */
     public synchronized void addMessage(String line, boolean action, String id, long timestamp) {
+        if (timestamp == -1) {
+            timestamp = System.currentTimeMillis();
+        }
         setFirstSeen();
         addLine(new TextMessage(timestamp, line, action, id, null));
         replayCachedLowTrust();
