@@ -425,6 +425,13 @@ public class LinkController extends MouseAdapter {
         return text.getSelectedText();
     }
     
+    /**
+     * Return the element under the mouse pointer, or a nearby one. For links it
+     * may sometimes return a paragraph element.
+     * 
+     * @param e
+     * @return 
+     */
     public static Element getElement(MouseEvent e) {
         JTextPane text = (JTextPane) e.getSource();
         Point mouseLocation = new Point(e.getX(), e.getY());
@@ -475,7 +482,27 @@ public class LinkController extends MouseAdapter {
                     Font font = new Font(StyleConstants.getFontFamily(attr), Font.PLAIN, StyleConstants.getFontSize(attr));
                     int textWidth = text.getFontMetrics(font).stringWidth(doc.getText(pos, 1));
                     if (e.getX() - rect.x > textWidth) {
-                        element = null;
+                        /**
+                         * Returning the paragraph element still contains info
+                         * like highlight source, but not the link. Normally
+                         * this returns a leaf element, so depending on what
+                         * assumptions the caller makes this could cause issues,
+                         * but probably not.
+                         * 
+                         * Returning the last element in the line could work,
+                         * since that should just be a linebreak (or not a link
+                         * at least), but it also could cause issues.
+                         * 
+                         * Semantically it seems a bit weirder to return the
+                         * "wrong" element, rather than the paragraph that at
+                         * least contains the mouse pointer.
+                         */
+                        Element paragraph = doc.getParagraphElement(pos);
+//                        element = paragraph.getElement(paragraph.getElementCount() - 1);
+//                        if (getUrl(element) != null) {
+//                            element = null;
+//                        }
+                        element = paragraph;
                     }
                 }
                 return element;
