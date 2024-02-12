@@ -2,6 +2,7 @@
 package chatty.util.api;
 
 import chatty.util.SpecialMap;
+import chatty.util.StringUtil;
 import chatty.util.api.Emoticon.Type;
 import chatty.util.settings.Settings;
 import java.util.ArrayList;
@@ -231,7 +232,14 @@ public class EmoticonFavorites {
     
     private void checkFavorite(Emoticon emote) {
         Favorite f = getNotFoundByEmote(emote);
-        if (f != null) {
+        /**
+         * For Twitch emotes if a temp emote has been added the emoteset is
+         * unknown, so for favorites that emote shouldn't be used, otherwise it
+         * can't be determined whether the emote is usable for the local user.
+         */
+        if (f != null
+                && (emote.type != Type.TWITCH
+                    || !StringUtil.isNullOrEmpty(emote.emoteset))) {
             favorites.put(f, emote);
             notFoundByName.values().remove(f);
             notFoundByTypeId.subRemoveValue(f);
