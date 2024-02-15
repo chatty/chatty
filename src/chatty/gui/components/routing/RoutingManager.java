@@ -15,6 +15,7 @@ import chatty.gui.components.textpane.UserMessage;
 import chatty.util.Pair;
 import chatty.util.StringUtil;
 import chatty.util.chatlog.ChatLog;
+import chatty.util.history.HistoryUtil;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -126,22 +127,25 @@ public class RoutingManager {
         for (Map.Entry<String, Pair<String, HighlightItem>> t : targets.getResultTargets().entrySet()) {
             String name = t.getValue().key;
             HighlightItem hlItem = t.getValue().value;
-            RoutingTarget target = getTarget(name);
-            UserMessage thisMessage = message.copy();
-            thisMessage.routingSource = hlItem;
-            target.addMessage(localUser.getChannel(), thisMessage);
             
-            
-            RoutingTargetSettings ts = getSettings(name);
-            
-            switch (ts.openOnMessage) {
-                case 1: // Any message
-                case 2: // Regular chat message
-                    channels.addContent(target.getContent());
-            }
-            
-            if (ts.shouldLog()) {
-                chatLog.message(ts.getPrefixedLogFilename(), message.user, message.text, message.action, message.user.getChannel());
+            if (HistoryUtil.checkAllowMatch(message.tags, "Routing", hlItem, main.getSettings())) {
+                RoutingTarget target = getTarget(name);
+                UserMessage thisMessage = message.copy();
+                thisMessage.routingSource = hlItem;
+                target.addMessage(localUser.getChannel(), thisMessage);
+
+                
+                RoutingTargetSettings ts = getSettings(name);
+
+                switch (ts.openOnMessage) {
+                    case 1: // Any message
+                    case 2: // Regular chat message
+                        channels.addContent(target.getContent());
+                }
+
+                if (ts.shouldLog() && (message.tags == null || !message.tags.isHistoricMsg())) {
+                    chatLog.message(ts.getPrefixedLogFilename(), message.user, message.text, message.action, message.user.getChannel());
+                }
             }
         }
     }

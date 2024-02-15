@@ -405,6 +405,11 @@ public class SettingsManager {
         settings.addBoolean("historyServiceEnabled", false);
         settings.addLong("historyServiceLimit", 30);
         settings.addList("historyServiceExcluded", new ArrayList(), Setting.STRING);
+        settings.addBoolean("historyMessageHighlight", false);
+        settings.addBoolean("historyMessageMsgColors", false);
+        settings.addBoolean("historyMessageIgnore", true);
+        settings.addBoolean("historyMessageRouting", false);
+        settings.addBoolean("historyMessageNotifications", false);
 
         //=======================
         // Channel Admin Features

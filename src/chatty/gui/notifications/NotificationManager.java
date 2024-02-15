@@ -24,6 +24,7 @@ import chatty.util.StringUtil;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.StreamInfo;
+import chatty.util.history.HistoryUtil;
 import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
 import java.nio.file.Path;
@@ -334,6 +335,7 @@ public class NotificationManager {
                     && (type == n.type || type == null)
                     && n.matchesChannel(channel)
                     && n.matches(message, channel, ab, user, localUser, tags)
+                    && checkHistoricAllowMatch(tags, n)
                     && (!n.hasOption(TypeOption.FAV_CHAN) || channelFavorites.isFavorite(channel))
                     && !hideOnStart(n)) {
                 
@@ -474,6 +476,18 @@ public class NotificationManager {
             return false;
         }
         return true;
+    }
+    
+    private boolean checkHistoricAllowMatch(MsgTags tags, Notification n) {
+        return HistoryUtil.checkAllowMatch(tags, "Notifications", n.getMatcher(), settings);
+        
+//        if (tags == null || !tags.isHistoricMsg()) {
+//            return true;
+//        }
+//        if (settings.getBoolean("historyMsgNotifications")) {
+//            return true;
+//        }
+//        return n.hasMatcher() && n.getMatcher().matchHistoric();
     }
     
     private String getDisplayName(User user) {

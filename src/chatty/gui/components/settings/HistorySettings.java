@@ -2,6 +2,7 @@
 package chatty.gui.components.settings;
 
 import chatty.gui.components.LinkLabel;
+import chatty.lang.Language;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -101,9 +102,26 @@ public class HistorySettings extends SettingsPanel implements ActionListener {
                                                                30, 40, 50, 60,
                                                                70, 80, 90, 100);
         SettingsUtil.addStandardSetting(externalHistory, "historyServiceLimit", 2, historyServiceLimit, true);
+
+        String matchOptionsTip = "Using the matching prefix \"config:historic2\" will allow "
+                + "the match even for features that are disabled here, while \"config:historic\" does the same but will restrict the match to history messages only.";
+        JLabel matchOptionsLabel = new JLabel("Allow for history messages:");
+        matchOptionsLabel.setToolTipText(SettingsUtil.addTooltipLinebreaks(matchOptionsTip));
+        externalHistory.add(matchOptionsLabel,
+                            SettingsDialog.makeGbcSub2(0, 3, 2, 1, GridBagConstraints.WEST));
+        
+        JPanel matchOptions = new JPanel();
+        matchOptions.add(d.addSimpleBooleanSetting("historyMessageHighlight", Language.getString("settings.page.highlight"), matchOptionsTip));
+        matchOptions.add(d.addSimpleBooleanSetting("historyMessageIgnore", Language.getString("settings.page.ignore"), matchOptionsTip));
+        matchOptions.add(d.addSimpleBooleanSetting("historyMessageMsgColors", Language.getString("settings.page.msgColors"), matchOptionsTip));
+        matchOptions.add(d.addSimpleBooleanSetting("historyMessageRouting", "Routing", matchOptionsTip));
+        matchOptions.add(d.addSimpleBooleanSetting("historyMessageNotifications", Language.getString("settings.page.notifications"), matchOptionsTip));
+        
+        externalHistory.add(matchOptions,
+                            SettingsDialog.makeGbcSub2(0, 4, 2, 1, GridBagConstraints.WEST));
         
         externalHistory.add(new JLabel("Excluded channels:"),
-                            SettingsDialog.makeGbcSub2(0, 3, 2, 1, GridBagConstraints.WEST));
+                            SettingsDialog.makeGbcSub2(0, 5, 2, 1, GridBagConstraints.WEST));
         
         ListSelector excludedChannels = d.addListSetting("historyServiceExcluded",
                                                         "Channel to be excluded from history",
@@ -111,7 +129,7 @@ public class HistorySettings extends SettingsPanel implements ActionListener {
                                                         false, true);
         final ChannelFormatter formatter = new ChannelFormatter();
         excludedChannels.setDataFormatter(formatter);
-        externalHistory.add(excludedChannels, SettingsDialog.makeGbcSub2(0, 4, 2, 1, GridBagConstraints.WEST));
+        externalHistory.add(excludedChannels, SettingsDialog.makeGbcSub2(0, 6, 2, 1, GridBagConstraints.WEST));
         
         SettingsUtil.addSubsettings(historyServiceEnabled, historyServiceLimit, excludedChannels);
     }

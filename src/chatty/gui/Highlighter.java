@@ -607,6 +607,8 @@ public class Highlighter {
         
         private boolean overrideIgnored;
         
+        private boolean matchHistoric;
+        
         /**
          * 0 - Always disabled
          * 1 - Depends on default
@@ -950,6 +952,15 @@ public class Highlighter {
                             addTagsItem("Hype Chat", null, tags -> {
                                 return tags.getHypeChatAmountText() != null;
                             });
+                        }
+                        else if (part.equals("historic")) {
+                            addTagsItem("History Service Message", null, tags -> {
+                                matchHistoric = true;
+                                return tags.isHistoricMsg();
+                            });
+                        }
+                        else if (part.equals("historic2")) {
+                            matchHistoric = true;
                         }
                         else if (part.startsWith("repeatedmsg")) {
 //                            String options = parsePrefix(item, "repeatmsg:");
@@ -1828,6 +1839,10 @@ public class Highlighter {
         
         public boolean overrideIgnored() {
             return overrideIgnored;
+        }
+        
+        public boolean matchHistoric() {
+            return matchHistoric;
         }
         
         public boolean substitutesEnabled(boolean substitutesDefault) {

@@ -119,6 +119,7 @@ import javax.swing.event.MenuListener;
 import chatty.util.dnd.DockPopout;
 import chatty.util.gif.FocusUpdates;
 import chatty.util.gif.GifUtil;
+import chatty.util.history.HistoryUtil;
 import chatty.util.seventv.WebPUtil;
 import java.util.function.Consumer;
 import org.json.simple.JSONValue;
@@ -3509,7 +3510,12 @@ public class MainGui extends JFrame implements Runnable {
                 
                 boolean isOwnMessage = isOwnUsername(user.getName()) || (whisper && action);
                 boolean ignoredUser = (userIgnored(user, whisper) && !isOwnMessage);
+                // May be necessary to check even if ignoredUser, to get ignore matchings later on
                 boolean ignored = checkMsg(ignoreList, "ignore", text, -2, -2, user, localUser, tags, isOwnMessage, false) || ignoredUser;
+                if (!HistoryUtil.checkAllowMatch(tags, "Ignore", ignoreList.getLastMatchItem(), client.settings)) {
+                    ignored = false;
+                    ignoredUser = false;
+                }
                 
                 boolean highlighted = false;
                 List<Match> highlightMatches = null;
@@ -3522,6 +3528,9 @@ public class MainGui extends JFrame implements Runnable {
                                               || client.settings.getBoolean("highlightIgnored")
                                               ? false : ignored;
                     highlighted = checkMsg(highlighter, "highlight", text, -2, -2, user, localUser, tags, isOwnMessage, rejectIgnoredWithoutPrefix);
+                    if (!HistoryUtil.checkAllowMatch(tags, "Highlight", highlighter.getLastMatchItem(), client.settings)) {
+                        highlighted = false;
+                    }
                     if (highlighted) {
                         if (client.settings.getBoolean("highlightOverrideIgnored")
                                 || highlighter.getLastMatchItem().overrideIgnored()) {
@@ -3530,7 +3539,9 @@ public class MainGui extends JFrame implements Runnable {
                     }
                 }
                 
-                if (!ignored || client.settings.getBoolean("logIgnored")) {
+                boolean allowLog = !tags.isHistoricMsg();
+                if ((!ignored || client.settings.getBoolean("logIgnored"))
+                        && allowLog) {
                     client.chatLog.bits(chan.getFilename(), user, bitsAmount);
                     client.chatLog.message(chan.getFilename(), user, text, action, null);
                 }
@@ -3585,7 +3596,8 @@ public class MainGui extends JFrame implements Runnable {
                                 ignoreSource, tags);
                         ignoredMessagesHelper.ignoredMessage(channel);
                     }
-                    if (ignoredUser || !ignoreList.getLastMatchItem().noLog()) {
+                    if ((ignoredUser || !ignoreList.getLastMatchItem().noLog())
+                            && allowLog) {
                         client.chatLog.message("ignored", user, text, action, channel);
                     }
                 }
@@ -3626,6 +3638,9 @@ public class MainGui extends JFrame implements Runnable {
                     }
                     if (!(highlighted || hlByPoints) || client.settings.getBoolean("msgColorsPrefer")) {
                         MsgColorItem colorItem = msgColorManager.getMsgColor(user, localUser, text, -2, -2, tags);
+                        if (HistoryUtil.checkAllowMatch(tags, "msgColors", colorItem.getMatcher(), client.settings)) {
+                            colorItem = MsgColorManager.EMPTY;
+                        }
                         if (!colorItem.isEmpty()) {
                             message.color = colorItem.getForegroundIfEnabled();
                             message.backgroundColor = colorItem.getBackgroundIfEnabled();
@@ -3649,7 +3664,8 @@ public class MainGui extends JFrame implements Runnable {
                         if (!highlighter.getLastMatchItem().hide()) {
                             highlightedMessages.addMessage(channel, message);
                         }
-                        if (!highlighter.getLastMatchItem().noLog()) {
+                        if (!highlighter.getLastMatchItem().noLog()
+                                && allowLog) {
                             client.chatLog.message("highlighted", user, text, action, channel);
                         }
                     }

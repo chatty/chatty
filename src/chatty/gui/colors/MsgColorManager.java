@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class MsgColorManager {
     
-    private static final MsgColorItem EMPTY = new MsgColorItem(null, null, false, null, false);
+    public static final MsgColorItem EMPTY = new MsgColorItem(null, null, false, null, false);
     
     private static final String DATA_SETTING = "msgColors";
     private static final String ENABLED_SETTING = "msgColorsEnabled";

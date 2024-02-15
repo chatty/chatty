@@ -326,7 +326,7 @@ public class Notification {
     }
     
     public boolean hasEnabled() {
-        return desktopState != State.OFF || soundState != State.OFF;
+        return desktopState != State.OFF || soundState != State.OFF || messageState != State.OFF;
     }
 
     public void setMatched() {
@@ -376,6 +376,10 @@ public class Notification {
     
     public boolean hasMatcher() {
         return matcherItem != null;
+    }
+    
+    public Highlighter.HighlightItem getMatcher() {
+        return matcherItem;
     }
     
     public boolean hasSound() {
