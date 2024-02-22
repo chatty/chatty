@@ -9,17 +9,22 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import chatty.Room;
+import chatty.User;
 import chatty.gui.components.settings.ChannelFormatter;
+import chatty.util.SpecialMap;
 import chatty.util.UrlRequest;
-import chatty.util.UrlRequest.FullResult;
 import chatty.util.api.Requests;
 
 import chatty.util.irc.MsgTags;
 import chatty.util.irc.ParsedMsg;
 import chatty.util.settings.Settings;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
+import org.json.simple.parser.ParseException;
 
 /**
  * History Manager which should be the entry point for getting historic Chat messages from external services.
@@ -35,8 +40,13 @@ public class HistoryManager {
 
     private final static String STRHISTORYURL = "https://recent-messages.robotty.de/api/v2/recent-messages/";
 
+    private final Object LOCK = new Object();
+    
     private final Map<String, Long> latestMessageSeen = new HashMap<>();
-
+    
+    private final Set<String> requestPendingChannels = new HashSet<>();
+    private final SpecialMap<String, List<QueuedMessage>> queuedMessages = new SpecialMap<>(new HashMap<>(), () -> new ArrayList<>());
+    
     /**
      * Default Constructor
      * 
@@ -47,11 +57,16 @@ public class HistoryManager {
     }
     
     public void setMessageSeen(String stream) {
-        latestMessageSeen.put(stream, System.currentTimeMillis());
+        synchronized (LOCK) {
+            latestMessageSeen.put(stream, System.currentTimeMillis());
+        }
     }
     
-    public void resetMessageSeen(String stream) {
-        latestMessageSeen.remove(stream);
+    public void channelClosed(String stream) {
+        synchronized (LOCK) {
+            latestMessageSeen.remove(stream);
+            queuedMessages.remove(stream);
+        }
     }
 
     /**
@@ -117,76 +132,104 @@ public class HistoryManager {
      * @param stream Channel to start the request for
      * @return A JSONObject with all messages requested accordingly to the parameters
      */
-    private JSONObject executeRequest(String stream) {
-        JSONObject root = null;
+    private void executeRequest(String stream, Consumer<List<HistoryMessage>> listener) {
+        String url = STRHISTORYURL + stream;
 
-        try {
-            String url = STRHISTORYURL + stream;
-            
-            long limit = settings.getLong("historyServiceLimit");
-            if (limit <= 0) {
-                limit = 30;
-            }
-            
-            // -24h until now.
-            long timestampBefore = System.currentTimeMillis();
-            long timestampAfter = System.currentTimeMillis() - 24 * 60 * 60 * 1000;
+        long limit = settings.getLong("historyServiceLimit");
+        if (limit <= 0) {
+            limit = 30;
+        }
+
+        // -24h until now.
+        long timestampBefore = System.currentTimeMillis();
+        long timestampAfter = System.currentTimeMillis() - 24 * 60 * 60 * 1000;
+        synchronized (LOCK) {
             if (latestMessageSeen.containsKey(stream)) {
                 timestampAfter = latestMessageSeen.get(stream);
             }
-            
-            url = Requests.makeUrl(url,
-                             "limit", String.valueOf(limit),
-                             "before", String.valueOf(timestampBefore),
-                             "after", String.valueOf(timestampAfter));
-            
-            UrlRequest request = new UrlRequest(url);
-            request.setLabel("ChatHistory/");
-            // Set lower timeout so the IRC thread isn't stuck for ages if the
-            // server is slow/not reachable
-            request.setTimeouts(4000, 2000);
-            FullResult result = request.sync();
-
-            if (result.getResponseCode() != 200) {
-                // Some error detection in future??
-            } else {
-                String res = result.getResult();
-                JSONParser parser = new JSONParser();
-                root = (JSONObject) parser.parse(res);
-            }
-        } catch(Exception ex) {
-            LOGGER.warning("Error requesting chat history: "+ex);
         }
 
-        return root;
-    }
+        url = Requests.makeUrl(url,
+                               "limit", String.valueOf(limit),
+                               "before", String.valueOf(timestampBefore),
+                               "after", String.valueOf(timestampAfter));
 
+        UrlRequest request = new UrlRequest(url);
+        request.setLabel("ChatHistory/");
+        request.setTimeouts(5000, 3000);
+        request.async((String resultText, int responseCode) -> {
+            List<HistoryMessage> result = new ArrayList<>();
+            if (responseCode != 200) {
+                // Some error detection in future??
+            }
+            else {
+                try {
+                    JSONParser parser = new JSONParser();
+                    JSONObject root = (JSONObject) parser.parse(resultText);
+                    JSONArray jsArray = (JSONArray) root.get("messages");
+                    for (int i = 0; i < jsArray.size(); i++) {
+                        HistoryMessage historyMsg = this.transformStringToMessage((String) jsArray.get(i));
+                        if (historyMsg != null) {
+                            result.add(historyMsg);
+                        }
+                    }
+                } catch (ParseException ex) {
+                    LOGGER.warning("Error requesting chat history: " + ex);
+                }
+            }
+            // Always return a result, even if empty
+            listener.accept(result);
+        });
+    }
+    
     /**
      * Get all the chat messages from the room in the given constraints from the settings
      * @param room
-     * @return a List of HistoryMessages
+     * @param listener
      */
-    public List<HistoryMessage> getHistoricChatMessages(Room room) {
-        ArrayList<HistoryMessage> ret = new ArrayList<>();
-
-        String channelName = room.getStream();
+    public void getHistoricChatMessages(Room room, Consumer<List<HistoryMessage>> listener) {
         //?hide_moderation_messages=true/false: Omits CLEARCHAT and CLEARMSG messages from the response. Optional, defaults to false.
         //?hide_moderated_messages=true/false: Omits all messages from the response that have been deleted by a CLEARCHAT or CLEARMSG message. Optional, defaults to false.
         //?clearchat_to_notice=true/false: Converts CLEARCHAT messages into NOTICE messages with a user-presentable message.
 
-        JSONObject historyObject = this.executeRequest(channelName);
-        if (historyObject == null) {
-            return ret;
+        synchronized (LOCK) {
+            requestPendingChannels.add(room.getStream());
+            queuedMessages.remove(room.getStream());
         }
-
-        JSONArray jsArray = (JSONArray) historyObject.get("messages");
-        for (int i = 0; i< jsArray.size(); i++) {
-            HistoryMessage historyMsg = this.transformStringToMessage((String)jsArray.get(i));
-            if (historyMsg != null) {
-                ret.add(historyMsg);
+        
+        this.executeRequest(room.getStream(), listener);
+    }
+    
+    //-------
+    // Queue
+    //-------
+    public List<QueuedMessage> getQueuedMessages(String stream) {
+        synchronized (LOCK) {
+            requestPendingChannels.remove(stream);
+            List<QueuedMessage> result = queuedMessages.remove(stream);
+            return result != null ? result : new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Add message to queue.
+     * 
+     * @param user
+     * @param text
+     * @param tags
+     * @param action
+     * @return true if the message was added, false if the message should be
+     * output directly
+     */
+    public boolean addQueueMessage(User user, String text, MsgTags tags, boolean action) {
+        synchronized (LOCK) {
+            if (requestPendingChannels.contains(user.getStream())) {
+                queuedMessages.getPut(user.getStream()).add(
+                        new QueuedMessage(user, text, action, tags));
+                return true;
             }
+            return false;
         }
-        return ret;
     }
     
 }

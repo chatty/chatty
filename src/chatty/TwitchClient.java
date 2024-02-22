@@ -87,6 +87,7 @@ import chatty.util.api.eventsub.payloads.ShoutoutPayload;
 import chatty.util.chatlog.ChatLog;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
+import chatty.util.history.QueuedMessage;
 import chatty.util.irc.MsgTags;
 import chatty.util.irc.UserTagsUtil;
 import chatty.util.settings.FileManager;
@@ -708,7 +709,7 @@ public class TwitchClient {
             chatLog.closeChannel(room.getFilename());
             updateStreamInfoChannelOpen(channel);
         }
-        historyManager.resetMessageSeen(Helper.toStream(channel));
+        historyManager.channelClosed(Helper.toStream(channel));
     }
     
     private void closeChannelStuff(Room room) {
@@ -3277,20 +3278,26 @@ public class TwitchClient {
         if (historyManager.isChannelExcluded(stream)) {
             return;
         }
-        Room room = Room.createRegular("#" + stream);
+        String channelName = Helper.toChannel(stream);
+        Room room = Room.createRegular(channelName);
         g.printSystem(room, "### Pulling information from history service. ###");
 
-        // Get the actual list of messages
-        List<HistoryMessage> history = historyManager.getHistoricChatMessages(room);
+        // Get the actual list of messages asynchronously
+        historyManager.getHistoricChatMessages(room, history -> {
+            for (int i = 0; i < history.size(); i++) {
+                HistoryMessage currentMsg = history.get(i);
+                User user = c.getUser(channelName, currentMsg.userName);
+                UserTagsUtil.updateUserFromTags(user, currentMsg.tags);
+                g.printMessage(user, currentMsg.message, currentMsg.action, currentMsg.tags);
+            }
+            g.printSystem(room, "### Finished with history logs. ###");
+            historyManager.setMessageSeen(stream);
 
-        for (int i = 0; i < history.size(); i++) {
-            HistoryMessage currentMsg = history.get(i);
-            User user  = c.getUser("#"+stream, currentMsg.userName);
-            UserTagsUtil.updateUserFromTags(user, currentMsg.tags);
-            g.printMessage(user, currentMsg.message, currentMsg.action, currentMsg.tags);
-        }
-        historyManager.setMessageSeen(stream);
-        g.printSystem(room, "### Finished with history logs. ###");
+            // Output messages that arrived live while loading the history
+            for (QueuedMessage msg : historyManager.getQueuedMessages(stream)) {
+                g.printMessage(msg.user, msg.text, msg.action, msg.tags);
+            }
+        });
     }
 
     private class EmoteListener implements EmoticonListener {
@@ -3536,7 +3543,9 @@ public class TwitchClient {
                 g.printPointsNotice(user, info, text, tags);
             }
             else {
-                g.printMessage(user, text, action, tags);
+                if (!historyManager.addQueueMessage(user, text, tags, action)) {
+                    g.printMessage(user, text, action, tags);
+                }
                 if (tags.isReply() && tags.hasReplyUserMsg() && tags.hasId()) {
                     ReplyManager.addReply(tags.getReplyParentMsgId(), tags.getId(), String.format("<%s> %s", user.getName(), text), tags.getReplyUserMsg());
                 }
