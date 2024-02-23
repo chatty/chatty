@@ -1018,6 +1018,25 @@ public class Highlighter {
                                 }
                             });
                         }
+                        else if (part.startsWith("afterban")) {
+                            String[] split = part.split("\\|");
+                            int matchNumber;
+                            if (split.length == 2 && split[1].matches("[0-9]+")) {
+                                matchNumber = Integer.parseInt(split[1]);
+                            }
+                            else {
+                                matchNumber = Integer.MAX_VALUE;
+                            }
+                            addUserItem("Messages after ban/timeout", matchNumber < Integer.MAX_VALUE ? matchNumber : null, user -> {
+                                /**
+                                 * When matching takes place the latest user
+                                 * message won't be added yet, so look for
+                                 * smaller than the current number.
+                                 */
+                                int msgs = user.getNumberOfMessagesAfterBan();
+                                return msgs != -1 && msgs < matchNumber;
+                            });
+                        }
                     });
                     parseBadges(list);
                     parseTags(list);

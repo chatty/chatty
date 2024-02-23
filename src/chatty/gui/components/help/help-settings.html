@@ -1045,6 +1045,14 @@
                     match, for example <code>config:repeatedmsg|4</code> requires
                     4 repeated messages (can't be lower than the Repetition
                     Detection setting).</li>
+                <li><code>config:afterban|number</code> - Matches on the number
+                    of messages after the user was banned/timed out (based on
+                    the bans/messages visible in the User Dialog). <code>config:afterban|1</code>
+                    matches the first message after a ban, <code>config:afterban|5</code>
+                    up to the fifth message. The number is optional, so
+                    <code>config:afterban</code> matches all messages after a
+                    ban. If the user was not banned (or Chatty doesn't know
+                    about it) then this never matches.</li>
                 <li><code>config:info</code> - This item applies to info
                     messages instead of regular user messages</li>
                 <li><code>config:any</code> - This item applies to both info
@@ -1055,7 +1063,7 @@
                     from the history service on channel join. This also allows
                     historic message to be matched for features that are
                     otherwise turned off in the History settings.</li>
-                <li><code>config:historic</code> - Allows historic message to be
+                <li><code>config:historic2</code> - Allows historic message to be
                     matched for features that are otherwise turned off in the
                     History settings, but does not restrict the match to just
                     historic messages.</li>

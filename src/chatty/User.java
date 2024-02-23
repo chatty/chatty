@@ -582,6 +582,23 @@ public class User implements Comparable<User> {
         return result;
     }
     
+    public synchronized int getNumberOfMessagesAfterBan() {
+        if (lines == null) {
+            return -1;
+        }
+        int msgsAfterBan = 0;
+        for (int i=lines.size() - 1; i>=0; i--) {
+            Message m = lines.get(i);
+            if (m instanceof TextMessage) {
+                msgsAfterBan++;
+            }
+            else if (m instanceof BanMessage) {
+                return msgsAfterBan;
+            }
+        }
+        return -1;
+    }
+    
     public synchronized TextMessage getMessage(String msgId) {
         if (msgId == null) {
             return null;

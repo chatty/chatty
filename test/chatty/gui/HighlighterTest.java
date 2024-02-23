@@ -1518,4 +1518,44 @@ public class HighlighterTest {
         assertTrue(highlighter.check(user, "abc"));
     }
     
+    @Test
+    public void testAfterban() {
+        User banUser = new User("testUser", Room.createRegular("#testChannel"));
+        
+        update("config:afterban");
+        updateBlacklist("");
+        
+        assertFalse(highlighter.check(banUser, "abc"));
+        
+        banUser.addMessage("123", false, "abc");
+        assertFalse(highlighter.check(banUser, "abc"));
+        
+        banUser.addBan(5, "", "");
+        assertTrue(highlighter.check(banUser, "abc"));
+        
+        update("config:afterban|1");
+        assertTrue(highlighter.check(banUser, "abc"));
+        
+        update("config:afterban");
+        banUser.addMessage("123", false, "abc");
+        assertTrue(highlighter.check(banUser, "abc"));
+        
+        /**
+         * For real messages the message is added to the user object after
+         * matching so "1" will expect "0" messages after a ban
+         */
+        update("config:afterban|1");
+        assertFalse(highlighter.check(banUser, "abc"));
+        
+        update("config:afterban|2");
+        assertTrue(highlighter.check(banUser, "abc"));
+        
+        update("config:afterban|1");
+        assertFalse(highlighter.check(banUser, "abc"));
+        banUser.addBan(5, "", "");
+        assertTrue(highlighter.check(banUser, "abc"));
+        banUser.addMessage("123", false, "abc");
+        assertFalse(highlighter.check(banUser, "abc"));
+    }
+    
 }
