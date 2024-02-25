@@ -5,15 +5,14 @@ import chatty.Chatty;
 import chatty.Helper;
 import chatty.util.api.CachedManager;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 import javax.swing.Timer;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -28,7 +27,7 @@ public class Pronouns {
     private static final Object LOCK = new Object();
     
     // Should be handled as immutable
-    private volatile Map<String, String> pronouns = new HashMap<>();
+    private volatile Map<String, Pronoun> pronouns = new HashMap<>();
     private final CachedBulkManager<String, String> data;
     private volatile static Pronouns instance;
     
@@ -53,10 +52,11 @@ public class Pronouns {
             @Override
             public void request(CachedBulkManager<String, String> manager, Set<String> asap, Set<String> normal, Set<String> backlog) {
                 String username = manager.makeAndSetRequested(asap, normal, backlog, 1).iterator().next();
-                UrlRequest request = new UrlRequest("https://pronouns.alejo.io/api/users/" + username);
+                UrlRequest request = new UrlRequest("https://api.pronouns.alejo.io/v1/users/" + username);
                 request.async((result, responseCode) -> {
                     if (responseCode == 404) {
-                        manager.setNotFound(username);
+                        // This is a valid response (old API was empty array)
+                        manager.setResult(username, NOT_FOUND);
                     } else if (result == null) {
                         manager.setError(username);
                     } else {
@@ -136,11 +136,11 @@ public class Pronouns {
          */
         userCounter++;
         String unique = "user" + (userCounter % 5);
-        return pronouns.get(data.getOrQuerySingle(unique, null, CachedBulkManager.NONE, username));
+        return getDisplay(data.getOrQuerySingle(unique, null, CachedBulkManager.NONE, username));
     }
     
     private void sendResult(BiConsumer<String, String> listener, String username, CachedBulkManager.Result<String, String> result) {
-        String r = pronouns.get(result.get(username));
+        String r = getDisplay(result.get(username));
         if (r != null) {
             listener.accept(username, r);
         }
@@ -150,7 +150,7 @@ public class Pronouns {
         CachedManager cache = new CachedManager(CACHE_FILE1, CACHE_EXPIRES_AFTER, "Pronouns1") {
             @Override
             public boolean handleData(String data) {
-                Map<String, String> parsed = parsePronouns(data);
+                Map<String, Pronoun> parsed = parsePronouns(data);
                 if (!parsed.isEmpty()) {
                     pronouns = parsed;
                     return true;
@@ -160,24 +160,25 @@ public class Pronouns {
         };
         
         if (!cache.load()) {
-            UrlRequest request = new UrlRequest("https://pronouns.alejo.io/api/pronouns");
+            UrlRequest request = new UrlRequest("https://api.pronouns.alejo.io/v1/pronouns");
             request.async((result, responseCode) -> {
                 cache.dataReceived(result, false);
             });
         }
     }
     
-    private Map<String, String> parsePronouns(String json) {
-        Map<String, String> result = new HashMap<>();
+    private Map<String, Pronoun> parsePronouns(String json) {
+        Map<String, Pronoun> result = new HashMap<>();
         try {
             JSONParser parser = new JSONParser();
-            JSONArray root = (JSONArray)parser.parse(json);
-            for (Object o : root) {
+            JSONObject root = (JSONObject) parser.parse(json);
+            for (Object o : root.values()) {
                 JSONObject entry = (JSONObject)o;
                 String name = JSONUtil.getString(entry, "name");
-                String display = JSONUtil.getString(entry, "display");
-                if (name != null && display != null) {
-                    result.put(name, display);
+                String subject = JSONUtil.getString(entry, "subject");
+                String object = JSONUtil.getString(entry, "object");
+                if (name != null && subject != null) {
+                    result.put(name, new Pronoun(name, subject, object));
                 }
             }
         } catch (Exception ex) {
@@ -186,15 +187,110 @@ public class Pronouns {
         return result;
     }
     
+    private static class Pronoun {
+        
+        public final String id;
+        public final String subject;
+        public final String object;
+        
+        private Pronoun(String id, String subject, String object) {
+            this.id = id;
+            this.subject = subject;
+            this.object = object;
+        }
+        
+        public String getDisplay() {
+            if (StringUtil.isNullOrEmpty(object) || subject.equals(object)) {
+                return subject;
+            }
+            return String.format("%s/%s",
+                                 subject, object);
+        }
+        
+        public String getDisplay(Pronoun combineWith) {
+            if (combineWith == null || this.equals(combineWith)) {
+                return getDisplay();
+            }
+            return String.format("%s/%s",
+                                 subject, combineWith.subject);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Pronoun other = (Pronoun) obj;
+            return Objects.equals(this.id, other.id);
+        }
+        
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 67 * hash + Objects.hashCode(this.id);
+            return hash;
+        }
+        
+    }
+    
     private String parseUser(String json) {
         try {
             JSONParser parser = new JSONParser();
-            JSONArray root = (JSONArray)parser.parse(json);
-            if (!root.isEmpty()) {
-                return JSONUtil.getString((JSONObject) root.get(0), "pronoun_id");
-            }
+            JSONObject root = (JSONObject) parser.parse(json);
+            String id = JSONUtil.getString(root, "pronoun_id");
+            String alt_id = JSONUtil.getString(root, "alt_pronoun_id");
+            return combineIds(id, alt_id);
         } catch (Exception ex) {
             LOGGER.warning("Error parsing pronouns: "+ex);
+        }
+        return null;
+    }
+    
+    /**
+     * Combine ids into one string.
+     * 
+     * Needs to be converted into a string for the file cache anyway, so let's
+     * just use this everywhere, so fewer changes are necessary.
+     * 
+     * @param id
+     * @param altId
+     * @return 
+     */
+    private static String combineIds(String id, String altId) {
+        if (!StringUtil.isNullOrEmpty(id)) {
+            if (!StringUtil.isNullOrEmpty(altId)) {
+                return id + "|" + altId;
+            }
+            return id;
+        }
+        return null;
+    }
+    
+    /**
+     * Get the text that should actually be displayed to the user.
+     * 
+     * @param combinedIds
+     * @return 
+     */
+    private String getDisplay(String combinedIds) {
+        if (combinedIds == null) {
+            return null;
+        }
+        String[] split = combinedIds.split("\\|");
+        String id = split[0];
+        String altId = null;
+        if (split.length == 2) {
+            altId = split[1];
+        }
+        Pronoun pronoun = pronouns.get(id);
+        if (pronoun != null) {
+            return pronoun.getDisplay(pronouns.get(altId));
         }
         return null;
     }

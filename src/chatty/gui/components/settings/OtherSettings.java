@@ -132,7 +132,7 @@ public class OtherSettings extends SettingsPanel {
                 "Display pronouns in User Dialog",
                 "Click on a user in chat to open User Dialog, the pronoun (if available) will be shown in the title next to the username");
         pronouns.add(pronouns1);
-        pronouns.add(new LinkLabel("(based on [url:http://pronouns.alejo.io pronouns.alejo.io])", d.getLinkLabelListener()));
+        pronouns.add(new LinkLabel("(based on [url:https://pr.alejo.io pr.alejo.io])", d.getLinkLabelListener()));
         other.add(pronouns,
                 SettingsDialog.makeGbc(0, 10, 3, 1, GridBagConstraints.WEST));
         
