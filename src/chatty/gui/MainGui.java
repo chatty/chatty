@@ -3638,7 +3638,7 @@ public class MainGui extends JFrame implements Runnable {
                     }
                     if (!(highlighted || hlByPoints) || client.settings.getBoolean("msgColorsPrefer")) {
                         MsgColorItem colorItem = msgColorManager.getMsgColor(user, localUser, text, -2, -2, tags);
-                        if (HistoryUtil.checkAllowMatch(tags, "msgColors", colorItem.getMatcher(), client.settings)) {
+                        if (!HistoryUtil.checkAllowMatch(tags, "msgColors", colorItem.getMatcher(), client.settings)) {
                             colorItem = MsgColorManager.EMPTY;
                         }
                         if (!colorItem.isEmpty()) {

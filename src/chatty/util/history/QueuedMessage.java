@@ -15,7 +15,7 @@ public class QueuedMessage {
     public final boolean action;
     public final MsgTags tags;
 
-    public QueuedMessage(chatty.User user, java.lang.String text, boolean action, chatty.util.irc.MsgTags tags) {
+    public QueuedMessage(User user, String text, boolean action, MsgTags tags) {
         this.user = user;
         this.text = text;
         this.action = action;
