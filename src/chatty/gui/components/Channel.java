@@ -158,7 +158,7 @@ public final class Channel extends JPanel {
         }
     }
     
-    private void closeModPanel() {
+    public void closeModPanel() {
         if (modPanelPopup != null) {
             modPanelPopup.hide();
             modPanelPopup = null;

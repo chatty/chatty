@@ -1599,6 +1599,12 @@ public class Channels {
         }
         return false;
     }
+
+    public void closeModPanels() {
+        for (Channel chan : getChannels()) {
+            chan.closeModPanel();
+        }
+    }
     
     /**
      * Sets the focus to the input bar when clicked anywhere on the channel.

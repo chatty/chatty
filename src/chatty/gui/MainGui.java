@@ -2597,6 +2597,7 @@ public class MainGui extends JFrame implements Runnable {
                     openFollowerDialog();
                 }
             }
+            channels.closeModPanels();
             dockedDialogs.activeContentChanged();
             routingManager.setChannel(channels.getLastActiveChannel());
             state.update(true);
