@@ -1615,6 +1615,11 @@ public class TwitchClient {
         commands.add("marker", p -> {
             commandAddStreamMarker(p.getRoom(), p.getArgs());
         });
+        commands.add("createClip", p -> {
+            api.createClip(p.getRoom().getStream(), result -> {
+                g.printLine(p.getRoom(), result);
+            });
+        });
         c.addNewCommands(commands, this);
         commands.add("addStreamHighlight", p -> {
             commandAddStreamHighlight(p.getRoom(), p.getArgs());

@@ -468,6 +468,34 @@ public class Requests {
         });
     }
     
+    public void createClip(String userId, Consumer<String> listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/clips",
+                             "broadcaster_id", userId);
+        newApi.add(url, "POST", api.defaultToken, r -> {
+            if (r.responseCode == 202) {
+                String clipUrl = Parsing.getClipUrl(r.text);
+                if (clipUrl != null) {
+                    listener.accept("Edit clip: "+clipUrl);
+                }
+                else {
+                    listener.accept("Error creating clip");
+                }
+            }
+            else if (r.responseCode == 401) {
+                listener.accept("Creating clip failed: Check access under 'Main - Account'");
+            }
+            else {
+                String errorMsg = getErrorMessage(r.text);
+                if (errorMsg != null) {
+                    listener.accept(errorMsg);
+                }
+                else {
+                    listener.accept("Creating clip failed");
+                }
+            }
+        });
+    }
+    
     public void sendAnnouncement(String streamId, String message, String color) {
         String url = String.format("https://api.twitch.tv/helix/chat/announcements?broadcaster_id=%s&moderator_id=%s",
                 streamId, api.localUserId);

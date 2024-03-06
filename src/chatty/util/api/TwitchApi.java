@@ -530,6 +530,16 @@ public class TwitchApi {
             }
         }, stream);
     }
+    
+    public void createClip(String stream, Consumer<String> listener) {
+        userIDs.getUserIDsAsap(r -> {
+            if (r.hasError()) {
+                listener.accept("Failed to resolve channel id");
+            } else {
+                requests.createClip(r.getId(stream), listener);
+            }
+        }, stream);
+    }
         
     public static String[] ANNOUNCEMENT_COLORS = new String[]{
         "", "primary", "blue", "green", "orange", "purple"

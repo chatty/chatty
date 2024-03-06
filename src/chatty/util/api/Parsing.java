@@ -163,4 +163,16 @@ public class Parsing {
         
     }
     
+    public static String getClipUrl(String text) {
+        try {
+            JSONParser parser = new JSONParser();
+            JSONObject root = (JSONObject) parser.parse(text);
+            JSONObject data = (JSONObject) ((JSONArray) root.get("data")).get(0);
+            return (String) data.get("edit_url");
+        } catch (Exception ex) {
+            LOGGER.warning("Error getting clip url: " + ex);
+        }
+        return null;
+    }
+    
 }
