@@ -6,6 +6,7 @@ import chatty.Addressbook;
 import chatty.Helper;
 import chatty.Logging;
 import chatty.User;
+import chatty.util.DateTime;
 import chatty.util.Debugging;
 import chatty.util.MiscUtil;
 import chatty.util.Pair;
@@ -441,12 +442,12 @@ public class Highlighter {
      * retrieve all match indices and some meta information.
      */
     public static class HighlightItem {
-        
+
         public enum Type {
             REGULAR("Regular chat messages"),
             INFO("Info messages"),
             ANY("Any type of message"),
-            TEXT_MATCH_TEST("Only match text, any message type");
+            TEXT_MATCHING_ONLY("Only match text, any message type");
             
             public final String description;
             
@@ -617,6 +618,12 @@ public class Highlighter {
         private int substitutesEnabled = 1;
         
         private List<String> routingTargets;
+        
+        private int msgsReq = 1;
+        private int msgsLimit = 0;
+        private long msgsDuration = 0;
+        private boolean msgsBeforeDuration;
+        private boolean msgsMatchOuter;
         
         //--------------------------
         // Debugging
@@ -811,6 +818,103 @@ public class Highlighter {
                     addUserItem("Not User Status", s, user -> {
                         return checkStatus(user, s, false);
                     });
+                }
+                else if (item.startsWith("msgs:") || item.startsWith("!msgs:")) {
+                    boolean inverted = item.startsWith("!msgs:");
+                    if (inverted) {
+                        item = item.substring(1);
+                    }
+                    List<String> listEntries = parseStringListPrefix(item, "msgs:", s -> s);
+                    List<HighlightItem> hlItems = new ArrayList<HighlightItem>() {
+                        
+                        @Override
+                        public String toString() {
+                            StringBuilder b = new StringBuilder("\n");
+                            for (HighlightItem hlItem : this) {
+                                if (b.length() > 1) {
+                                    b.append("OR\n");
+                                }
+                                b.append("  ");
+                                if (hlItem.msgsMatchOuter) {
+                                    b.append("Text match from outer item\n");
+                                }
+                                else {
+                                    b.append(hlItem.getMatchInfo().replaceAll("\\n(?!$)", "\n  "));
+                                }
+                            }
+                            return b.toString();
+                        }
+                        
+                    };
+                    for (String entry : listEntries) {
+                        hlItems.add(new HighlightItem(entry));
+                    }
+                    addUserItem(inverted ? "Don't " : "" + "Match user messages", hlItems, user -> {
+                            boolean matched = false;
+                            for (HighlightItem hlItem : hlItems) {
+                                long time = -1;
+                                if (hlItem.msgsDuration > 0) {
+                                    time = System.currentTimeMillis() - hlItem.msgsDuration;
+                                }
+                                int num = user.getMatchingMessages(
+                                        hlItem.msgsMatchOuter ? HighlightItem.this : hlItem,
+                                        hlItem.msgsLimit,
+                                        time,
+                                        hlItem.msgsBeforeDuration);
+                                if (num >= hlItem.msgsReq) {
+                                    matched = true;
+                                    break;
+                                }
+                            }
+                            if (inverted) {
+                                return !matched;
+                            }
+                            return matched;
+                        });
+                }
+                else if (item.startsWith("mreq:")) {
+                    try {
+                        msgsReq = Integer.parseInt(parsePrefix(item, "mreq:"));
+                    }
+                    catch (NumberFormatException ex) {
+                        // Change nothing
+                    }
+                }
+                else if (item.startsWith("mlimit:")) {
+                    try {
+                        msgsLimit = Integer.parseInt(parsePrefix(item, "mlimit:"));
+                    }
+                    catch (NumberFormatException ex) {
+                        // Change nothing
+                    }
+                }
+                else if (item.startsWith("mtime:")) {
+                    String value = parsePrefix(item, "mtime:");
+                    msgsBeforeDuration = false;
+                    if (value.startsWith(">")) {
+                        value = value.substring(1);
+                        msgsBeforeDuration = true;
+                    }
+                    if (value.startsWith("<")) {
+                        value = value.substring(1);
+                    }
+                    try {
+                        msgsDuration = DateTime.parseDuration(value);
+                    }
+                    catch (NumberFormatException ex) {
+                        // Change nothing
+                    }
+                }
+                else if (item.startsWith("mtype:")) {
+                    try {
+                        String value = parsePrefix(item, "mtype:");
+                        if (value.equals("outer")) {
+                            msgsMatchOuter = true;
+                        }
+                    }
+                    catch (NumberFormatException ex) {
+                        // Change nothing
+                    }
                 }
                 else if (item.startsWith("mystatus:")) {
                     Set<Status> s = parseStatus(parsePrefix(item, "mystatus:"));
@@ -1886,8 +1990,8 @@ public class Highlighter {
             return matches(Type.ANY, text, blacklist, null, null);
         }
         
-        public boolean matchesTest(String text, Blacklist blacklist) {
-            return matches(Type.TEXT_MATCH_TEST, text, blacklist, null, null);
+        public boolean matchesTextOnly(String text, Blacklist blacklist) {
+            return matches(Type.TEXT_MATCHING_ONLY, text, blacklist, null, null);
         }
         
         public boolean matches(Type type, String text, User user, User localUser, MsgTags tags) {
@@ -1962,7 +2066,7 @@ public class Highlighter {
             // Type
             //------
             if (type != appliesToType && appliesToType != Type.ANY
-                    && type != Type.ANY && type != Type.TEXT_MATCH_TEST) {
+                    && type != Type.ANY && type != Type.TEXT_MATCHING_ONLY) {
                 return false;
             }
             
@@ -1998,7 +2102,7 @@ public class Highlighter {
             
 //            System.out.println(raw);
             for (Item item : matchItems) {
-                if (type == Type.TEXT_MATCH_TEST && !item.matchesOnText) {
+                if (type == Type.TEXT_MATCHING_ONLY && !item.matchesOnText) {
                     continue;
                 }
                 boolean match = item.matches(type, text, msgStart, msgEnd, blacklist, channel, ab, user, localUser, tags);

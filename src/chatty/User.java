@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.gui.Highlighter;
 import chatty.gui.colors.UsercolorManager;
 import chatty.util.api.usericons.Usericon;
 import chatty.util.api.usericons.UsericonManager;
@@ -576,6 +577,38 @@ public class User implements Comparable<User> {
                     if (StringUtil.checkSimilarity(compareMsg, text, minSimilarity, method) > 0) {
                         result++;
                     }
+                }
+            }
+        }
+        return result;
+    }
+    
+    public synchronized int getMatchingMessages(Highlighter.HighlightItem item, int num, long time, boolean beforeTime) {
+        if (lines == null) {
+            return 0;
+        }
+        int result = 0;
+        int numMsgs = 0;
+        for (int i=lines.size() - 1; i>=0; i--) {
+            Message m = lines.get(i);
+            if (beforeTime) {
+                if (m.time > time) {
+                    continue;
+                }
+            }
+            else {
+                if (m.time < time) {
+                    return result;
+                }
+            }
+            if (m instanceof TextMessage) {
+                TextMessage tm = (TextMessage) m;
+                if (item.matchesTextOnly(tm.text, null)) {
+                    result++;
+                }
+                numMsgs++;
+                if (numMsgs == num) {
+                    return result;
                 }
             }
         }

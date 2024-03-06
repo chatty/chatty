@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -58,6 +59,16 @@ public class HighlighterTest {
     
     private void update(String... items) {
         highlighter.update(Arrays.asList(items));
+    }
+    
+    private void updateTrue(User user, String text, String... items) {
+        update(items);
+        assertTrue(highlighter.check(user, text));
+    }
+    
+    private void updateFalse(User user, String text, String... items) {
+        update(items);
+        assertFalse(highlighter.check(user, text));
     }
     
     private void updateBlacklist(String... items) {
@@ -1556,6 +1567,77 @@ public class HighlighterTest {
         assertTrue(highlighter.check(banUser, "abc"));
         banUser.addMessage("123", false, "abc");
         assertFalse(highlighter.check(banUser, "abc"));
+    }
+    
+    @Test
+    public void testMsgs() {
+        User msgsUser = new User("testUser", Room.createRegular("#testChannel"));
+        
+        updateFalse(msgsUser, "", "msgs:!live");
+        updateBlacklist("");
+        
+        msgsUser.addMessage("abc", false, "abc", System.currentTimeMillis() - TimeUnit.DAYS.toMillis(10));
+        assertFalse(highlighter.check(msgsUser, "abc"));
+        
+        msgsUser.addMessage("!live", false, "abc", System.currentTimeMillis() - TimeUnit.DAYS.toMillis(8));
+        assertTrue(highlighter.check(msgsUser, "abc"));
+        
+        updateTrue(msgsUser, "", "msgs:\"mlimit:1 !live\"");
+        
+        msgsUser.addMessage("123", false, "abc", System.currentTimeMillis() - TimeUnit.DAYS.toMillis(5));
+        assertFalse(highlighter.check(msgsUser, "abc"));
+        
+        updateTrue(msgsUser, "", "msgs:\"mlimit:2 !live\"");
+        updateFalse(msgsUser, "", "msgs:\"mlimit:2 mreq:2 !live");
+        updateTrue(msgsUser, "", "msgs:\"mlimit:2 mreq:1 !live");
+        updateFalse(msgsUser, "", "msgs:\"mlimit:2 mreq:2 !live");
+        updateTrue(msgsUser, "", "msgs:\"mlimit:2 mreq:1 !live");
+        updateTrue(msgsUser, "", "msgs:\"mlimit:2 mreq:1 e");
+        updateFalse(msgsUser, "", "msgs:\"mlimit:2 mreq:1 start:e");
+        updateTrue(msgsUser, "", "msgs:\"mlimit:2 mreq:1 !start:e");
+        
+        updateTrue(msgsUser, "", "msgs:mreq:1");
+        updateTrue(msgsUser, "", "msgs:mreq:2");
+        updateTrue(msgsUser, "", "msgs:mreq:3");
+        updateFalse(msgsUser, "", "msgs:mreq:4");
+        updateTrue(msgsUser, "", "msgs:mreq:3,mreq:4");
+        updateFalse(msgsUser, "", "msgs:mreq:4,mreq:5");
+        
+        updateTrue(msgsUser, "", "msgs:abc,!live");
+        updateTrue(msgsUser, "", "msgs:fewafagwaef,!live");
+        updateTrue(msgsUser, "", "msgs:\"mlimit:1 !live\",\"mlimit:2 !live\"");
+        
+        updateFalse(msgsUser, "", "!msgs:abc,!live");
+        updateFalse(msgsUser, "", "!msgs:mreq:1");
+        
+        updateFalse(msgsUser, "", "msgs:\"mreq:1 mtime:1d\"");
+        updateTrue(msgsUser, "", "msgs:\"mreq:1 mtime:6d\"");
+        updateFalse(msgsUser, "", "msgs:\"mreq:2 mtime:6d\"");
+        updateTrue(msgsUser, "", "msgs:\"mreq:2 mtime:9d\"");
+        
+        updateTrue(msgsUser, "", "msgs:\"mtime:6d 123\"");
+        updateTrue(msgsUser, "", "msgs:\"mtime:<6d 123\"");
+        updateFalse(msgsUser, "", "msgs:\"mtime:>6d 123\"");
+        updateFalse(msgsUser, "", "msgs:\"mtime:6d !live\"");
+        updateFalse(msgsUser, "", "msgs:\"mtime:<6d !live\"");
+        updateTrue(msgsUser, "", "msgs:\"mtime:>6d !live\"");
+        updateFalse(msgsUser, "", "msgs:\"mtime:6d !live2\"");
+        updateFalse(msgsUser, "", "msgs:\"mtime:<6d !live2\"");
+        updateFalse(msgsUser, "", "msgs:\"mtime:>6d !live2\"");
+        updateFalse(msgsUser, "", "msgs:\"mtime:7d !live\"");
+        updateFalse(msgsUser, "", "msgs:\"mtime:<7d !live\"");
+        updateTrue(msgsUser, "", "msgs:\"mtime:9d !live\"");
+        
+        updateTrue(msgsUser, "!live", "msgs:\"mtype:outer\" start:!live");
+        updateFalse(msgsUser, "!bot", "msgs:\"mtype:outer\" start:!bot");
+        
+        updateTrue(msgsUser, "!bot", "msgs:\"mtype:outer feafawefewafawefawefwaf\"");
+        updateFalse(msgsUser, "!bot", "msgs:\"mtype:abc feafawefewafawefawefwaf\"");
+        
+        updateTrue(msgsUser, "!bot", "msgs:\"abc\",12345");
+        updateTrue(msgsUser, "!bot", "msgs:\"mtime:6d !live\",\"mtime:11d abc\"");
+        updateTrue(msgsUser, "!bot", "msgs:\"mtype:outer\",\"abc\" !bot");
+        updateFalse(msgsUser, "!bot", "msgs:\"mtype:outer\",\"abc2\" !bot");
     }
     
 }

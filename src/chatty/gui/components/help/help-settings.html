@@ -1026,6 +1026,39 @@
             updated on channel join and when sending a message, so e.g. if you
             get modded while already in the channel it will not be recognized
             until after you have sent a message.</li>
+        <li><code>msgs:</code> / <code>!msgs:</code> matches on the
+            past messages of the user as they are shown in the User Dialog,
+            not including the message that triggered this Highlight checking.<br />
+            The value is a list of one or several Highlight items, which will be
+            used to match against the text of the user's past messages (only one
+            item has to match, to require several items to match use separate
+            <code>msgs:</code> prefixes).<br />
+            For example <code>msgs:"mlimit:1 start:!v","!vote"</code> checks if
+            the latest message begins with "!v" or any message contains "!vote".
+            The usual text matching related prefixes can be used, as well as
+            these additional prefixes:<br />
+            <ul>
+                <li><code>mlimit:</code> limits how many messages are checked
+                    (starting from the latest), for example <code>mlimit:2</code>
+                    only checks the latest two messages (by default it checks
+                    all).</li>
+                <li><code>mtime:</code> limits how long ago messages are
+                    checked, for example <code>mtime:1h</code> only checks
+                    messages from the last hour, whereas <code>mtime:>1h</code>
+                    only checks messages from <em>before</em> the last hour (by
+                    default it checks all).</li>
+                <li><code>mreq:</code> defines how many messages must match, for
+                    example <code>mreq:3</code> requires at least three past
+                    messages to match (by default at least one has to match).</li>
+                <li><code>mtype:outer</code> ignores text matching in the <code>msgs:</code>
+                    prefix itself (so for <code>msgs:"mtype:outer abc"</code>
+                    the "abc" would have no effect) and instead uses the outer
+                    item's text matching. For example <code>msgs:"mtype:outer" start:!vote</code>
+                    would match if both the message and also a past message
+                    begin with "!vote" (<code>msgs:"start:!vote" start:!vote</code>
+                    would have the same effect).</li>
+            </ul>
+        </li>
         <li><code>config:</code> to specify on or more options (separated by comma, no spaces):
             <ul>
                 <li><code>config:firstmsg</code> - Restrict matching to the

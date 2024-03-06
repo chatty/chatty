@@ -476,7 +476,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
             testResult.setText("Empty item.");
         } else if (highlightItem.hasError()) {
             testResult.setText("Error: "+highlightItem.getError());
-        } else if (highlightItem.matchesTest(getTestText(), blacklist)) {
+        } else if (highlightItem.matchesTextOnly(getTestText(), blacklist)) {
             testResult.setText("Matched.");
         } else {
             String failedReason = highlightItem.getFailedReason();
@@ -523,7 +523,7 @@ public class HighlighterTester extends JDialog implements StringEditor {
                         Match m = blacklistMatches.get(i);
                         doc.setCharacterAttributes(m.start, m.end - m.start, blacklistAttr, false);
                     }
-                } else if (blacklistItem.matchesTest(getTestText(), null)) {
+                } else if (blacklistItem.matchesTextOnly(getTestText(), null)) {
                     doc.setCharacterAttributes(0, doc.getLength(), blacklistAttr, false);
                 }
             }
