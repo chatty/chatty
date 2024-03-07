@@ -475,7 +475,8 @@ public class Requests {
             if (r.responseCode == 202) {
                 String clipUrl = Parsing.getClipUrl(r.text);
                 if (clipUrl != null) {
-                    listener.accept("Edit clip: "+clipUrl);
+                    listener.accept("Edit clip: " + clipUrl
+                            + "\n View Clip: " + clipUrl.replace("/edit", ""));
                 }
                 else {
                     listener.accept("Error creating clip");

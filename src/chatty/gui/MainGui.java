@@ -3939,6 +3939,15 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
 
+    public void printInfoMultline(final Room room, final String text) {
+        GuiUtil.edt(() -> {
+            String[] lines = text.split("\n");
+            for (String line : lines) {
+                printLine(room, line);
+            }
+        });
+    }
+
     public Object printLine(final Room room, final String line) {
         return printInfo(room, line, null);
     }

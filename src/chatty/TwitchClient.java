@@ -1617,7 +1617,7 @@ public class TwitchClient {
         });
         commands.add("createClip", p -> {
             api.createClip(p.getRoom().getStream(), result -> {
-                g.printLine(p.getRoom(), result);
+                g.printInfoMultline(p.getRoom(), result);
             });
         });
         c.addNewCommands(commands, this);
