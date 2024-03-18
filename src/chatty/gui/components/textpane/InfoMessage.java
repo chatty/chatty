@@ -5,7 +5,9 @@ import chatty.User;
 import chatty.gui.Highlighter.Match;
 import chatty.util.Pair;
 import chatty.util.irc.MsgTags;
+import chatty.util.irc.MsgTags.Link;
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -139,14 +141,16 @@ public class InfoMessage {
         return -1;
     }
     
-    public Pair<String, String> getLink() {
+    public List<Link> getAppendedLinks() {
+        List<Link> result = new ArrayList<>();
         if (tags != null) {
-            // When indicdes are set the join link is added differently
-            if (tags.getChannelJoin() != null && tags.getChannelJoinIndices() == null) {
-                return new Pair<>("Join", "join."+tags.getChannelJoin());
+            for (Link link : tags.getLinks()) {
+                if (link.startIndex == -1) {
+                    result.add(link);
+                }
             }
         }
-        return null;
+        return result;
     }
     
 }

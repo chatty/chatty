@@ -21,10 +21,12 @@ import java.util.function.Consumer;
 public class ResultManager {
 
     private final Map<Type, Set<Object>> listeners = new HashMap<>();
+    private final Map<Object, Object> uniqueListeners = new HashMap<>();
     
     public enum Type {
         CATEGORY_RESULT(CategoryResult.class),
-        SHIELD_MODE_RESULT(ShieldModeResult.class);
+        SHIELD_MODE_RESULT(ShieldModeResult.class),
+        CREATE_CLIP(CreateClipResult.class);
         
         private final Class c;
         
@@ -34,12 +36,32 @@ public class ResultManager {
     }
     
     public void subscribe(Type type, Object listener) {
+        subscribe(type, null, listener);
+    }
+    
+    /**
+     * Subscribe to the given type, but remove any previous listener under the
+     * same type with the same unique object provided.
+     * 
+     * @param type
+     * @param unique If provided, remove previous listener with the same type
+     * and unique object
+     * @param listener 
+     */
+    public void subscribe(Type type, Object unique, Object listener) {
         if (listener != null) {
             if (!type.c.isInstance(listener)) {
                 throw new RuntimeException("Invalid parameter");
             }
             if (!listeners.containsKey(type)) {
                 listeners.put(type, new HashSet<>());
+            }
+            if (unique != null) {
+                Object prevListener = uniqueListeners.remove(unique);
+                if (prevListener != null) {
+                    listeners.get(type).remove(prevListener);
+                }
+                uniqueListeners.put(unique, listener);
             }
             listeners.get(type).add(listener);
         }
@@ -61,6 +83,10 @@ public class ResultManager {
     
     public interface ShieldModeResult {
         public void result(String stream, boolean enabled);
+    }
+    
+    public interface CreateClipResult {
+        public void result(String editUrl, String viewUrl, String error);
     }
     
     public static void main(String[] args) {

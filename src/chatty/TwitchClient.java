@@ -73,6 +73,7 @@ import chatty.util.api.Emoticons;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.ResultManager;
+import chatty.util.api.ResultManager.CreateClipResult;
 import chatty.util.api.StreamCategory;
 import chatty.util.api.StreamInfo.StreamType;
 import chatty.util.api.StreamInfo.ViewerStats;
@@ -1616,9 +1617,18 @@ public class TwitchClient {
             commandAddStreamMarker(p.getRoom(), p.getArgs());
         });
         commands.add("createClip", p -> {
-            api.createClip(p.getRoom().getStream(), result -> {
-                g.printLine(p.getRoom(), result);
+            api.subscribe(ResultManager.Type.CREATE_CLIP, commands, (CreateClipResult) (editUrl, viewUrl, error) -> {
+                if (error != null) {
+                    g.printLine(p.getRoom(), error);
+                }
+                else {
+                    // Update indices when changing info text
+                    MsgTags tags = MsgTags.createLinks(
+                            new MsgTags.Link(MsgTags.Link.Type.URL, editUrl, 14, 22));
+                    g.printInfo(p.getRoom(), "Clip created (Edit Clip): "+viewUrl, tags);
+                }
             });
+            api.createClip(p.getRoom().getStream());
         });
         c.addNewCommands(commands, this);
         commands.add("addStreamHighlight", p -> {
@@ -2096,7 +2106,7 @@ public class TwitchClient {
         } else if (command.equals("testr")) {
             api.test();
         } else if (command.equals("joinlink")) {
-            MsgTags tags = MsgTags.create("chatty-channel-join", Helper.toChannel("twitch"));
+            MsgTags tags = MsgTags.createLinks(new MsgTags.Link(MsgTags.Link.Type.JOIN, Helper.toChannel("twitch"), "Join"));
             g.printInfo(c.getRoomByChannel(channel), "Join link:", tags);
         }
     }
@@ -2740,7 +2750,7 @@ public class TwitchClient {
                 String channel = Helper.toChannel(raid.fromLogin);
                 String text = String.format("[Raid] Now raiding %s with %d viewers.",
                         raid.toLogin, raid.viewers);
-                MsgTags tags = MsgTags.create("chatty-channel-join", Helper.toChannel(raid.toLogin));
+                MsgTags tags = MsgTags.createLinks(new MsgTags.Link(MsgTags.Link.Type.JOIN, Helper.toChannel(raid.toLogin), "Join"));
                 g.printInfo(c.getRoomByChannel(channel), text, tags);
             }
             String pollMessage = PollPayload.getPollMessage(message);
@@ -2771,7 +2781,7 @@ public class TwitchClient {
                 String infoText = String.format("[Shoutout] Was given to %s (@%s)",
                         shoutout.target_name,
                         shoutout.moderator_login);
-                MsgTags tags = MsgTags.create("chatty-channel-join", Helper.toChannel(shoutout.target_login));
+                MsgTags tags = MsgTags.createLinks(new MsgTags.Link(MsgTags.Link.Type.JOIN, Helper.toChannel(shoutout.target_login), "Join"));
                 g.printInfo(c.getRoomByChannel(channel), infoText, tags);
                 // Mod Action
                 List<String> args = new ArrayList<>();

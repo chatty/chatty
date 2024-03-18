@@ -76,6 +76,7 @@ import chatty.util.api.usericons.UsericonFactory;
 import chatty.util.api.usericons.UsericonManager;
 import java.util.function.Function;
 import chatty.gui.transparency.TransparencyComponent;
+import chatty.util.irc.MsgTags.Link;
 import java.util.function.Consumer;
 
 
@@ -762,10 +763,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         printTimestamp(style);
         printChannelIcon(null, message.localUser);
         printSpecialsInfo(message.text, style, message.highlightMatches, message.tags);
-        Pair<String, String> link = message.getLink();
-        if (link != null) {
+        
+        for (Link link : message.getAppendedLinks()) {
             print(" ", style);
-            print(link.key, styles.generalLink(style, link.value));
+            print(link.label, styles.generalLink(style, link));
         }
         finishLine();
     }
@@ -1930,7 +1931,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         }
 
         @Override
-        public void linkClicked(Channel channel, String link) {
+        public void linkClicked(Channel channel, MsgTags.Link link) {
         }
         
     }
@@ -2673,21 +2674,18 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         if (tags == null) {
             return;
         }
-        if (tags.getChannelJoin() == null || tags.getChannelJoinIndices() == null) {
+        java.util.List<Link> links = tags.getLinks();
+        if (links == null) {
             return;
         }
-        /**
-         * This only allows one link per message, just extending the existing
-         * join link functionality a bit, but should be good enough for now.
-         */
-        String chan = tags.getChannelJoin();
-        String indices = tags.getChannelJoinIndices();
-        String[] split = indices.split("-");
-        int start = Integer.parseInt(split[0]);
-        int end =  Integer.parseInt(split[1]);
-        if (!inRanges(start, ranges) && !inRanges(end, ranges)) {
-            ranges.put(start, end);
-            rangesStyle.put(start, styles.generalLink(baseStyle, "join."+chan));
+        
+        for (Link link : links) {
+            if (link.startIndex != -1 && link.endIndex != -1) {
+                if (!inRanges(link.startIndex, ranges) && !inRanges(link.endIndex, ranges)) {
+                    ranges.put(link.startIndex, link.endIndex);
+                    rangesStyle.put(link.startIndex, styles.generalLink(baseStyle, link));
+                }
+            }
         }
     }
     
@@ -3999,7 +3997,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             return info();
         }
         
-        public MutableAttributeSet generalLink(AttributeSet base, String target) {
+        public MutableAttributeSet generalLink(AttributeSet base, MsgTags.Link target) {
             SimpleAttributeSet result = new SimpleAttributeSet(base);
             result.addAttribute(Attribute.GENERAL_LINK, target);
             StyleConstants.setUnderline(result, true);

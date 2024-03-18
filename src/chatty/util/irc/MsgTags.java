@@ -3,8 +3,11 @@ package chatty.util.irc;
 
 import chatty.util.StringUtil;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Implementation of IRCv3 tags with Twitch-specific methods.
@@ -13,10 +16,13 @@ import java.util.Map;
  */
 public class MsgTags extends IrcMsgTags {
     
-    public static final MsgTags EMPTY = new MsgTags(null);
+    public static final MsgTags EMPTY = new MsgTags(null, null);
+    
+    private Map<String, Object> objects;
 
-    public MsgTags(Map<String, String> tags) {
+    public MsgTags(Map<String, String> tags, Map<String, Object> objects) {
         super(tags);
+        this.objects = objects;
     }
     
     public String getId() {
@@ -61,14 +67,6 @@ public class MsgTags extends IrcMsgTags {
         } else {
             return -1;
         }
-    }
-    
-    public String getChannelJoin() {
-        return get("chatty-channel-join");
-    }
-    
-    public String getChannelJoinIndices() {
-        return get("chatty-channel-join-indices");
     }
     
     public boolean isRestrictedMessage() {
@@ -119,27 +117,40 @@ public class MsgTags extends IrcMsgTags {
     //================
     
     /**
-     * Parse the given IRCv3 tags String (no leading @) into a IrcMsgTags object.
+     * Parse the given IRCv3 tags String (no leading @) into a MsgTags object.
      * 
      * @param tags The tags String
-     * @return IrcMsgTags object, empty if tags was null
+     * @return MsgTags object, empty if tags was null
      */
     public static MsgTags parse(String tags) {
         Map<String, String> parsedTags = parseTags(tags);
         if (parsedTags == null) {
             return EMPTY;
         }
-        return new MsgTags(parsedTags);
+        return new MsgTags(parsedTags, null);
     }
     
     /**
-     * Create a new IrcMsgTags object with the given key/value pairs.
+     * Create a new MsgTags object with the given key/value pairs.
      * 
      * @param args Alternating key/value pairs
-     * @return IrcMsgTags object
+     * @return MsgTags object
      */
     public static MsgTags create(String... args) {
-        return new MsgTags(createTags(args));
+        return new MsgTags(createTags(args), null);
+    }
+    
+    public void fillObjects(Map<String, Object> map) {
+        if (objects != null) {
+            map.putAll(objects);
+        }
+    }
+    
+    private void addObject(String key, Object value) {
+        if (objects == null) {
+            objects = new HashMap<>();
+        }
+        objects.put(key, value);
     }
     
     /**
@@ -154,7 +165,12 @@ public class MsgTags extends IrcMsgTags {
         Map<String, String> result = new HashMap<>();
         b.fill(result);
         a.fill(result);
-        return new MsgTags(result);
+        
+        Map<String, Object> objectsResult = new HashMap<>();
+        b.fillObjects(objectsResult);
+        a.fillObjects(objectsResult);
+        
+        return new MsgTags(result, objectsResult);
     }
     
     /**
@@ -170,7 +186,107 @@ public class MsgTags extends IrcMsgTags {
         Map<String, String> result = new HashMap<>();
         a.fill(result);
         result.put(key, value);
-        return new MsgTags(result);
+        
+        Map<String, Object> objectsResult = new HashMap<>();
+        a.fillObjects(objectsResult);
+        
+        return new MsgTags(result, objectsResult);
+    }
+    
+    //=======
+    // Links
+    //=======
+    
+    @SuppressWarnings("unchecked")
+    public List<Link> getLinks() {
+        if (objects != null && objects.containsKey("links")) {
+            return (List<Link>) objects.get("links");
+        }
+        return new ArrayList<>();
+    }
+    
+    public static MsgTags createLinks(Link... input) {
+        MsgTags tags = create("");
+        tags.addObject("links", createLinksObject(input));
+        return tags;
+    }
+    
+    public static Object createLinksObject(Link... links) {
+        List<Link> result = new ArrayList<>();
+        for (Link link : links) {
+            result.add(link);
+        }
+        return result;
+    }
+    
+    public static class Link {
+        
+        public enum Type {
+            JOIN, URL
+        }
+        
+        public final Type type;
+        public final String target;
+        public final String label;
+        public final int startIndex;
+        public final int endIndex;
+        
+        public Link(Type type, String target, int startIndex, int endIndex) {
+            this.type = type;
+            this.target = target;
+            this.label = "";
+            this.startIndex = startIndex;
+            this.endIndex = endIndex;
+        }
+        
+        public Link(Type type, String target, String label) {
+            this.type = type;
+            this.target = target;
+            this.label = label;
+            this.startIndex = -1;
+            this.endIndex = -1;
+        }
+        
+        @Override
+        public String toString() {
+            return String.format("[%s.%s %s](%d-%d)",
+                                 type, target, label, startIndex, endIndex);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Link other = (Link) obj;
+            if (this.startIndex != other.startIndex) {
+                return false;
+            }
+            if (this.endIndex != other.endIndex) {
+                return false;
+            }
+            if (!Objects.equals(this.target, other.target)) {
+                return false;
+            }
+            return Objects.equals(this.label, other.label);
+        }
+        
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 79 * hash + Objects.hashCode(this.target);
+            hash = 79 * hash + Objects.hashCode(this.label);
+            hash = 79 * hash + this.startIndex;
+            hash = 79 * hash + this.endIndex;
+            return hash;
+        }
+        
     }
     
 }

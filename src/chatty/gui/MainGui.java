@@ -2672,10 +2672,14 @@ public class MainGui extends JFrame implements Runnable {
         }
 
         @Override
-        public void linkClicked(Channel channel, String link) {
-            if (link.startsWith("join.")) {
-                String c = link.substring("join.".length());
-                client.joinChannel(c);
+        public void linkClicked(Channel channel, MsgTags.Link link) {
+            switch (link.type) {
+                case JOIN:
+                    client.joinChannel(link.target);
+                    break;
+                case URL:
+                    UrlOpener.openUrl(link.target);
+                    break;
             }
         }
         

@@ -11,6 +11,7 @@ import chatty.util.api.UserIDs.UserIdResult;
 import java.util.*;
 import java.util.logging.Logger;
 import chatty.util.api.ResultManager.CategoryResult;
+import chatty.util.api.ResultManager.CreateClipResult;
 import chatty.util.api.eventsub.EventSubAddResult;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -531,12 +532,12 @@ public class TwitchApi {
         }, stream);
     }
     
-    public void createClip(String stream, Consumer<String> listener) {
+    public void createClip(String stream) {
         userIDs.getUserIDsAsap(r -> {
             if (r.hasError()) {
-                listener.accept("Failed to resolve channel id");
+                resultManager.inform(ResultManager.Type.CREATE_CLIP, (CreateClipResult l) -> l.result(null, null, "Failed to resolve channel id"));
             } else {
-                requests.createClip(r.getId(stream), listener);
+                requests.createClip(r.getId(stream));
             }
         }, stream);
     }
@@ -557,6 +558,10 @@ public class TwitchApi {
     
     public void subscribe(ResultManager.Type type, Object listener) {
         resultManager.subscribe(type, listener);
+    }
+    
+    public void subscribe(ResultManager.Type type, Object unique, Object listener) {
+        resultManager.subscribe(type, unique, listener);
     }
     
     public interface StreamMarkerResult {

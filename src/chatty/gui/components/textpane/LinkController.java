@@ -37,6 +37,7 @@ import chatty.util.api.Emoticons;
 import chatty.util.api.CachedImage;
 import chatty.util.api.CachedImage.ImageType;
 import chatty.util.api.usericons.Usericon;
+import chatty.util.irc.MsgTags;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -215,7 +216,7 @@ public class LinkController extends MouseAdapter {
     
     private void handleSingleLeftClick(MouseEvent e, Element element) {
         String url;
-        String link;
+        MsgTags.Link link;
         User user;
         CachedImage<Emoticon> emoteImage;
         CachedImage<Usericon> usericonImage;
@@ -376,8 +377,8 @@ public class LinkController extends MouseAdapter {
         return deleted;
     }
     
-    private String getGeneralLink(Element e) {
-        return (String)(e.getAttributes().getAttribute(ChannelTextPane.Attribute.GENERAL_LINK));
+    private MsgTags.Link getGeneralLink(Element e) {
+        return (MsgTags.Link)(e.getAttributes().getAttribute(ChannelTextPane.Attribute.GENERAL_LINK));
     }
 
     private User getUser(Element e) {
@@ -533,7 +534,7 @@ public class LinkController extends MouseAdapter {
                 user = getMention(element);
             }
             String url = getUrl(element);
-            String link = getGeneralLink(element);
+            MsgTags.Link link = getGeneralLink(element);
             CachedImage<Emoticon> emoteImage = getEmoticonImage(element);
             CachedImage<Usericon> usericonImage = getUsericonImage(element);
             if (user != null) {
@@ -544,9 +545,14 @@ public class LinkController extends MouseAdapter {
                 m = new UrlContextMenu(url, isUrlDeleted(element), contextMenuListener);
             }
             else if (link != null) {
-                if (link.startsWith("join.")) {
-                    String c = Helper.toStream(link.substring("join.".length()));
-                    m = new StreamsContextMenu(Arrays.asList(new String[]{c}), contextMenuListener);
+                switch (link.type) {
+                    case JOIN:
+                        String c = Helper.toStream(link.target);
+                        m = new StreamsContextMenu(Arrays.asList(new String[]{c}), contextMenuListener);
+                        break;
+                    case URL:
+                        m = new UrlContextMenu(link.target, false, contextMenuListener);
+                        break;
                 }
             }
             else if (emoteImage != null) {

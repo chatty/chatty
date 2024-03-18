@@ -417,9 +417,10 @@ public class NotificationManager {
             int start = StringUtil.toLowerCase(d.title).indexOf(stream);
             if (start != -1) {
                 int end = start + stream.length() - 1;
-                tags = MsgTags.create(
-                        "chatty-channel-join", stream,
-                        "chatty-channel-join-indices", start+"-"+end);
+                tags = MsgTags.createLinks(new MsgTags.Link(
+                        MsgTags.Link.Type.JOIN,
+                        stream,
+                        start, end));
             }
         }
         
