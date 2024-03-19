@@ -2807,6 +2807,15 @@ public class MainGui extends JFrame implements Runnable {
                 openUserInfoDialog(user, p.getParameters().get("msg-id"), null);
             }
         });
+        client.commands.addEdt("userinfoRecent", p -> {
+            User user = RecentlyAffectedUsers.poll(p.getChannel());
+            if (user == null) {
+                printSystem(p.getRoom(), "No recently affected user found");
+            }
+            else {
+                openUserInfoDialog(user, p.getParameters().get("msg-id"), null);
+            }
+        });
         client.commands.addEdt("search", p -> {
             openSearchDialog();
         });

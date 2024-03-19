@@ -6,6 +6,7 @@ import chatty.gui.MainGui;
 import chatty.gui.UrlOpener;
 import chatty.lang.Language;
 import chatty.util.DateTime;
+import chatty.util.RecentlyAffectedUsers;
 import chatty.util.StringUtil;
 import chatty.util.api.TwitchApi;
 import chatty.util.api.TwitchApi.SimpleRequestResultListener;
@@ -58,7 +59,7 @@ public class TwitchCommands {
     private static final Set<String> OTHER_COMMANDS = new HashSet<>(Arrays.asList(new String[]{
     }));
     
-    private TwitchConnection c;
+    private final TwitchConnection c;
     
     public TwitchCommands(TwitchConnection c) {
         this.c = c;
@@ -392,6 +393,7 @@ public class TwitchCommands {
             if (r.error == null) {
                 // Success
                 client.g.addToLine(p.getRoom(), objectId, "OK");
+                RecentlyAffectedUsers.addUser(user);
             }
             else {
                 // Failed

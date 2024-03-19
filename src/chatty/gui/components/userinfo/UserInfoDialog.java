@@ -54,8 +54,6 @@ public class UserInfoDialog extends JDialog {
     private final JCheckBox singleMessage = new JCheckBox(SINGLE_MESSAGE_CHECK);
     private final BanReasons banReasons;
     private final Buttons buttons;
-
-    private final ActionListener actionListener;
     
     private User currentUser;
     private String currentLocalUsername;
@@ -83,6 +81,7 @@ public class UserInfoDialog extends JDialog {
             Settings settings,
             final ContextMenuListener contextMenuListener) {
         super(parent);
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         this.requester = requester;
         this.settings = settings;
         GuiUtil.installEscapeCloseOperation(this);
@@ -107,14 +106,7 @@ public class UserInfoDialog extends JDialog {
             }
         });
         
-        actionListener = new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-        };
-        closeButton.addActionListener(actionListener);
+        closeButton.addActionListener(e -> dispose());
         
         setLayout(new GridBagLayout());
         

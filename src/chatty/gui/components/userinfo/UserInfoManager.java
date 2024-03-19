@@ -6,8 +6,8 @@ import chatty.User;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
 import chatty.gui.components.menus.ContextMenuListener;
+import chatty.util.RecentlyAffectedUsers;
 import chatty.util.Timestamp;
-import chatty.util.api.ChannelInfo;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.TwitchApi;
@@ -18,10 +18,9 @@ import chatty.util.settings.Settings;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.Window;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.text.SimpleDateFormat;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -33,13 +32,10 @@ import java.util.function.Consumer;
 public class UserInfoManager {
     
     private final List<UserInfoDialog> dialogs = new ArrayList<>();
-    private final ComponentListener closeListener;
+    private final WindowListener closeListener;
     
     private final Window dummyWindow = new Window(null);
-    private int x;
-    private int y;
-    private final Point temp2 = new Point();
-            
+    
     private final MainGui main;
     private final Settings settings;
     private final ContextMenuListener contextMenuListener;
@@ -55,22 +51,13 @@ public class UserInfoManager {
         this.main = owner;
         this.settings = settings;
         this.contextMenuListener = contextMenuListener;
-        closeListener = new ComponentAdapter() {
+        closeListener = new WindowAdapter() {
             
             @Override
-            public void componentHidden(ComponentEvent e) {
-                handleClosed(e.getComponent());
+            public void windowClosed(WindowEvent e) {
+                handleClosed(e.getWindow());
             }
             
-            @Override
-            public void componentMoved(ComponentEvent e) {
-//                handleChanged(e.getComponent());
-            }
-            
-            @Override
-            public void componentResized(ComponentEvent e) {
-//                handleChanged(e.getComponent());
-            }
         };
         userInfoListener = new UserInfoListener() {
 
@@ -215,7 +202,7 @@ public class UserInfoManager {
             dialog.setSize(400, 360);
         }
         dialog.setLocation(targetLocation);
-        dialog.addComponentListener(closeListener);
+        dialog.addWindowListener(closeListener);
     }
     
     private void handleClosed(Component c) {
@@ -229,6 +216,7 @@ public class UserInfoManager {
         if (!dialog.isPinned() && numUnpinned() == 1) {
             saveLocationAndSize(dialog);
         }
+        RecentlyAffectedUsers.addUser(dialog.getUser());
     }
     
     private void saveLocationAndSize(Component c) {

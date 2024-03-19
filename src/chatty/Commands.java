@@ -188,6 +188,14 @@ public class Commands {
             return parameters.getArgs();
         }
         
+        public String getArgsTrimNonNull() {
+            String args = StringUtil.trim(getArgs());
+            if (args != null) {
+                return args;
+            }
+            return "";
+        }
+        
         public boolean hasArgs() {
             return !StringUtil.isNullOrEmpty(parameters.getArgs());
         }
