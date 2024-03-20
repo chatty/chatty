@@ -56,6 +56,7 @@ public class UserMessage extends Message {
         result.ignoreSource = ignoreSource;
         result.routingSource = routingSource;
         result.localUser = localUser;
+        result.historicTimeStamp = historicTimeStamp;
         return result;
     }
     
