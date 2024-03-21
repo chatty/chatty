@@ -21,7 +21,7 @@ public class RecentlyAffectedUsers {
      * 
      * @param user 
      */
-    public static void addUser(User user) {
+    public synchronized static void addUser(User user) {
         if (!users.containsKey(user.getChannel())) {
             users.put(user.getChannel(), new UniqueLimitedRingBuffer<>(10));
         }
@@ -34,7 +34,7 @@ public class RecentlyAffectedUsers {
      * @param channel
      * @return The {@code User} or {@code null} if none is present
      */
-    public static User poll(String channel) {
+    public synchronized static User poll(String channel) {
         if (users.containsKey(channel)) {
             return users.get(channel).pollLast();
         }
