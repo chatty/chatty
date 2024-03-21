@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+
+Name=Chatty
+Comment=twitch.tv chat client
+Categories=Network;InstantMessaging;Chat
+
+Icon=chatty
+Exec=chatty
+Terminal=false
+StartupWMClass=chatty-Chatty
