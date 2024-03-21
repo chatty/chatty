@@ -1055,12 +1055,17 @@ public class Helper {
         UserNotice found = null;
         for (Map.Entry<UserNotice, javax.swing.Timer> entry : pointsMerge.entrySet()) {
             UserNotice stored = entry.getKey();
-            // Attached messages seem to be trimmed depending on source
-            if (stored.tags.getCustomRewardId() != null
-                    && stored.tags.getCustomRewardId().equals(newNotice.tags.getCustomRewardId())) {
+
+             // Attached messages seem to be trimmed depending on source
+            boolean hasCustomRewardId = stored.tags.getCustomRewardId() != null;
+            boolean hasSameCustomRewardId = hasCustomRewardId && stored.tags.getCustomRewardId()
+                                                                            .equals(newNotice.tags.getCustomRewardId());
+
+            if (hasSameCustomRewardId) {
                 found = stored;
                 entry.getValue().stop();
             }
+
         }
         if (found != null) {
             pointsMerge.remove(found);
