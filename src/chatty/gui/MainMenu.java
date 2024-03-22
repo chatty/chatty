@@ -422,13 +422,18 @@ public class MainMenu extends JMenuBar {
     
     public void updateCustomTabs(List<RoutingTargetInfo> infos) {
         customTabsMenu.removeAll();
-        for (RoutingTargetInfo info : infos) {
-            String label = info.name;
-            if (info.messages > -1) {
-                label = String.format("%s (%d)",
-                        info.name, info.messages);
+        if (infos.isEmpty()) {
+            addItem(customTabsMenu, "", "No custom tabs").setEnabled(false);
+        }
+        else {
+            for (RoutingTargetInfo info : infos) {
+                String label = info.name;
+                if (info.messages > -1) {
+                    label = String.format("%s (%d)",
+                                          info.name, info.messages);
+                }
+                addItem(customTabsMenu, "customTab." + info.name, label);
             }
-            addItem(customTabsMenu, "customTab."+info.name, label);
         }
     }
     

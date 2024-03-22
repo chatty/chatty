@@ -252,7 +252,7 @@ public class MsgTags extends IrcMsgTags {
             return String.format("[%s.%s %s](%d-%d)",
                                  type, target, label, startIndex, endIndex);
         }
-
+        
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {
@@ -274,12 +274,16 @@ public class MsgTags extends IrcMsgTags {
             if (!Objects.equals(this.target, other.target)) {
                 return false;
             }
-            return Objects.equals(this.label, other.label);
+            if (!Objects.equals(this.label, other.label)) {
+                return false;
+            }
+            return this.type == other.type;
         }
         
         @Override
         public int hashCode() {
-            int hash = 7;
+            int hash = 3;
+            hash = 79 * hash + Objects.hashCode(this.type);
             hash = 79 * hash + Objects.hashCode(this.target);
             hash = 79 * hash + Objects.hashCode(this.label);
             hash = 79 * hash + this.startIndex;
