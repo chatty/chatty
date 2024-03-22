@@ -40,12 +40,11 @@ public class ResultManager {
     }
     
     /**
-     * Subscribe to the given type, but remove any previous listener under the
-     * same type with the same unique object provided.
+     * Subscribe to the given type, but remove any previous listener with the
+     * same unique object provided.
      * 
      * @param type
-     * @param unique If provided, remove previous listener with the same type
-     * and unique object
+     * @param unique If provided remove previous listener added with this object
      * @param listener 
      */
     public void subscribe(Type type, Object unique, Object listener) {
@@ -59,7 +58,7 @@ public class ResultManager {
             if (unique != null) {
                 Object prevListener = uniqueListeners.remove(unique);
                 if (prevListener != null) {
-                    listeners.get(type).remove(prevListener);
+                    listeners.forEach((k,v) -> v.remove(prevListener));
                 }
                 uniqueListeners.put(unique, listener);
             }
