@@ -425,7 +425,7 @@ public class UsericonManager {
             if (!badges.hasId(id)) {
                 return false;
             }
-            if (version != null && !badges.get(id).equals(version)) {
+            if (version != null && !badges.getVersion(id).equals(version)) {
                 return false;
             }
         }

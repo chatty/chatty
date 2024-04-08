@@ -28,9 +28,9 @@ public class UserTagsUtil {
         }
 
         IrcBadges badgeInfo = IrcBadges.parse(tags.get("badge-info"));
-        String subMonths = badgeInfo.get("subscriber");
+        String subMonths = badgeInfo.getVersion("subscriber");
         if (subMonths == null) {
-            subMonths = badgeInfo.get("founder");
+            subMonths = badgeInfo.getVersion("founder");
         }
         if (subMonths != null) {
             user.setSubMonths(Helper.parseShort(subMonths, (short) 0));
