@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.chatty</id>
+
+  <name>Chatty</name>
+  <summary>Twitch.tv chat client</summary>
+
+  <metadata_license>MIT</metadata_license>
+  <project_license>GPL-3.0-or-later and MIT</project_license>
+
+  <description>
+    <p>
+      Chatty is a chat software specifically made for Twitch, in the spirit of a classic IRC Client.
+    </p>
+    <p>
+      Basic Features
+    </p>
+    <p>
+      Join several channels in tabs, split views or popped out into separate windows     Channel Favorites &amp; History     Log chat to file, TAB-Completion, Input History     Flexible message Highlighting and Ignoring     Customizable chat colors, font, line spacings, alternating backgrounds     Choose between several Look&amp;Feel, including Dark Mode
+    </p>
+    <p>
+      Watching
+    </p>
+    <p>
+      Get notified when channels you follow go live     Easily open streams in your browser, or run Livestreamer (or the more up-to-date Streamlink) out of Chatty
+    </p>
+    <p>
+      Streaming
+    </p>
+    <p>
+      Set your stream title, game &amp; tags (with custom Presets) and run commercials     Write current stream uptime to a file and create Stream Marker, via configurable hotkey or Mod Command, to assist in making Stream Highlights     List your 100 most recent followers/subscribers     Viewerhistory graph of your current streaming session
+    </p>
+    <p>
+      Moderating
+    </p>
+    <p>
+      Click on nick to open customizable User Dialog, showing recent messages and basic account info     Optional pause-chat-on-hover to avoid misclicks     AutoMod support to approve/deny filtered messages     Create Custom Commands and customize Context Menus
+    </p>
+    <p>
+      Emotes &amp; Badges
+    </p>
+    <p>
+      FrankerFaceZ Emotes (&amp; Mod Icons), BetterTTV Emotes (no Personal Emotes though)     Unified Bot Badge (using multiple sources)     Emote Dialog with Favorites, Subemotes, Channel-specific Emotes, and more..     Emote TAB-Completion using Shift-TAB (configurable)     Enter Emoji codes like :thinking:, aided by TAB-Completion     Locally hide/ignore individual Emotes or Badges or add your own
+    </p>
+    <p>
+      Other Features
+    </p>
+    <p>
+      Use Chatty in several languages, including English, German, French, Russian, Japanese, and more.. (the help and parts of the GUI aren&apos;t translated, translations thanks to contributers)     SpeedRunsLive Race Viewer     Global Hotkey support (Windows, Linux, Mac), e.g. to trigger a commerical or Custom Command
+    </p>
+  </description>
+
+  <url type="homepage">https://chatty.github.io/</url>
+  <url type="bugtracker">https://chatty.github.io/help/help-troubleshooting.html#report</url>
+  <url type="faq">https://chatty.github.io/#faq</url>
+  <url type="help">https://chatty.github.io/help/help.html</url>
+  <url type="donation">https://chatty.github.io/#contribute</url>
+  <url type="contact">https://chatty.github.io/#feedback</url>
+  <url type="vcs-browser">https://github.com/chatty/chatty</url>
+  <url type="contribute">https://github.com/chatty/chatty#contributions</url>
+
+  # TODO: Auto generate me from changelog!
+  <releases></releases>
+
+  <launchable type="desktop-id">io.github.chatty.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://chatty.github.io/img/stuff.png</image>
+      <caption>Screenshot showing the general interface of chatty</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://chatty.github.io/img/Chatty_Split_View.jpg</image>
+      <caption>Screenshot showing the split view functionality with multiple chats open</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://chatty.github.io/img/userdialog.png</image>
+      <caption>Screenshot showing the moderation functionality</caption>
+    </screenshot>
+  </screenshots>
+
+  <content_rating type="oars-1.1"/>
+</component>
