@@ -2,8 +2,17 @@
 package chatty.util.dnd;
 
 import chatty.util.dnd.DockDropInfo.DropType;
+
+import chatty.util.dnd.DockUtil.BottomSplitCreator;
+import chatty.util.dnd.DockUtil.LeftSplitCreator;
+import chatty.util.dnd.DockUtil.RightSplitCreator;
+import chatty.util.dnd.DockUtil.SplitCreator;
+import chatty.util.dnd.DockUtil.TopSplitCreator;
+
 import java.awt.BorderLayout;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
@@ -88,12 +97,21 @@ public class DockBase extends JPanel implements DockChild {
 
     @Override
     public void split(DockDropInfo info, DockContent content) {
+        final Map<DropType, DockUtil.SplitCreator> CREATOR_MAP = new HashMap<>();
+
+        CREATOR_MAP.put(DropType.LEFT, new LeftSplitCreator());
+        CREATOR_MAP.put(DropType.RIGHT, new RightSplitCreator());
+        CREATOR_MAP.put(DropType.BOTTOM, new BottomSplitCreator());
+        CREATOR_MAP.put(DropType.TOP, new TopSplitCreator());
+
         if (child.isEmpty()) {
             child.addContent(content);
             return;
         }
         DockTabsContainer newCompTabs = new DockTabsContainer();
-        DockSplit newChildSplit = DockUtil.createSplit(info, child, newCompTabs);
+
+        SplitCreator creator = CREATOR_MAP.get(info.location);
+        DockSplit newChildSplit = creator.createSplit(info, child, newCompTabs);
         if (newChildSplit != null) {
             // Configure new child
             applySettings(newChildSplit);
