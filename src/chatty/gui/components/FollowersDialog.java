@@ -10,6 +10,8 @@ import chatty.gui.DockedDialogManager;
 import chatty.gui.GuiUtil;
 import chatty.gui.laf.LaF;
 import chatty.gui.MainGui;
+import chatty.gui.components.admin.AdminDialog;
+import static chatty.gui.components.admin.AdminDialog.SMALL_BUTTON_INSETS;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.StreamsContextMenu;
@@ -34,6 +36,7 @@ import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
@@ -49,6 +52,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -96,6 +101,7 @@ public class FollowersDialog extends JDialog {
     private final JTable table;
     private final ListTableModel<Follower> followers = new MyListTableModel();
     private final JLabel loadInfo = new JLabel();
+    private final JButton refreshButton;
     
     private final JScrollPane accessInfo;
     private final JScrollPane mainTable;
@@ -192,16 +198,26 @@ public class FollowersDialog extends JDialog {
         accessInfo = new JScrollPane(accessInfoText);
         mainPanel.add(accessInfo, gbc);
         
-        gbc = GuiUtil.makeGbc(0, 3, 2, 1, GridBagConstraints.WEST);
+        gbc = GuiUtil.makeGbc(0, 3, 1, 1, GridBagConstraints.WEST);
         gbc.insets = new Insets(2, 5, 5, 5);
         mainPanel.add(loadInfo, gbc);
+        
+        refreshButton = new JButton(Language.getString("admin.button.reload"));
+        refreshButton.setMargin(SMALL_BUTTON_INSETS);
+        refreshButton.setIcon(new ImageIcon(AdminDialog.class.getResource("view-refresh.png")));
+        refreshButton.setMnemonic(KeyEvent.VK_R);
+        refreshButton.addActionListener(e -> request(true));
+        
+        gbc = GuiUtil.makeGbc(1, 3, 1, 1, GridBagConstraints.EAST);
+        gbc.insets = new Insets(2, 5, 5, 5);
+        mainPanel.add(refreshButton, gbc);
         
         // Timer
         Timer timer = new Timer(REFRESH_TIMER, new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                request();
+                request(false);
                 update();
                 table.repaint();
             }
@@ -457,13 +473,13 @@ public class FollowersDialog extends JDialog {
     /**
      * Try to request new data if the dialog is open and a stream is set.
      */
-    private void request() {
+    private void request(boolean forceRefresh) {
         if (isVisible() && stream != null && !stream.isEmpty()) {
             loading = true;
             if (type == Type.FOLLOWERS) {
-                api.getFollowers(stream);
+                api.getFollowers(stream, forceRefresh);
             } else if (type == Type.SUBSCRIBERS) {
-                api.getSubscribers(stream);
+                api.getSubscribers(stream, forceRefresh);
             }
         }
     }
@@ -521,7 +537,7 @@ public class FollowersDialog extends JDialog {
             updateMain();
         }
         setVisible(true);
-        request();
+        request(false);
         update();
     }
     

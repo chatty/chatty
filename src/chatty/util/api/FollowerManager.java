@@ -124,14 +124,15 @@ public class FollowerManager {
      * be updated, in which case it requests the data from the API.
      * 
      * @param streamName The name of the stream to request the data for
+     * @param forceRefresh
      */
-    protected synchronized void request(String streamName) {
+    protected synchronized void request(String streamName, boolean forceRefresh) {
         if (streamName == null || streamName.isEmpty()) {
             return;
         }
         final String stream = StringUtil.toLowerCase(streamName);
         FollowerInfo cachedInfo = cached.get(stream);
-        if (cachedInfo == null || checkTimePassed(cachedInfo)) {
+        if (cachedInfo == null || checkTimePassed(cachedInfo) || forceRefresh) {
             api.userIDs.getUserIDsAsap(r -> {
                 if (!r.hasError()) {
                     String streamId = r.getId(stream);

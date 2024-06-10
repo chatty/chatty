@@ -243,16 +243,16 @@ public class TwitchApi {
         StreamLabels.request(requests);
     }
     
-    public void getFollowers(String stream) {
-        followerManager.request(stream);
+    public void getFollowers(String stream, boolean forceRefresh) {
+        followerManager.request(stream, forceRefresh);
     }
 
     public Follower getSingleFollower(String stream, String streamId, String user, String userId, boolean refresh) {
         return followerManager.getSingleFollower(stream, streamId, user, userId, refresh);
     }
     
-    public void getSubscribers(String stream) {
-        subscriberManager.request(stream);
+    public void getSubscribers(String stream, boolean forceRefresh) {
+        subscriberManager.request(stream, forceRefresh);
     }
     
     public UserInfo getCachedUserInfo(String channel, Consumer<UserInfo> result) {

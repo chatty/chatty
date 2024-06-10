@@ -1937,7 +1937,7 @@ public class TwitchClient {
 //            g.printMessage("test10", testUser, "longer message abc hmm fwef wef wef wefwe fwe ewfwe fwef wwefwef"
 //                    + "fjwfjfwjefjwefjwef wfejfkwlefjwoefjwf wfjwoeifjwefiowejfef wefjoiwefj", false, null, 0);
         } else if (command.equals("requestfollowers")) {
-            api.getFollowers(parameter);
+            api.getFollowers(parameter, false);
         } else if (command.equals("simulate2")) {
             c.simulate(parameter);
         } else if (command.equals("simulate")) {

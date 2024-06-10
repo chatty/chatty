@@ -80,7 +80,7 @@ public class UserInfoManager {
             
             @Override
             public void requestFollowerInfo(String stream) {
-                api.getFollowers(stream);
+                api.getFollowers(stream, false);
             }
 
         };
