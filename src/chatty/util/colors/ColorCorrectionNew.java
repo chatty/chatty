@@ -75,21 +75,21 @@ public class ColorCorrectionNew {
     }
     
     public static Color makeBrighter(Color c, float factor) {
-        int r = c.getRed();
-        int g = c.getGreen();
-        int b = c.getBlue();
-        
-        // Remaining to max value
-        int rr = 255 - r;
-        int rg = 255 - g;
-        int rb = 255 - b;
-        
-        // Add a factor of remaining
-        int cr = r + (int)(rr * factor);
-        int cg = g + (int)(rg * factor);
-        int cb = b + (int)(rb * factor);
-        
-        return new Color(cr, cg, cb);
+        int originalRed = c.getRed();
+        int originalGreen = c.getGreen();
+        int originalBlue = c.getBlue();
+
+        // Calculate remaining to max value for each color component
+        int remainingRed = 255 - originalRed;
+        int remainingGreen = 255 - originalGreen;
+        int remainingBlue = 255 - originalBlue;
+
+        // Add a factor of remaining to each color component
+        int brighterRed = originalRed + (int) (remainingRed * factor);
+        int brighterGreen = originalGreen + (int) (remainingGreen * factor);
+        int brighterBlue = originalBlue + (int) (remainingBlue * factor);
+
+        return new Color(brighterRed, brighterGreen, brighterBlue);
     }
     
     public static Color makeDarker(Color c, float factor) {
