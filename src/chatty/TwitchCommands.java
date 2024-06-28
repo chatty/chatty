@@ -165,6 +165,13 @@ public class TwitchCommands {
                 api.shoutout(user, resultListener);
             }, "");
         });
+        commands.add("warn", "<user> <reason>", p -> {
+            Commands.CommandParsedArgs args = p.parsedArgs(2, 2);
+            String reason = args != null ? args.get(1, "") : "";
+            userCommand(client, p, args, (user, resultListener) -> {
+                api.warn(user, reason, resultListener);
+            }, StringUtil.aEmptyb(reason, "", " (%s)"));
+        });
         //--------------------------
         // Broadcaster
         //--------------------------

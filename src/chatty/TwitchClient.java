@@ -2720,8 +2720,10 @@ public class TwitchClient {
             chatLog.modAction(data);
 
             User modUser = c.getUser(channel, data.created_by);
-            modUser.addModAction(data);
-            g.updateUserinfo(modUser);
+            if (!data.moderation_action.equals("acknowledge_warning")) {
+                modUser.addModAction(data);
+                g.updateUserinfo(modUser);
+            }
 
             String bannedUsername = ModLogInfo.getBannedUsername(data);
             if (bannedUsername != null) {
@@ -2737,6 +2739,19 @@ public class TwitchClient {
                 int type = User.UnbanMessage.getType(data.moderation_action);
                 unbannedUser.addUnban(type, data.created_by);
                 g.updateUserinfo(unbannedUser);
+            }
+            if (data.moderation_action.equals("warn") && data.args.size() > 1) {
+                String warnedUsername = ModLogInfo.getTargetUsername(data);
+                if (warnedUsername != null) {
+                    User warnedUser = c.getUser(channel, warnedUsername);
+                    String reason = data.args.get(1);
+                    warnedUser.addWarning(reason, data.created_by);
+                    g.updateUserinfo(warnedUser);
+                }
+            }
+            if (data.moderation_action.equals("acknowledge_warning")) {
+                modUser.addWarningAcknowledged();
+                g.updateUserinfo(modUser);
             }
         }
     }

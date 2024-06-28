@@ -183,6 +183,16 @@ public class ModLogInfo extends InfoMessage {
         return null;
     }
     
+    public static String getTargetUsername(ModeratorActionData data) {
+        if (!data.args.isEmpty()) {
+            String username = data.args.get(0);
+            if (Helper.isValidStream(username)) {
+                return username;
+            }
+        }
+        return null;
+    }
+    
     @Override
     public String toString() {
         return text;

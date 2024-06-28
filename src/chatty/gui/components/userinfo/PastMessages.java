@@ -254,6 +254,17 @@ public class PastMessages extends JTextArea {
                 b.append(sm.full_text);
                 b.append("\n");
             }
+            else if (m instanceof User.WarnMessage) {
+                User.WarnMessage wm = (User.WarnMessage)m;
+                b.append(timestampFormat.make(m.getTime(), user.getRoom())).append("! ");
+                if (wm.by == null && wm.reason == null) {
+                    b.append("Warnung acknowledged");
+                }
+                else {
+                    b.append("Warned by ").append(wm.by).append(" (").append(wm.reason).append(")");
+                }
+                b.append("\n");
+            }
             else if (m instanceof User.ModAction) {
                 User.ModAction ma = (User.ModAction)m;
                 b.append(timestampFormat.make(m.getTime(), user.getRoom())).append(">");

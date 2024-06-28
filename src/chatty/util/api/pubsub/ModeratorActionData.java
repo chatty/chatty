@@ -139,6 +139,15 @@ public class ModeratorActionData extends MessageData {
         if (created_by == null) {
             created_by = JSONUtil.getString(data, "created_by_login");
         }
+        // Warn command has empty created_by when broadcaster does it
+        if (StringUtil.isNullOrEmpty(created_by)) {
+            String createdById = JSONUtil.getString(data, "created_by_user_id");
+            String chanId = JSONUtil.getString(data, "channel_id");
+            String chanLogin = JSONUtil.getString(data, "channel_login");
+            if (Objects.equals(chanId, createdById)) {
+                created_by = chanLogin;
+            }
+        }
         if (created_by == null) {
             created_by = "";
         }

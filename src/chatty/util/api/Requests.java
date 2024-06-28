@@ -585,6 +585,20 @@ public class Requests {
         });
     }
     
+    public void warn(String streamId, String targetId, String reason, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/moderation/warnings",
+                "broadcaster_id", streamId,
+                "moderator_id", api.localUserId);
+        JSONObject data = new JSONObject();
+        data.put("user_id", targetId);
+        data.put("reason", reason);
+        JSONObject json = new JSONObject();
+        json.put("data", data);
+        newApi.add(url, "POST", json.toJSONString(), api.defaultToken, r -> {
+            handleResult(r, listener);
+        });
+    }
+    
     public void setVip(String streamId, String targetId, boolean add, SimpleRequestResultListener listener) {
         String url = makeUrl("https://api.twitch.tv/helix/channels/vips",
                 "broadcaster_id", streamId,

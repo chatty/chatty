@@ -384,6 +384,16 @@ public class User implements Comparable<User> {
         addLine(new InfoMessage(System.currentTimeMillis(), message, fullText));
     }
     
+    public synchronized void addWarning(String reason, String by) {
+        setFirstSeen();
+        addLine(new WarnMessage(System.currentTimeMillis(), reason, by));
+    }
+    
+    public synchronized void addWarningAcknowledged() {
+        setFirstSeen();
+        addLine(new WarnMessage(System.currentTimeMillis(), null, null));
+    }
+    
     public synchronized void addModAction(ModeratorActionData data) {
         setFirstSeen();
         addLine(new ModAction(System.currentTimeMillis(), data.moderation_action+" "+ModLogInfo.makeArgsText(data)));
@@ -1402,6 +1412,26 @@ public class User implements Comparable<User> {
         public ModAction(long time, String commandAndParameters) {
             super(time);
             this.commandAndParameters = commandAndParameters;
+        }
+        
+    }
+    
+    public static class WarnMessage extends Message {
+        
+        public final String reason;
+        public final String by;
+        
+        /**
+         * If reason and by are null, the user has acknowledge a warning.
+         * 
+         * @param time The timestamp the warning was received
+         * @param reason The message associated with the warning
+         * @param by The moderator who has issued the warning
+         */
+        public WarnMessage(long time, String reason, String by) {
+            super(time);
+            this.reason = reason;
+            this.by = by;
         }
         
     }

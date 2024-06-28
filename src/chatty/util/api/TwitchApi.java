@@ -592,6 +592,12 @@ public class TwitchApi {
         });
     }
     
+    public void warn(User targetUser, String reason, SimpleRequestResultListener listener) {
+        runWithUserIds(targetUser, listener, (streamId, targetId) -> {
+            requests.warn(streamId, targetId, reason, listener);
+        });
+    }
+    
     public void setVip(User targetUser, boolean add, SimpleRequestResultListener listener) {
         runWithUserIds(targetUser, listener, (streamId, targetId) -> {
             requests.setVip(streamId, targetId, add, listener);

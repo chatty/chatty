@@ -31,6 +31,7 @@ public class TokenInfo {
         ),
         MODERATION("moderation",
                 Scope.MANAGE_CHAT,
+                Scope.MANAGE_WARNINGS,
                 Scope.MANAGE_BANS,
                 Scope.MANAGE_MSGS,
                 Scope.CHAN_MOD,
@@ -106,6 +107,7 @@ public class TokenInfo {
         MANAGE_RAIDS("channel:manage:raids", "manageRaids"),
         MANAGE_POLLS("channel:manage:polls", "managePolls"),
         MANAGE_SHOUTOUTS("moderator:manage:shoutouts", "manageShoutouts"),
+        MANAGE_WARNINGS("moderator:manage:warnings", "manageWarnings"),
         CLIPS_EDIT("clips:edit", "editClips");
         
         public String scope;
