@@ -2744,7 +2744,7 @@ public class TwitchClient {
                 String warnedUsername = ModLogInfo.getTargetUsername(data);
                 if (warnedUsername != null) {
                     User warnedUser = c.getUser(channel, warnedUsername);
-                    String reason = data.args.get(1);
+                    String reason = ModLogInfo.getWarnReason(data);
                     warnedUser.addWarning(reason, data.created_by);
                     g.updateUserinfo(warnedUser);
                 }

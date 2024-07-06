@@ -67,6 +67,9 @@ public class ModLogInfo extends InfoMessage {
         if (data.moderation_action.equals("delete") && data.args.size() > 1) {
             return String.format("%s (%s)", data.args.get(0), data.args.get(1));
         }
+        if (data.moderation_action.equals("warn") && data.args.size() > 1) {
+            return String.format("%s %s", data.args.get(0), getWarnReason(data));
+        }
         return StringUtil.join(data.args, " ");
     }
     
@@ -191,6 +194,24 @@ public class ModLogInfo extends InfoMessage {
             }
         }
         return null;
+    }
+    
+    public static String getWarnReason(ModeratorActionData data) {
+        StringBuilder result = new StringBuilder();
+        // First arg is target username
+        for (int i = 1; i < data.args.size(); i++) {
+            String item = data.args.get(i);
+            if (item.isEmpty() && i == 1) {
+                result.append("Selected rules: ");
+            }
+            if (!item.isEmpty()) {
+                if (result.length() > 0) {
+                    result.append(", ");
+                }
+                result.append(item);
+            }
+        }
+        return result.toString();
     }
     
     @Override
