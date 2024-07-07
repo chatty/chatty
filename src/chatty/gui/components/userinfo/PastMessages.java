@@ -258,7 +258,7 @@ public class PastMessages extends JTextArea {
                 User.WarnMessage wm = (User.WarnMessage)m;
                 b.append(timestampFormat.make(m.getTime(), user.getRoom())).append("! ");
                 if (wm.by == null && wm.reason == null) {
-                    b.append("Warnung acknowledged");
+                    b.append("Warning acknowledged");
                 }
                 else {
                     b.append("Warned by ").append(wm.by).append(" (").append(wm.reason).append(")");
