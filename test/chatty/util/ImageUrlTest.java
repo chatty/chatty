@@ -39,7 +39,7 @@ public class ImageUrlTest {
              "2", "https://cdn1.example.com/cdn/cdn/2x",
              "3", "https://cdn1.example.com/cdn/cdn/3x");
         
-        testTemplate("123",
+        testSingle("123",
              "1", "https://example.com/cdn/123/1");
         
         testMap("123",
@@ -61,6 +61,10 @@ public class ImageUrlTest {
     
     private static void testMap(String id, String... params) {
         assertEquals(ImageUrl.MapImageUrl.class, test(id, params).getClass());
+    }
+    
+    private static void testSingle(String id, String... params) {
+        assertEquals(ImageUrl.SingleImageUrl.class, test(id, params).getClass());
     }
     
     private static ImageUrl test(String id, String... params) {
