@@ -70,8 +70,8 @@ public abstract class ImageUrl {
                 template = temp;
             }
             ImageUrl result = cache(new TemplateImageUrl(template, urls.keySet()));
-            System.out.println(result+" "+System.identityHashCode(result)+" "+urls);
-            System.out.println(cacheSize());
+//            System.out.println(result+" "+System.identityHashCode(result)+" "+urls);
+//            System.out.println(cacheSize());
             return result;
         }
         
