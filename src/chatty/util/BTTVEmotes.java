@@ -24,7 +24,7 @@ public class BTTVEmotes {
     
     private static final String URL_GLOBAL = "https://api.betterttv.net/3/cached/emotes/global";
     private static final String URL_CHANNEL = "https://api.betterttv.net/3/cached/users/twitch/";
-    private static final String TEMPLATE = "https://cdn.betterttv.net/emote/{{id}}/{{image}}";
+    public static final String TEMPLATE = "https://cdn.betterttv.net/emote/{{id}}/{{image}}";
     
     public static final String GLOBAL = "$global$";
     
@@ -236,7 +236,7 @@ public class BTTVEmotes {
             }
 
             Emoticon.Builder builder = new Emoticon.Builder(Emoticon.Type.BTTV,
-                    code, urlTemplate);
+                    code);
             builder.setCreator(userName);
             builder.setLiteral(true);
             builder.setStringId(id);

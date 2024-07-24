@@ -196,6 +196,12 @@ public class RawMessageTest {
         if (type.equals("hypechat2")) {
             return "@badge-info=;badges=;color=#00FF7F;display-name=USERNAME;emotes=;first-msg=0;flags=;id=1234;mod=0;pinned-chat-paid-amount=7500;pinned-chat-paid-canonical-amount=7500;pinned-chat-paid-currency=KRW;pinned-chat-paid-exponent=0;pinned-chat-paid-is-system-message=1;pinned-chat-paid-level=TWO;returning-chatter=0;room-id=1234;subscriber=0;tmi-sent-ts=1687458800209;turbo=0;user-id=1234;user-type= :username!username@username.tmi.twitch.tv PRIVMSG "+channel+" :User sent Hype Chat";
         }
+        if (type.equals("gigantified")) {
+            return "@badge-info=;badges=;color=#0000FF;display-name=Test;emotes=emotesv2_37fd23c055024b1e8dc15bd584dad6b2:3-10/emotesv2_37fd23c055024b1e8dc15bd584dad6b2:12-19;first-msg=0;flags=;id=123;mod=0;msg-id=gigantified-emote-message;returning-chatter=0;room-id=123;subscriber=0;tmi-sent-ts=123;turbo=0;user-id=123;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :hi joshWave joshWave";
+        }
+        if (type.equals("gigantified2")) {
+            return "@badge-info=;badges=vip/1;color=#0000FF;display-name=Test;emotes=65:0-7/30259:18-24;first-msg=0;flags=;id=1234;mod=0;msg-id=gigantified-emote-message;returning-chatter=0;room-id=1234;subscriber=0;tmi-sent-ts=1234;turbo=0;user-id=1234;user-type=;vip=1 :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :FrankerZ ZreknarF HeyGuys";
+        }
         if (type.equals("custom")) {
             String[] parts = options.split("&");
             String badges = parts[0];

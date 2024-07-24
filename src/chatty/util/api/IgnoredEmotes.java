@@ -240,7 +240,7 @@ public class IgnoredEmotes {
     public static void main(String[] args) {
         Item item = Item.parse("abc type:ffz in:c");
         System.out.println(item);
-        Emoticon emote = (new Emoticon.Builder(Emoticon.Type.FFZ, "abc", null)).build();
+        Emoticon emote = (new Emoticon.Builder(Emoticon.Type.FFZ, "abc")).build();
         System.out.println(item.matches(emote, CHAT));
         System.out.println(Item.create(emote, 0));
     }

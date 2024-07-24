@@ -3,7 +3,9 @@ package chatty.util.api;
 
 import chatty.Helper;
 import chatty.User;
+import chatty.util.BTTVEmotes;
 import chatty.util.ImageCache.ImageResult;
+import chatty.util.ImageUrl;
 import chatty.util.StringUtil;
 import chatty.util.api.CachedImage.ImageType;
 import java.awt.Dimension;
@@ -19,8 +21,10 @@ import java.util.regex.PatternSyntaxException;
 import chatty.util.api.CachedImage.CachedImageUser;
 import chatty.util.seventv.WebPUtil;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * A single emoticon, that contains a pattern, an URL to the image and
@@ -106,11 +110,10 @@ public class Emoticon {
     public final String regex;
     public final String emoteset;
     private final Set<String> streamRestrictions;
-    public final String url;
+    public final ImageUrl url;
     public final boolean literal;
     public final String stringId;
     public final String stringIdAlias;
-    public final String urlX2;
     public final String creator;
     
     private String stream;
@@ -136,11 +139,11 @@ public class Emoticon {
         
         private final Type type;
         private final String search;
-        private final String url;
+        private final Map<Integer, String> urls = new HashMap<>();
         
+        private ImageUrl imageUrl;
         private String regex;
         private SubType subtype;
-        private String urlX2;
         private int width = -1;
         private int height = -1;
         private boolean literal = false;
@@ -155,10 +158,9 @@ public class Emoticon {
         private boolean isAnimated = false;
         private boolean isZeroWidth = false;
         
-        public Builder(Type type, String search, String url) {
+        public Builder(Type type, String search) {
             this.type = type;
             this.search = search;
-            this.url = url;
         }
         
         public Builder setRegex(String regex) {
@@ -212,8 +214,13 @@ public class Emoticon {
             return this;
         }
         
-        public Builder setX2Url(String url) {
-            this.urlX2 = url;
+        public Builder addUrl(int scale, String url) {
+            urls.put(scale, Helper.checkHttpUrl(url));
+            return this;
+        }
+        
+        public Builder setImageUrl(ImageUrl url) {
+            this.imageUrl = url;
             return this;
         }
         
@@ -265,7 +272,7 @@ public class Emoticon {
      */
     public String getEmoteUrl(int factor, ImageType imageType) {
         if (type == Type.TWITCH || type == Type.CUSTOM2) {
-            if (stringId != null) {
+            if (stringId != null && (factor == 1 || factor == 2 || factor == 4)) {
                 return getTwitchEmoteUrlById(stringId, factor, imageType);
             }
         } else if (type == Type.BTTV && stringId != null) {
@@ -274,8 +281,8 @@ public class Emoticon {
             return getSevenTVEmoteUrl(stringId, factor);
         } else if (type == Type.FFZ) {
             return getFFZUrl(factor);
-        } else if (factor == 1) {
-            return url;
+        } else if (url != null) {
+            return url.getUrl(stringId, factor);
         }
         return null;
     }
@@ -297,31 +304,41 @@ public class Emoticon {
     }
     
     public String getBttvEmoteUrl(String id, int factor) {
-        if (url == null || url.isEmpty()) {
-            return null;
+        if (factor == 1 || factor == 2 || factor == 4) {
+            if (factor == 4) {
+                factor = 3;
+            }
+            String result = BTTVEmotes.TEMPLATE;
+            result = result.replace("{{id}}", id);
+            result = result.replace("{{image}}", factor + "x");
+            if (WebPUtil.shouldUseWebP()) {
+                result += ".webp";
+            }
+            return result;
         }
-        String result = url;
-        result = result.replace("{{id}}", id);
-        result = result.replace("{{image}}", factor + "x");
-        if (WebPUtil.shouldUseWebP()) {
-            result += ".webp";
-        }
-        return result;
+        return null;
     }
     
     public String getFFZUrl(int factor) {
-        String gif = isAnimated() && !WebPUtil.shouldUseWebP() ? ".gif" : "";
-        if (factor == 2 && urlX2 != null) {
-            return urlX2+gif;
+        if (url == null) {
+            return null;
         }
-        return url+gif;
+        String result = url.getUrl(stringId, factor);
+        if (result == null) {
+            return null;
+        }
+        String gif = isAnimated() && !WebPUtil.shouldUseWebP() ? ".gif" : "";
+        return result+gif;
     }
     
     public String getSevenTVEmoteUrl(String id, int factor) {
-        if (StringUtil.isNullOrEmpty(id) || StringUtil.isNullOrEmpty(url) || factor > 4) {
+        if (StringUtil.isNullOrEmpty(id) || url == null || factor > 4) {
             return null;
         }
-        String result = url.replace("{size}", factor+"x");
+        String result = url.getUrl(id, factor);
+        if (result == null) {
+            return null;
+        }
         if (!WebPUtil.shouldUseWebP()) {
             if (isAnimated()) {
                 result = result.replace(".webp", ".gif");
@@ -354,8 +371,15 @@ public class Emoticon {
 
         this.type = builder.type;
         this.emoteset = builder.emoteset;
-        this.url = Helper.checkHttpUrl(builder.url);
-        this.urlX2 = Helper.checkHttpUrl(builder.urlX2);
+        if (builder.imageUrl != null) {
+            this.url = builder.imageUrl;
+        }
+        else if (!builder.urls.isEmpty()) {
+            this.url = new ImageUrl.Builder(builder.stringId, builder.urls).build();
+        }
+        else {
+            this.url = null;
+        }
         
         int width = builder.width;
         int height = builder.height;

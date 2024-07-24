@@ -48,7 +48,7 @@ public class EmoticonParsing {
                     // Channel emotes API doesn't include owner_id
                     owner_id = streamId;
                 }
-                Emoticon.Builder builder = new Emoticon.Builder(Emoticon.Type.TWITCH, code, null);
+                Emoticon.Builder builder = new Emoticon.Builder(Emoticon.Type.TWITCH, code);
                 builder.setStringId(id);
                 builder.setEmoteset(set);
                 builder.setStream(streamName);

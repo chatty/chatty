@@ -557,14 +557,22 @@ public class ImageCache {
             Dimension expectedSize = getScaledSize(defaultSize, scaleFactor, maxHeight);
             int actualUrlFactor = 1;
             String preferredUrl = null;
-            if (expectedSize.width > defaultSize.width) {
-                preferredUrl = urlRequester.apply(2);
+            int preferredFactor = getPreferredScale(expectedSize, defaultSize);
+            for (int f = preferredFactor; f <= 4; f++) {
+                preferredUrl = urlRequester.apply(f);
                 if (preferredUrl != null) {
-                    actualUrlFactor = 2;
+                    actualUrlFactor = f;
+                    break;
                 }
             }
             if (preferredUrl == null) {
-                preferredUrl = urlRequester.apply(1);
+                for (int f = preferredFactor - 1; f > 0; f--) {
+                    preferredUrl = urlRequester.apply(f);
+                    if (preferredUrl != null) {
+                        actualUrlFactor = f;
+                        break;
+                    }
+                }
             }
             URL actualUrl = null;
             try {
@@ -688,6 +696,13 @@ public class ImageCache {
                 resultHeight = MAX_SCALED_HEIGHT;
             }
             return new Dimension(resultWidth, resultHeight);
+        }
+        
+        private static int getPreferredScale(Dimension expectedSize, Dimension defaultSize) {
+            if (expectedSize.width > 0 && defaultSize.width > 0) {
+                return MathUtil.divRoundUp(expectedSize.width, defaultSize.width);
+            }
+            return 1;
         }
 
         /**

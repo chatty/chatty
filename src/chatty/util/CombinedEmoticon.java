@@ -59,7 +59,8 @@ public class CombinedEmoticon extends Emoticon {
     public static CombinedEmoticon create(List<Emoticon> emotes, String code, ImageType imageType) {
         Debugging.println("combinedemotes", "Create: %s", emotes);
         Emoticon base = emotes.get(0);
-        Emoticon.Builder b = new Emoticon.Builder(base.type, code, base.url);
+        Emoticon.Builder b = new Emoticon.Builder(base.type, code);
+        b.setImageUrl(base.url);
         b.setStringId(base.stringId);
         b.setStringIdAlias(base.stringIdAlias);
         b.setLiteral(base.literal);
@@ -75,7 +76,6 @@ public class CombinedEmoticon extends Emoticon {
             }
         }
         b.setSize(maxWidth, maxHeight);
-        b.setX2Url(base.urlX2);
         b.setSubType(base.subType);
         b.addInfo("Special Combined Emote");
         return new CombinedEmoticon(b, emotes, imageType);

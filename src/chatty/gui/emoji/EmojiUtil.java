@@ -95,7 +95,8 @@ public class EmojiUtil {
             String filename, String name, String alias, String category, String unicodeVersion) {
         String url = EmojiUtil.class.getResource(set.internalPath+filename).toString();
         //System.out.println(url);
-        Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.EMOJI, code, url);
+        Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.EMOJI, code);
+        b.addUrl(1, url);
         b.setCreator(set.name);
         b.setSize(24, 24);
         if (name != null) {

@@ -150,7 +150,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         URL_DELETED, DELETED_LINE, EMOTICON, IS_APPENDED_INFO, INFO_TEXT, BANS,
         BAN_MESSAGE, ID, ID_AUTOMOD, AUTOMOD_ACTION, USERICON, IMAGE_ID, ANIMATED,
         APPENDED_INFO_UPDATED, MENTION, USERICON_INFO, GENERAL_LINK,
-        REPEAT_MESSAGE_COUNT, LOW_TRUST_INFO, IS_RESTRICTED,
+        REPEAT_MESSAGE_COUNT, LOW_TRUST_INFO, IS_RESTRICTED, POWER_UP_INFO,
         
         HIGHLIGHT_WORD, HIGHLIGHT_LINE, HIGHLIGHT_SOURCE, EVEN, PARAGRAPH_SPACING,
         CUSTOM_BACKGROUND, CUSTOM_BACKGROUND_ORIG, CUSTOM_FOREGROUND,
@@ -179,6 +179,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         
         ACTION_COLORED, LINKS_CUSTOM_COLOR, BUFFER_SIZE, AUTO_SCROLL_TIME,
         EMOTICON_MAX_HEIGHT, EMOTICON_SCALE_FACTOR, USERICON_SCALE_FACTOR,
+        EMOTICON_SCALE_FACTOR_GIGANTIFIED,
         CUSTOM_USERICON_SCALE_MODE, BOT_BADGE_ENABLED, CHANNEL_LOGO_SIZE,
         FILTER_COMBINING_CHARACTERS, PAUSE_ON_MOUSEMOVE,
         PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED,
@@ -676,6 +677,13 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         }
         finishLine();
         
+        String powerUpInfo = message.tags.getPowerUpInfo();
+        if (powerUpInfo != null) {
+            changeInfo(getLastLine(doc), (attributes) -> {
+                attributes.addAttribute(Attribute.POWER_UP_INFO, powerUpInfo);
+            });
+        }
+        
         int repeatMsg = RepeatMsgHelper.getRepeatMsg(message.tags);
         if (repeatMsg > 1) {
             changeInfo(getLastLine(doc), (attributes) -> {
@@ -1037,6 +1045,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             // Make text based on current attributes
             //---------------------------------------
             String text = "";
+            
+            String powerUpInfo = (String)attributes.getAttribute(Attribute.POWER_UP_INFO);
+            if (!StringUtil.isNullOrEmpty(powerUpInfo)) {
+                text = StringUtil.append(text, " ", "["+powerUpInfo+"]");
+            }
+            
             Integer repeatMsgCount = (Integer)attributes.getAttribute(Attribute.REPEAT_MESSAGE_COUNT);
             if (repeatMsgCount != null && repeatMsgCount > 1) {
                 text += String.format("(x%d)", repeatMsgCount);
@@ -2479,7 +2493,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         }
         
         if (styles.isEnabled(Setting.EMOTICONS_ENABLED)) {
-            findEmoticons(text, user, ranges, rangesStyle, emotes);
+            findEmoticons(text, user, ranges, rangesStyle, emotes, tags != null && tags.hasGigantifiedEmote());
             if (containsBits) {
                 findBits(main.emoticons.getCheerEmotes(), text, ranges, rangesStyle, user);
             }
@@ -2761,7 +2775,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     }
     
     private void findEmoticons(String text, User user, Map<Integer, Integer> ranges,
-            Map<Integer, MutableAttributeSet> rangesStyle, TagEmotes tagEmotes) {
+            Map<Integer, MutableAttributeSet> rangesStyle, TagEmotes tagEmotes, boolean gigantified) {
         
         Set<String> accessToSets = user.isLocalUser() ? main.emoticons.getLocalEmotesets() : null;
         findEmoticons(user, main.emoticons.getCustomEmotes(), text, ranges, rangesStyle, accessToSets);
@@ -2780,7 +2794,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         if (tagEmotes != null) {
             // Add emotes from tags
             Map<String, Emoticon> emoticonsById = main.emoticons.getEmoticonsById();
-            addTwitchTagsEmoticons(user, emoticonsById, text, ranges, rangesStyle, tagEmotes);
+            addTwitchTagsEmoticons(user, emoticonsById, text, ranges, rangesStyle, tagEmotes, gigantified);
         }
         
         // Sent messages
@@ -2847,7 +2861,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                         // combined emote still needs to be created
                         if (emotes.size() > 1) {
                             Emoticon emote = main.emoticons.getCombinedEmote(emotes, styles.emoticonImageType());
-                            styleChanges.put(baseStart, styles.emoticon(emote));
+                            styleChanges.put(baseStart, styles.emoticon(emote, false));
                         }
                         // Always reset when it's not an overlay emote
                         emotes.clear();
@@ -2864,7 +2878,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             // Finish any remaining changes
             if (emotes.size() > 1) {
                 Emoticon emote = main.emoticons.getCombinedEmote(emotes, styles.emoticonImageType());
-                styleChanges.put(baseStart, styles.emoticon(emote));
+                styleChanges.put(baseStart, styles.emoticon(emote, false));
             }
             // Apply changes (except removing entries, which is already done)
             for (Entry<Integer, Integer> entry : changes.entrySet()) {
@@ -2887,11 +2901,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
      */
     private void addTwitchTagsEmoticons(User user, Map<String, Emoticon> emoticons, String text,
             Map<Integer, Integer> ranges, Map<Integer, MutableAttributeSet> rangesStyle,
-            TagEmotes emotesDef) {
+            TagEmotes emotesDef, boolean gigantified) {
         if (emotesDef == null) {
             return;
         }
         Map<Integer, Emoticons.TagEmote> def = emotesDef.emotes;
+        int lastIndex = emotesDef.getLargestIndex();
         
         /**
          * Iterate over each character of the message and check if an emote starts
@@ -2908,9 +2923,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         int offset = 0;
         for (int i=0;i<text.length();) {
             
-            if (def.containsKey(i-offset)) {
+            int currentIndex = i - offset;
+            if (def.containsKey(currentIndex)) {
                 // An emote starts at the current position, so add it.
-                Emoticons.TagEmote emoteData = def.get(i-offset);
+                Emoticons.TagEmote emoteData = def.get(currentIndex);
                 String id = emoteData.id;
                 int start = i;
                 int end = emoteData.end+offset;
@@ -2930,14 +2946,14 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                          */
                         String code = text.substring(start, end+1);
                         Emoticon.Builder b = new Emoticon.Builder(
-                                Emoticon.Type.TWITCH, code, null);
+                                Emoticon.Type.TWITCH, code);
                         b.setStringId(id);
                         b.setEmoteset(Emoticon.SET_UNKNOWN);
                         emoticon = b.build();
                         main.emoticons.addTempEmoticon(emoticon);
                     }
                     if (!main.emoticons.isEmoteIgnored(emoticon, IgnoredEmotes.CHAT)) {
-                        addEmoticon(emoticon, start, end, ranges, rangesStyle);
+                        addEmoticon(emoticon, start, end, ranges, rangesStyle, gigantified && currentIndex == lastIndex);
                     }
                 }
             }
@@ -2983,7 +2999,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                 // For Emoji, check for text style variation selector
                 boolean textEmoji = emoticon.type == Emoticon.Type.EMOJI && m.group().endsWith("\uFE0E");
                 if (!textEmoji) {
-                    addEmoticon(emoticon, start, end, ranges, rangesStyle);
+                    addEmoticon(emoticon, start, end, ranges, rangesStyle, false);
                 }
             }
         }
@@ -3010,7 +3026,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                         continue;
                     }
                     boolean ignored = main.emoticons.isEmoteIgnored(emote, IgnoredEmotes.CHAT);
-                    if (!ignored && addEmoticon(emote, start, end - bitsLength, ranges, rangesStyle)) {
+                    if (!ignored && addEmoticon(emote, start, end - bitsLength, ranges, rangesStyle, false)) {
                         // Add emote
                         addFormattedText(emote.color, end - bitsLength + 1, end, ranges, rangesStyle);
                     } else {
@@ -3026,10 +3042,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     
     private boolean addEmoticon(Emoticon emoticon, int start, int end,
             Map<Integer, Integer> ranges,
-            Map<Integer, MutableAttributeSet> rangesStyle) {
+            Map<Integer, MutableAttributeSet> rangesStyle, boolean gigantified) {
         if (!inRanges(start, ranges) && !inRanges(end, ranges)) {
             ranges.put(start, end);
-            MutableAttributeSet attr = styles.emoticon(emoticon);
+            MutableAttributeSet attr = styles.emoticon(emoticon, gigantified);
             // Add an extra attribute, making this Style unique
             // (else only one icon will be output if two of the same
             // follow in a row)
@@ -3847,6 +3863,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             addNumericSetting(Setting.AUTO_SCROLL_TIME, 30, 5, 1234);
             addNumericSetting(Setting.EMOTICON_MAX_HEIGHT, 200, 0, 300);
             addNumericSetting(Setting.EMOTICON_SCALE_FACTOR, 100, 1, 200);
+            addNumericSetting(Setting.EMOTICON_SCALE_FACTOR_GIGANTIFIED, 150, 1, 200);
             addNumericSetting(Setting.USERICON_SCALE_FACTOR, 100, 1, 200);
             addNumericSetting(Setting.CUSTOM_USERICON_SCALE_MODE, 0, 0, 10);
             addNumericSetting(Setting.DISPLAY_NAMES_MODE, 0, 0, 10);
@@ -4223,12 +4240,19 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             return style;
         }
         
-        public int emoticonMaxHeight() {
-            return numericSettings.get(Setting.EMOTICON_MAX_HEIGHT);
+        public int emoticonMaxHeight(boolean gigantified) {
+            return (int)(numericSettings.get(Setting.EMOTICON_MAX_HEIGHT) * gigantifiedFactor(gigantified));
         }
         
-        public float emoticonScaleFactor() {
-            return (float)(numericSettings.get(Setting.EMOTICON_SCALE_FACTOR) / 100.0);
+        public float emoticonScaleFactor(boolean gigantified) {
+            return (float)(numericSettings.get(Setting.EMOTICON_SCALE_FACTOR) / 100.0) * gigantifiedFactor(gigantified);
+        }
+        
+        private float gigantifiedFactor(boolean gigantified) {
+            if (gigantified) {
+                return (float)(numericSettings.get(Setting.EMOTICON_SCALE_FACTOR_GIGANTIFIED) / 100.0);
+            }
+            return 1;
         }
         
         public float usericonScaleFactor() {
@@ -4273,13 +4297,14 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
          * Make a style with the given icon.
          * 
          * @param emoticon
+         * @param gigantified
          * @return 
          */
-        public MutableAttributeSet emoticon(Emoticon emoticon) {
+        public MutableAttributeSet emoticon(Emoticon emoticon, boolean gigantified) {
             // Does this need any other attributes e.g. standard?
             SimpleAttributeSet emoteStyle = new SimpleAttributeSet();
             CachedImage<Emoticon> emoteImage = emoticon.getIcon(
-                    emoticonScaleFactor(), emoticonMaxHeight(), emoticonImageType(), ChannelTextPane.this);
+                    emoticonScaleFactor(gigantified), emoticonMaxHeight(gigantified), emoticonImageType(), ChannelTextPane.this);
             StyleConstants.setIcon(emoteStyle, emoteImage.getImageIcon());
             
             emoteStyle.addAttribute(Attribute.EMOTICON, emoteImage);

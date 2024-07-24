@@ -1109,7 +1109,8 @@ public class Emoticons {
         
         // With code and URL found we can add the emote, other stuff is optional
         if (code != null && url != null) {
-            Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.CUSTOM, code, url);
+            Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.CUSTOM, code);
+            b.addUrl(1, url);
             b.setLiteral(literal).setEmoteset(emoteset);
             b.setStringId(id);
             if (size != null) {
@@ -1218,7 +1219,7 @@ public class Emoticons {
     }
     
     private static Emoticon testBuild(String code) {
-       Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.TWITCH, code, "");
+       Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.TWITCH, code);
        return b.build();
     }
     
@@ -1258,6 +1259,14 @@ public class Emoticons {
             hash = 37 * hash + Objects.hashCode(this.emotes);
             return hash;
         }
+        
+        public int getLargestIndex() {
+            if (emotes == null || emotes.isEmpty()) {
+                return -1;
+            }
+            return Collections.max(emotes.keySet());
+        }
+        
     }
     
     /**

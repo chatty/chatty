@@ -12,7 +12,9 @@ import chatty.util.UrlRequest;
 import chatty.util.api.Emoticon;
 import chatty.util.api.EmoticonUpdate;
 import chatty.util.api.TwitchApi;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
@@ -157,15 +159,24 @@ public class SevenTV {
             boolean animated = JSONUtil.getBoolean(data, "animated", false);
             JSONObject host = (JSONObject) data.get("host");
 
-            File file = getFile(host);
-            if (file == null) {
+            List<File> files = getFiles(host);
+            if (files == null) {
                 LOGGER.warning("SevenTV emote: No file found");
                 return null;
             }
-            int width = file.width;
-            int height = file.height;
             
-            Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.SEVENTV, code, file.url);
+            int width = Integer.MAX_VALUE;
+            int height = Integer.MAX_VALUE;
+            
+            Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.SEVENTV, code);
+            for (File file : files) {
+                width = Integer.min(width, file.width);
+                height = Integer.min(height, file.height);
+            }
+            for (File file : files) {
+                int scale = file.width / width;
+                b.addUrl(scale, file.url);
+            }
             b.setSize(width, height);
             b.setStringId(id);
             b.setAnimated(animated);
@@ -183,11 +194,12 @@ public class SevenTV {
         }
     }
     
-    private File getFile(JSONObject host) {
+    private List<File> getFiles(JSONObject host) {
         String baseUrl = JSONUtil.getString(host, "url");
         if (baseUrl == null) {
             return null;
         }
+        List<File> result = new ArrayList<>();
         JSONArray files = (JSONArray) host.get("files");
         for (Object o : files) {
             JSONObject file = (JSONObject) o;
@@ -195,12 +207,10 @@ public class SevenTV {
                 String name = (String) file.get("name");
                 int width = JSONUtil.getInteger(file, "width", -1);
                 int height = JSONUtil.getInteger(file, "height", -1);
-                if (name.contains("1x") && width != -1 && height != -1) {
-                    return new File(baseUrl+"/"+name.replace("1x", "{size}"), width, height);
-                }
+                result.add(new File(baseUrl+"/"+name, width, height));
             }
         }
-        return null;
+        return result;
     }
     
     private static class File {

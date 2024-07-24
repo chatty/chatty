@@ -112,6 +112,23 @@ public class MsgTags extends IrcMsgTags {
                 getHypeChatAmountText());
     }
     
+    public String getPowerUpInfo() {
+        if (hasValue("msg-id")) {
+            switch (get("msg-id")) {
+                case "gigantified-emote-message":
+                    return "Gigantified Emote";
+                case "animated-message":
+                    return String.format("Styled Message (%s)",
+                                         StringUtil.shortenTo(get("animation-id"), 20));
+            }
+        }
+        return null;
+    }
+    
+    public boolean hasGigantifiedEmote() {
+        return isValue("msg-id", "gigantified-emote-message");
+    }
+    
     //================
     // Factory Methods
     //================

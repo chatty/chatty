@@ -39,7 +39,7 @@ public class CheerEmoticon extends Emoticon {
     
     public static CheerEmoticon create(String prefix, int min_bits, Color color,
             Set<CheerEmoticonUrl> urls, String stream) {
-        Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.TWITCH, "(?i)"+prefix+"([0-9]+)", "");
+        Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.TWITCH, "(?i)"+prefix+"([0-9]+)");
         b.setSubType(Emoticon.SubType.CHEER);
         b.addInfo(Helper.formatViewerCount(min_bits)+" bits");
         b.addStreamRestriction(stream);

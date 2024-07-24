@@ -123,7 +123,7 @@ public class ChattyMisc {
                 String id = JSONUtil.getString(emoteData, "id");
                 String code = JSONUtil.getString(emoteData, "code");
                 String regex = JSONUtil.getString(emoteData, "regex");
-                Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.TWITCH, code, null);
+                Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.TWITCH, code);
                 b.setStringId(id);
                 b.setRegex(regex);
                 result.get(type).add(b.build());

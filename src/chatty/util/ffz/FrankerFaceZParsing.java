@@ -198,8 +198,6 @@ public class FrankerFaceZParsing {
                 urls = (JSONObject)emote.get("animated");
                 isAnimated = true;
             }
-            String url1 = (String)urls.get("1");
-            String url2 = (String)urls.get("2");
             
             int id = ((Number)emote.get("id")).intValue();
             
@@ -214,12 +212,13 @@ public class FrankerFaceZParsing {
             if (code == null || code.isEmpty()) {
                 return null;
             }
-            if (url1 == null || url1.isEmpty()) {
-                return null;
-            }
             
-            Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.FFZ, code, url1);
-            b.setX2Url(url2);
+            Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.FFZ, code);
+            for (Object key : urls.keySet()) {
+                int scale = Integer.parseInt((String) key);
+                String url = (String) urls.get(key);
+                b.addUrl(scale, url);
+            }
             b.setSize(width, height);
             b.setCreator(creator);
             b.setStringId(String.valueOf(id));

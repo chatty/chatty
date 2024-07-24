@@ -422,7 +422,10 @@ public class Usericon implements Comparable {
                     if (scale == 2) {
                         return url2 != null ? url2.toString() : null;
                     }
-                    return url.toString();
+                    else if (scale == 1) {
+                        return url.toString();
+                    }
+                    return null;
                 }
 
                 @Override

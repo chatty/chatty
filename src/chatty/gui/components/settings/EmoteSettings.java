@@ -26,6 +26,7 @@ import javax.swing.table.TableCellRenderer;
 import chatty.util.api.CachedImage.CachedImageUser;
 import chatty.util.api.IgnoredEmotes;
 import chatty.util.seventv.WebPUtil;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Window;
@@ -71,7 +72,7 @@ public class EmoteSettings extends SettingsPanel {
                 d.makeGbc(0, 3, 1, 1, GridBagConstraints.WEST));
         ComboLongSetting emoteScale = new ComboLongSetting(makeScaleValues());
         d.addLongSetting("emoteScale", emoteScale);
-        main.add(emoteScale, d.makeGbc(1, 3, 1, 1, GridBagConstraints.CENTER));
+        main.add(emoteScale, d.makeGbc(1, 3, 1, 1, GridBagConstraints.WEST));
         
         // Maximum Emote Height (Chat)
         main.add(new JLabel(Language.getString("settings.emoticons.maxHeight")),
@@ -81,18 +82,24 @@ public class EmoteSettings extends SettingsPanel {
         main.add(new JLabel(Language.getString("settings.emoticons.maxHeightPixels")),
                 d.makeGbc(4, 3, 1, 1, GridBagConstraints.WEST));
         
+        main.add(new JLabel(Language.getString("settings.emoticons.gigantifiedScale")),
+                d.makeGbc(0, 4, 1, 1, GridBagConstraints.WEST));
+        ComboLongSetting emoteScaleGigantified = new ComboLongSetting(makeScaleValuesGigantified());
+        d.addLongSetting("emoteScaleGigantified", emoteScaleGigantified);
+        main.add(emoteScaleGigantified, d.makeGbc(1, 4, 1, 1, GridBagConstraints.WEST));
+        
         // Emotes Dialog Emote Scale
         main.add(new JLabel(Language.getString("settings.emoticons.dialogScale")),
-                d.makeGbc(0, 4, 1, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 5, 1, 1, GridBagConstraints.WEST));
         ComboLongSetting emoteScaleDialog = new ComboLongSetting(makeScaleValues());
         d.addLongSetting("emoteScaleDialog", emoteScaleDialog);
-        main.add(emoteScaleDialog, d.makeGbc(1, 4, 1, 1, GridBagConstraints.CENTER));
+        main.add(emoteScaleDialog, d.makeGbc(1, 5, 1, 1, GridBagConstraints.WEST));
         
         //-------
         // Other
         //-------
         main.add(d.addSimpleBooleanSetting("closeEmoteDialogOnDoubleClick"),
-                d.makeGbc(0, 5, 3, 1));
+                d.makeGbc(0, 6, 3, 1));
         
         //--------------------------
         // Animations
@@ -103,11 +110,11 @@ public class EmoteSettings extends SettingsPanel {
         SettingsUtil.addSubsettings(animatePauseSetting, s -> s != 2, animatePauseFrameSetting);
         
         SettingsUtil.addLabeledComponent(main, "animationPause",
-                0, 6, 4, GridBagConstraints.WEST,
+                0, 7, 4, GridBagConstraints.WEST,
                 animatePauseSetting);
         
         SettingsUtil.addLabeledComponent(main, "animationPauseFrame",
-                0, 7, 4, GridBagConstraints.WEST,
+                0, 8, 4, GridBagConstraints.WEST,
                 animatePauseFrameSetting);
         
         //--------------------------
@@ -115,14 +122,14 @@ public class EmoteSettings extends SettingsPanel {
         //--------------------------
         JLabel webpTest = new JLabel("WebP not supported.");
         main.add(webpTest,
-                SettingsDialog.makeGbc(2, 8, 3, 1, GridBagConstraints.WEST));
+                SettingsDialog.makeGbc(2, 9, 3, 1, GridBagConstraints.WEST));
         WebPUtil.runIfWebPAvailable(() -> {
             webpTest.setText("WebP is supported.");
         });
         
         main.add(
                 d.addSimpleBooleanSetting("webp"),
-                d.makeGbc(0, 8, 2, 1, GridBagConstraints.WEST));
+                d.makeGbc(0, 9, 2, 1, GridBagConstraints.WEST));
         
         //==========================
         // Provider specific
@@ -263,12 +270,16 @@ public class EmoteSettings extends SettingsPanel {
     
     public static Map<Long, String> makeScaleValues() {
         final Map<Long, String> scaleDef = new LinkedHashMap<>();
-        for (int i=50;i<=200;i += 10) {
-            if (i == 10) {
-                scaleDef.put((long)i, "Normal");
-            } else {
-                scaleDef.put((long)i, (i)+"%");
-            }
+        for (int i = 50; i <= 200; i += 10) {
+            scaleDef.put((long) i, (i) + "%");
+        }
+        return scaleDef;
+    }
+    
+    public static Map<Long, String> makeScaleValuesGigantified() {
+        final Map<Long, String> scaleDef = new LinkedHashMap<>();
+        for (int i = 100; i <= 200; i += 10) {
+            scaleDef.put((long) i, "+" + (i - 100) + "%");
         }
         return scaleDef;
     }
@@ -545,7 +556,7 @@ public class EmoteSettings extends SettingsPanel {
         List<IgnoredEmotes.Item> matches = new ArrayList<>();
         matches.add(IgnoredEmotes.Item.parse("Kappa for:c"));
         matches.add(IgnoredEmotes.Item.parse("Kappa for:t"));
-        Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.TWITCH, "Kappa", null);
+        Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.TWITCH, "Kappa");
 //        b.setStringId("123abc");
         System.out.println(new EditIgnoredEmote(null).showDialog(null, b.build(), matches));
         System.exit(0);

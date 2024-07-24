@@ -43,7 +43,7 @@ public class LocalEmotesSetting extends AdvancedSetting<Emoticon> {
     }
     
     private Emoticon createEmote(String id, String code) {
-        Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.CUSTOM2, code, null);
+        Emoticon.Builder b = new Emoticon.Builder(Emoticon.Type.CUSTOM2, code);
         b.setStringId(id);
         return b.build();
     }
