@@ -44,7 +44,7 @@ import javax.swing.event.DocumentListener;
  */
 public class Editor implements StringEditor {
     
-    private static final int INPUT_LENGTH_LIMIT = 100*1000;
+    private static final int INPUT_LENGTH_LIMIT = 200*1000;
 
     private final JDialog dialog;
     private final JLabel label;

@@ -58,7 +58,7 @@ public class MainSettings extends SettingsPanel {
         SettingsUtil.addLabeledComponent(startSettingsPanel, "settings.startup.onStart", 0, 1, 1, EAST, onStart);
         
         JTextField channels = d.addSimpleStringSetting("autojoinChannel", 25, true);
-        GuiUtil.installLengthLimitDocumentFilter(channels, 8000, false);
+        GuiUtil.installLengthLimitDocumentFilter(channels, 80000, false);
         SettingsUtil.addLabeledComponent(startSettingsPanel, "settings.startup.channels", 0, 2, 1, EAST, channels);
         
         JCheckBox connectDialogIfMissing = d.addSimpleBooleanSetting("connectDialogIfMissing");

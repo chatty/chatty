@@ -62,7 +62,7 @@ public class JoinDialog extends JDialog {
                 changed();
             }
         });
-        GuiUtil.installLengthLimitDocumentFilter(channels, 8000, false);
+        GuiUtil.installLengthLimitDocumentFilter(channels, 80000, false);
         TextSelectionMenu.install(channels);
         
         GridBagConstraints gbc;

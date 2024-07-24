@@ -103,7 +103,7 @@ public class FavoritesDialog extends JDialog {
                 channelsChanged();
             }
         });
-        GuiUtil.installLengthLimitDocumentFilter(input, 8000, false);
+        GuiUtil.installLengthLimitDocumentFilter(input, 80000, false);
         TextSelectionMenu.install(input);
         
         // Table

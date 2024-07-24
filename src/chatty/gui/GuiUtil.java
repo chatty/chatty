@@ -715,7 +715,11 @@ public class GuiUtil {
                 
                 int limit = defaultLimit;
                 
-                if (!inputLimitsEnabled) {
+                /**
+                 * If component isn't showing or is not focus owner it's likely
+                 * that the text was set automatically, not entered by the user.
+                 */
+                if (!inputLimitsEnabled || !comp.isShowing() || !comp.isFocusOwner()) {
                     limit = 0;
                 }
                 else {
@@ -747,7 +751,7 @@ public class GuiUtil {
                             popup.showPopup("Length limit reached");
                         }
                         else {
-                            popup.showPopup("Length limit reached ("+overLimit+" characters not added)");
+                            popup.showPopup("Length limit reached ("+overLimit+" over limit)");
                         }
                     }
                     if (!allowNewlines) {

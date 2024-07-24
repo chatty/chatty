@@ -41,7 +41,7 @@ public class SimplePopup {
     }
     
     public void showPopup(String text) {
-        if (owner == null) {
+        if (owner == null || !owner.isShowing()) {
             return;
         }
         hidePopup();

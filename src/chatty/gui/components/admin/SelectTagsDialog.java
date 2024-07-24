@@ -430,7 +430,7 @@ public class SelectTagsDialog extends JDialog {
         // Input
         JTextField input = new JTextField(25);
         input.setText(tag.getName());
-        GuiUtil.installLengthLimitDocumentFilter(input, 25, false);
+        GuiUtil.installLengthLimitDocumentFilter(input, MAX_TAG_LENGTH, false);
         dialog.add(input, GuiUtil.makeGbc(0, 0, 2, 1));
         dialog.add(GuiUtil.createInputLenghtLabel(input, 25), GuiUtil.makeGbc(2, 0, 1, 1));
         // Buttons
