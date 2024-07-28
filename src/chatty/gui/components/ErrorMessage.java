@@ -245,7 +245,7 @@ public class ErrorMessage extends JDialog {
         debugMessage.append(errorText);
     }
     
-    private String makeErrorText(LogRecord error, LinkedList<LogRecord> previous) {
+    public static String makeErrorText(LogRecord error, LinkedList<LogRecord> previous) {
         StringBuilder b = new StringBuilder();
         for (LogRecord r : previous) {
             // Should never be null, but since this may contain null and it

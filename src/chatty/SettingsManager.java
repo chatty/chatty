@@ -112,6 +112,7 @@ public class SettingsManager {
         settings.addLong("autoSaveSettings", 15);
         settings.addBoolean("debugLogIrc", false);
         settings.addBoolean("debugLogIrcFile", false);
+        settings.addString("ignoreError", "");
         settings.addBoolean("autoRequestMods", false);
         
         // Backup

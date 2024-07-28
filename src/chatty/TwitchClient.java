@@ -2054,6 +2054,8 @@ public class TwitchClient {
                     }
                 });
             }
+        } else if (command.equals("error")) {
+            Helper.unhandledException();
         } else if (command.equals("getuserid")) {
             if (parameter == null) {
                 g.printSystem("Parameter required.");

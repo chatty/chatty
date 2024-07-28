@@ -122,6 +122,7 @@ import chatty.util.gif.GifUtil;
 import chatty.util.history.HistoryUtil;
 import chatty.util.seventv.WebPUtil;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import org.json.simple.JSONValue;
 
 /**
@@ -5759,6 +5760,11 @@ public class MainGui extends JFrame implements Runnable {
 
             @Override
             public void run() {
+                String ignore = client.settings.getString("ignoreError");
+                if (!ignore.isEmpty()
+                        && Pattern.compile(ignore).matcher(ErrorMessage.makeErrorText(error, previous)).find()) {
+                    return;
+                }
                 int result = errorMessage.show(error, previous, client.getOpenChannels().size());
                 if (result == ErrorMessage.QUIT) {
                     exit();
