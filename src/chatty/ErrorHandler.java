@@ -34,7 +34,7 @@ public class ErrorHandler implements UncaughtExceptionHandler {
             return;
         }
         try {
-            String stacktrace = Logging.getStacktrace(e);
+            String stacktrace = StackTrace.getStacktrace(e);
             if (t != null && t.getName() != null && t.getName().startsWith("JKeyMaster-")) {
                 // Output as warning, but also show directly to user
                 LOGGER.warning(String.format("[%s/%s][%s][%s]\n%s",

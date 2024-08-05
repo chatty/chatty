@@ -74,20 +74,9 @@ public class CustomPaths {
 
     public synchronized void setCustom(Chatty.PathType type, Path path, String info, boolean requireExists) {
         ChattyPath p = get(type);
-        if (!path.isAbsolute()) {
-            path = Paths.get(System.getProperty("user.dir"), path.toString());
-        }
-        if (requireExists && !Files.isDirectory(path)) {
-            p.customDir = null;
-            p.invalidCustomDir = path.toString();
-            p.customInfo = info;
-        }
-        else {
-            p.customDir = path;
-            p.invalidCustomDir = null;
-            p.customInfo = info;
-        }
+        p.setCustomValuesForObject(path,info,requireExists);
     }
+
 
     public void setCustom(Chatty.PathType type, String path, String info, boolean requireExists) {
         setCustom(type, Paths.get(path), info, requireExists);
@@ -169,6 +158,18 @@ public class CustomPaths {
             return defaultDir;
         }
 
+        public synchronized void setCustomValuesForObject(Path path, String info, Boolean requireExists){
+            if (!path.isAbsolute()) {
+                path = Paths.get(System.getProperty("user.dir"), path.toString());
+            }
+            this.customDir = path;
+            this.invalidCustomDir = null;
+            this.customInfo = info;
+            if (requireExists && !Files.isDirectory(path)) {
+                this.customDir = null;
+                this.invalidCustomDir = path.toString();
+            }
+        }
         public Path getAndCreate() {
             Path path = get();
             path.toFile().mkdirs();
