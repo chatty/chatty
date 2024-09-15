@@ -185,12 +185,22 @@ public class HtmlColors {
     }
     
     public static String getNamedColorString(Color color) {
+        return getNamedColorString(color, false);
+    }
+    
+    public static String getNamedColorString(Color color, boolean verbose) {
         if (color == null) {
             return null;
         }
         for (NamedColor c : colors) {
             if (c.equals(color)) {
-                return c.getName();
+                if (verbose) {
+                    return String.format("%s (%s)",
+                                         c.getName(), getColorString(color));
+                }
+                else {
+                    return c.getName();
+                }
             }
         }
         return getColorString(color);

@@ -3551,6 +3551,7 @@ public class MainGui extends JFrame implements Runnable {
                                 || highlighter.getLastMatchItem().overrideIgnored()) {
                             ignored = false;
                         }
+                        tags = MsgTags.addTag(tags, MsgTags.IS_HIGHLIGHTED, "true");
                     }
                 }
                 
@@ -4034,6 +4035,7 @@ public class MainGui extends JFrame implements Runnable {
                         || highlighter.getLastMatchItem().overrideIgnored()) {
                     ignored = false;
                 }
+                tags = MsgTags.addTag(tags, MsgTags.IS_HIGHLIGHTED, "true");
             }
         }
         if (!ignored) {

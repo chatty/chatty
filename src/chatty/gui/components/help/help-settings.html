@@ -1092,6 +1092,9 @@
                     messages and regular user messages</li>
                 <li><code>config:hl</code> - Restrict matching to user messages
                     highlighted by using channel points</li>
+                <li><code>config:highlighted</code> - Applies when the message
+                    has been highlighted through the Highlight list, doesn't
+                    work for entries on the Highlight or Ignore list.</li>
                 <li><code>config:historic</code> - Applies to messages loaded
                     from the history service on channel join. This also allows
                     historic message to be matched for features that are
@@ -1215,6 +1218,11 @@
                 <li><code>config:!log</code> - Don't log the message to the
                     separate highlighted/ignored log file (may still be logged
                     to the channel log file)</li>
+                <li><code>config:followup</code> - Enable highlighting follow-up
+                    messages from the same user within 10s, regardless of the
+                    state of the setting in the Highlights settings
+                    (<code>config:followup|0</code> to force off regardless of
+                    setting).</li>
             </ul>
         </li>
         <li><code>n:</code> to provide a note that is ignored for matching.

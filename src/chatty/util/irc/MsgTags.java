@@ -129,6 +129,12 @@ public class MsgTags extends IrcMsgTags {
         return isValue("msg-id", "gigantified-emote-message");
     }
     
+    public static final String IS_HIGHLIGHTED = "chatty-highlighted";
+    
+    public boolean isChattyHighlighted() {
+        return hasValue(IS_HIGHLIGHTED);
+    }
+    
     //================
     // Factory Methods
     //================
@@ -201,11 +207,15 @@ public class MsgTags extends IrcMsgTags {
      */
     public static MsgTags addTag(MsgTags a, String key, String value) {
         Map<String, String> result = new HashMap<>();
-        a.fill(result);
+        if (a != null) {
+            a.fill(result);
+        }
         result.put(key, value);
         
         Map<String, Object> objectsResult = new HashMap<>();
-        a.fillObjects(objectsResult);
+        if (a != null) {
+            a.fillObjects(objectsResult);
+        }
         
         return new MsgTags(result, objectsResult);
     }
