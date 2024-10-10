@@ -21,6 +21,12 @@ public class UsericonContextMenu extends ContextMenu {
         this.listener = listener;
         this.usericonImage = usericonImage;
         Usericon usericon = usericonImage.getObject();
+
+        if (usericon.type == Usericon.Type.CHANNEL_LOGO) {
+            addItem("badgeImage", usericonImage.getSizeString(), ContextMenuHelper.ICON_IMAGE);
+            addItem("hideChannelLogo", "Hide channel logo");
+            return;
+        }
         
         //--------------------
         // General Description

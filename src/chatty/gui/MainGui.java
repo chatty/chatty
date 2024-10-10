@@ -2550,6 +2550,9 @@ public class MainGui extends JFrame implements Runnable {
             else if (e.getActionCommand().equals("badgeImage")) {
                 UrlOpener.openUrlPrompt(getActiveWindow(), usericonImage.getSourceUrl(), true);
             }
+            else if (e.getActionCommand().equals("hideChannelLogo")) {
+                JOptionPane.showMessageDialog(getActiveWindow(), "Custom Tabs/Stream Chat: Right-click on empty space to open context menu.");
+            }
         }
         
         @Override

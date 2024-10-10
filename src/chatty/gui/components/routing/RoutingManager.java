@@ -280,6 +280,7 @@ public class RoutingManager {
     protected void updateSettings(String targetId, RoutingTargetSettings settings) {
         entries.put(targetId, settings);
         targets.get(targetId).settingsUpdated();
+        saveSettings();
     }
     
     public static String toId(String name) {
@@ -294,7 +295,8 @@ public class RoutingManager {
         String targetId = toId(targetName);
         RoutingTargetSettings entry = entries.get(targetId);
         if (entry == null) {
-            entry = new RoutingTargetSettings(targetName, 1, true, false, "", 0, false, false);
+            entry = new RoutingTargetSettings(targetName, 1, true, false, "", 0, false, false,
+                    RoutingTargetSettings.CHANNEL_LOGO_DEFAULT);
             entries.put(targetId, entry);
         }
         return entry;
