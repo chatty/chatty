@@ -321,6 +321,11 @@ public class ChatLog {
             return settings.getBoolean("logIgnored2");
         }
         
+        // Custom Tabs logging has to be specifically enabled by the user anyway
+        if (channel.startsWith("customTab-")) {
+            return true;
+        }
+        
         // Check channel files (whispers also fall under this because it allows
         // setting it for individual $username channels)
         String mode = settings.getString("logMode");
