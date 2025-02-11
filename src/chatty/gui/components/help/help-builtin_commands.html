@@ -106,6 +106,15 @@
             in a menu)</li>
         <li><code>/insertword &lt;text&gt;</code> - Same as <code>/insert</code>,
             but adds spaces so it's separated from text before and after (if present)</li>
+        <li><code>/insert2 [-options] &lt;text&gt;</code> - Options:
+            <code>f</code> - Focus inputbox,
+            <code>p</code> - Insert at beginning of input (prepend),
+            <code>a</code> - Insert at the end of input (append),
+            <code>b</code> - Set caret to beginning after inserting,
+            <code>e</code> - Set caret to end after inserting,
+            <code>s</code> - Append space if necessary,
+            <code>c</code> - Insert in currently active channel (can sometimes differ from channel context of command).
+            Example: <code>/insert2 -fbe @$(nick)</code> (add username at start of inputbox and focus/set caret at end)</li>
         <li><code>/setSize &lt;width&gt; &lt;height&gt;</code> - Sets the main window size</li>
         <li><code>/echo &lt;text&gt;</code> - Outputs the given text as an info message</li>
         <li><code>/triggerNotification [-hmt] &lt;text&gt;</code> - Triggers a

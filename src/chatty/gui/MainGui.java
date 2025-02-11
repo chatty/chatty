@@ -25,6 +25,7 @@ import chatty.util.api.*;
 
 import java.util.List;
 import chatty.Chatty;
+import chatty.Commands;
 import chatty.TwitchClient;
 import chatty.Helper;
 import chatty.User;
@@ -2465,9 +2466,9 @@ public class MainGui extends JFrame implements Runnable {
             Emoticon emote = emoteImage.getObject();
             String url = null;
             if (e.getActionCommand().equals("code")) {
-                channels.getActiveChannel().insertText(emote.code, true);
+                channels.getActiveChannel().insertText(emote.code, "s");
             } else if (e.getActionCommand().equals("codeEmoji")) {
-                channels.getActiveChannel().insertText(emote.stringId, true);
+                channels.getActiveChannel().insertText(emote.stringId, "s");
             } else if (e.getActionCommand().equals("cheer")) {
                 url = "https://help.twitch.tv/customer/portal/articles/2449458";
             } else if (e.getActionCommand().equals("emoteImage")) {
@@ -2824,10 +2825,19 @@ public class MainGui extends JFrame implements Runnable {
             openSearchDialog();
         });
         client.commands.addEdt("insert", p -> {
-            insert(p.getArgs(), false);
+            insert(p.getRoom(), p.getArgs(), false);
         });
         client.commands.addEdt("insertWord", p -> {
-            insert(p.getArgs(), true);
+            insert(p.getRoom(), p.getArgs(), true);
+        });
+        client.commands.addEdt("insert2", "[-options] <text>", p -> {
+            Commands.CommandParsedArgs args = p.parsedArgs(1, 1);
+            if (args == null) {
+                printLine(p.getCommand().getUsage());
+            }
+            else {
+                insert(p.getRoom(), args.get(0), args.options);
+            }
         });
         client.commands.addEdt("openUrl", p -> {
             if (!UrlOpener.openUrl(p.getArgs())) {
@@ -2975,20 +2985,51 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public void insert(final String text, final boolean spaces) {
-        insert(text, spaces, false);
+        insert(channels.getLastActiveChannel().getRoom(), text, spaces, false);
     }
     
     public void insert(final String text, final boolean spaces, boolean focus) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                if (text != null) {
-                    channels.getLastActiveChannel().insertText(text, spaces);
-                    if (focus) {
-                        channels.getLastActiveChannel().requestFocus();
-                        channels.getLastActiveChannel().getInput().requestFocusInWindow();
-                    }
+        insert(channels.getLastActiveChannel().getRoom(), text, spaces, focus);
+    }
+    
+    public void insert(final Room room, final String text, final boolean spaces) {
+        insert(room, text, spaces, false);
+    }
+    
+    public void insert(final Room room, final String text, final boolean spaces, boolean focus) {
+        String options = spaces ? "s" : "";
+        options += focus ? "f" : "";
+        insert(room, text, options);
+    }
+    
+    /**
+     * 
+     * c - Current channel
+     * f - Focus input
+     * p - Prepend
+     * a - Append
+     * b - Set caret to beginning after inserting
+     * e - Set caret to end after inserting
+     * s - Add space if necessary
+     * 
+     * @param room
+     * @param text
+     * @param options 
+     */
+    public void insert(final Room room, final String text, final String options) {
+        SwingUtilities.invokeLater(() -> {
+            if (text != null) {
+                Channel chan;
+                if (options.contains("c")) {
+                    chan = channels.getLastActiveChannel();
+                }
+                else {
+                    chan = channels.getChannel(room);
+                }
+                chan.insertText(text, options);
+                if (options.contains("f")) {
+                    chan.requestFocus();
+                    chan.getInput().requestFocusInWindow();
                 }
             }
         });

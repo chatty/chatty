@@ -431,11 +431,23 @@ public final class Channel extends JPanel {
      * Insert text into the input box at the current caret position.
      * 
      * @param text
-     * @param withSpace 
+     * @param options 
      * @throws NullPointerException if the text is null
      */
-    public void insertText(String text, boolean withSpace) {
-        input.insertAtCaret(text, withSpace);
+    public void insertText(String text, String options) {
+        if (options.contains("p")) {
+            input.setCaretPosition(0);
+        }
+        else if (options.contains("a")) {
+            input.setCaretPosition(input.getText().length());
+        }
+        input.insertAtCaret(text, options.contains("s"));
+        if (options.contains("b")) {
+            input.setCaretPosition(0);
+        }
+        if (options.contains("e")) {
+            input.setCaretPosition(input.getText().length());
+        }
     }
     
     public void scroll(String action) {
