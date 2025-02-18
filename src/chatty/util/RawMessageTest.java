@@ -1,8 +1,16 @@
 
 package chatty.util;
 
-import chatty.util.api.CheerEmoticon;
+import chatty.Chatty;
+import chatty.TwitchConnection;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -202,6 +210,21 @@ public class RawMessageTest {
         if (type.equals("gigantified2")) {
             return "@badge-info=;badges=vip/1;color=#0000FF;display-name=Test;emotes=65:0-7/30259:18-24;first-msg=0;flags=;id=1234;mod=0;msg-id=gigantified-emote-message;returning-chatter=0;room-id=1234;subscriber=0;tmi-sent-ts=1234;turbo=0;user-id=1234;user-type=;vip=1 :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :FrankerZ ZreknarF HeyGuys";
         }
+        if (type.equals("notshared")) {
+            return "@badge-info=;badges=moderator/1;client-nonce=99a343c9cf2fcf4e96e0abc358f7b59b;color=#FF4500;display-name=Test;emotes=;flags=;id=1234;mod=0;room-id=1234;source-badge-info=;source-badges=staff/1;source-id=1234;source-room-id=1234;subscriber=0;tmi-sent-ts=1725918561648;turbo=0;user-id=1234;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :Not shared";
+        }
+        if (type.equals("shared")) {
+            return "@badge-info=;badges=moderator/1;client-nonce=99a343c9cf2fcf4e96e0abc358f7b59b;color=#FF4500;display-name=Test;emotes=;flags=;id=abcd;mod=0;room-id=1234;source-badge-info=;source-badges=subscriber/36;source-id=1234;source-room-id=12826;subscriber=0;tmi-sent-ts=1725918561648;turbo=0;user-id=1234;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :Shared message";
+        }
+        if (type.equals("shared2")) {
+            return "@badge-info=;badges=moderator/1,twitch-recap-2023/1;client-nonce=99a343c9cf2fcf4e96e0abc358f7b59b;color=#FF4500;display-name=Test;emotes=;flags=;id=abcd;mod=0;room-id=1234;source-badge-info=;source-badges=subscriber/1,twitch-recap-2023/1;source-id=1234;source-room-id=12826;subscriber=0;tmi-sent-ts=1725918561648;turbo=0;user-id=1234;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :Shared message";
+        }
+        if (type.equals("sharednotice")) {
+            return "@badge-info=subscriber/28;badges=broadcaster/1,subscriber/0,premium/1;color=#0000FF;display-name=ModeratorName;emotes=emotesv2_bc0b18e802fb430ca03f0ad04efea2d1:0-6;flags=;id=1234;login=moderatorname;mod=0;msg-id=sharedchatnotice;source-msg-id=announcement;msg-param-color=PRIMARY;room-id=1234;source-room-id=12826;subscriber=1;system-msg=;tmi-sent-ts=1648763597214;user-id=1234;user-type= :tmi.twitch.tv USERNOTICE "+channel+" :joshSss";
+        }
+        if (type.equals("sharedsub")) {
+            return "@badges=moderator/1,subscriber/36,turbo/1;color=#0000FF;display-name=USER;emotes=;flags=;id=1234;source-id=abcd;login=user;mod=1;msg-id=sharedchatnotice;source-msg-id=resub;msg-param-cumulative-months=45;msg-param-cumulative-tenure-months=45;msg-param-months=0;msg-param-should-share-streak-tenure=false;msg-param-should-share-streak=0;msg-param-sub-plan-name=CHANNEL\\sSub;msg-param-sub-plan=Prime;room-id=123;source-room-id=12826;subscriber=1;system-msg=USER\\sSubscribed\\swith\\sTwitch\\sPrime.;turbo=1;user-id=123;user-type=mod :tmi.twitch.tv USERNOTICE "+channel+" :Abc";
+        }
         if (type.equals("custom")) {
             String[] parts = options.split("&");
             String badges = parts[0];
@@ -211,6 +234,38 @@ public class RawMessageTest {
             return "@badges="+badges+";color=#008000;display-name="+name+";emote-only=0;emotes=;id=fwaef"+ThreadLocalRandom.current().nextInt()+";mod=0;subscriber=1;tmi-sent-ts=1508516209239;turbo=0;user-type= :"+username+"!abc@abc.tmi.twitch.tv PRIVMSG "+channel+" :"+msg;
         }
         return null;
+    }
+    
+    /**
+     * Read a bunch of raw IRC messages from a file and simulate on a randomized
+     * delay.
+     *
+     * @param c
+     * @param filename
+     */
+    public static void simulateFile(TwitchConnection c, String filename) {
+        new Thread("SimulateFile") {
+
+            @Override
+            public void run() {
+                Path file = Chatty.getPath(Chatty.PathType.SETTINGS).resolve(filename);
+                try (BufferedReader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        System.out.println(line);
+                        c.simulate(line);
+                        try {
+                            Thread.sleep(ThreadLocalRandom.current().nextInt(1000));
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(RawMessageTest.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                } catch (IOException | NumberFormatException ex) {
+
+                }
+            }
+
+        }.start();
     }
     
 }

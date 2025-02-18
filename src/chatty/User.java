@@ -332,7 +332,7 @@ public class User implements Comparable<User> {
     }
     
     public synchronized void addMessage(String line, boolean action, String id) {
-        addMessage(line, action, id, System.currentTimeMillis());
+        addMessage(line, action, id, null, null, System.currentTimeMillis());
     }
     
     /**
@@ -341,14 +341,21 @@ public class User implements Comparable<User> {
      * @param line 
      * @param action 
      * @param id 
+     * @param sourceId 
+     * @param sourceChannel 
      * @param timestamp 
      */
-    public synchronized void addMessage(String line, boolean action, String id, long timestamp) {
+    public synchronized void addMessage(String line, boolean action, String id, String sourceId, String sourceChannel, long timestamp) {
         if (timestamp == -1) {
             timestamp = System.currentTimeMillis();
         }
         setFirstSeen();
-        addLine(new TextMessage(timestamp, line, action, id, null));
+        if (sourceId != null && !sourceId.equals(id)) {
+            addLine(new SharedTextMessage(timestamp, line, action, id, sourceId, sourceChannel, null));
+        }
+        else {
+            addLine(new TextMessage(timestamp, line, action, id, null));
+        }
         replayCachedLowTrust();
         numberOfMessages++;
     }
@@ -374,14 +381,24 @@ public class User implements Comparable<User> {
         replayCachedBanInfo();
     }
     
-    public synchronized void addSub(String message, String text, String id) {
+    public synchronized void addSub(String message, String text, String id, String sourceId, String sourceChannel) {
         setFirstSeen();
-        addLine(new SubMessage(System.currentTimeMillis(), message, text, id));
+        if (sourceId != null && !sourceId.equals(id)) {
+            addLine(new SharedSubMessage(System.currentTimeMillis(), message, text, id, sourceId, sourceChannel));
+        }
+        else {
+            addLine(new SubMessage(System.currentTimeMillis(), message, text, id));
+        }
     }
     
-    public synchronized void addInfo(String message, String fullText) {
+    public synchronized void addInfo(String message, String fullText, boolean isShared, String sourceChannel) {
         setFirstSeen();
-        addLine(new InfoMessage(System.currentTimeMillis(), message, fullText));
+        if (isShared) {
+            addLine(new SharedInfoMessage(System.currentTimeMillis(), message, fullText, sourceChannel));
+        }
+        else {
+            addLine(new InfoMessage(System.currentTimeMillis(), message, fullText));
+        }
     }
     
     public synchronized void addWarning(String reason, String by) {
@@ -1298,6 +1315,29 @@ public class User implements Comparable<User> {
         
     }
     
+    public static class SharedTextMessage extends TextMessage implements SharedMessage {
+        
+        public final String sourceId;
+        public final String sourceChannel;
+        
+        public SharedTextMessage(long time, String message, boolean action, String id, String sourceId, String sourceChannel, LowTrustUserMessageData lowTrust) {
+            super(time, message, action, id, lowTrust);
+            this.sourceId = sourceId;
+            this.sourceChannel = sourceChannel;
+        }
+        
+        @Override
+        public TextMessage addLowTrust(LowTrustUserMessageData data) {
+            return new SharedTextMessage(getTime(), text, action, id, sourceId, sourceChannel, data);
+        }
+
+        @Override
+        public String getSourceChannel() {
+            return sourceChannel;
+        }
+        
+    }
+    
     public static class BanMessage extends Message {
         
         public final long duration;
@@ -1381,6 +1421,24 @@ public class User implements Comparable<User> {
         }
     }
     
+    public static class SharedSubMessage extends SubMessage implements SharedMessage {
+        
+        public final String sourceId;
+        public final String sourceChannel;
+        
+        public SharedSubMessage(long time, String message, String text, String id, String sourceId, String sourceChannel) {
+            super(time, message, text, id);
+            this.sourceId = sourceId;
+            this.sourceChannel = sourceChannel;
+        }
+
+        @Override
+        public String getSourceChannel() {
+            return sourceChannel;
+        }
+        
+    }
+    
     public static class InfoMessage extends Message {
         
         /**
@@ -1399,6 +1457,21 @@ public class User implements Comparable<User> {
             super(time);
             this.attached_message = message;
             this.full_text = full_text;
+        }
+    }
+    
+    public static class SharedInfoMessage extends InfoMessage implements SharedMessage {
+        
+        public final String sourceChannel;
+        
+        public SharedInfoMessage(long time, String message, String full_text, String sourceChannel) {
+            super(time, message, full_text);
+            this.sourceChannel = sourceChannel;
+        }
+
+        @Override
+        public String getSourceChannel() {
+            return sourceChannel;
         }
     }
     
@@ -1449,6 +1522,10 @@ public class User implements Comparable<User> {
             this.reason = reason;
         }
         
+    }
+    
+    public static interface SharedMessage {
+        public String getSourceChannel();
     }
     
 //    public static final void main(String[] args) {

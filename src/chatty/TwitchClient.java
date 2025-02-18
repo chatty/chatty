@@ -106,6 +106,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Consumer;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1969,6 +1970,8 @@ public class TwitchClient {
                     c.simulate(raw);
                 }
                 return;
+            } else if (parameter.startsWith("file ")) {
+                RawMessageTest.simulateFile(c, parameter.substring("file ".length()));
             }
             String raw = RawMessageTest.simulateIRC(channel, parameter, c.getUsername());
             if (raw != null) {
@@ -2679,7 +2682,7 @@ public class TwitchClient {
                         null));
                     
                     User targetUser = c.getUser(channel, data.targetUsername);
-                    targetUser.addInfo("", data.makeInfo());
+                    targetUser.addInfo("", data.makeInfo(), false, null);
                     g.updateUserinfo(targetUser);
                 }
             }
@@ -3072,6 +3075,32 @@ public class TwitchClient {
                 }
             }
         });
+    }
+    
+    public void resolveSourceData(User user, MsgTags tags, Consumer<MsgTags> resultListener) {
+        if (!tags.isSharedMessage()) {
+            resultListener.accept(tags);
+        }
+        else {
+            String sourceRoomId = tags.get("source-room-id");
+            api.getCachedUserInfoById(Arrays.asList(new String[]{sourceRoomId}), requestResult -> {
+                UserInfo info = requestResult.get(sourceRoomId);
+                if (info != null) {
+                    if (!StringUtil.isNullOrEmpty(info.profileImageUrl)) {
+                        usericonManager.addChannelLogoUrl(Helper.toChannel(info.login), info.profileImageUrl);
+                    }
+                    resultListener.accept(MsgTags.addTag(tags, MsgTags.SHARED_MESSAGE_SOURCE_CHANNEL, Helper.toChannel(info.login)));
+                }
+                else {
+                    /**
+                     * In case of error just output message, in which case
+                     * channel icon and name will be missing, but there will
+                     * still be some indication that it's a shared message.
+                     */
+                    resultListener.accept(tags);
+                }
+            });
+        }
     }
 
     private class MyStreamInfoListener implements StreamInfoListener {

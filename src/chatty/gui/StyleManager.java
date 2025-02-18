@@ -54,6 +54,7 @@ public class StyleManager implements StyleServer {
             "nickColorCorrection",
             "mentions", "mentionsInfo", "markHoveredUser", "highlightMatchesAll",
             "nickColorBackground", "mentionMessages", "msgColorsLinks",
+            "sharedBadges", "sharedLogoSize",
             "inputHistoryMultirowRequireCtrl" // Not delievered through this
             ));
     
@@ -240,6 +241,9 @@ public class StyleManager implements StyleServer {
         }
         other.addAttribute(Setting.DELETED_MESSAGES_MODE, deletedMessagesModeNumeric);
         addLongSetting(Setting.DISPLAY_NAMES_MODE, "displayNamesMode");
+        
+        addLongSetting(Setting.SHARED_BADGES, "sharedBadges");
+        addLongSetting(Setting.SHARED_LOGO_SIZE, "sharedLogoSize");
         
         colorCorrector = ColorCorrector.get(settings.getString("nickColorCorrection"));
     }

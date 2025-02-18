@@ -3507,6 +3507,9 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public void printMessage(User user, String text2, boolean action, MsgTags tags0) {
+        client.resolveSourceData(user, tags0, tags1 -> {
+            
+        
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -3520,7 +3523,7 @@ public class MainGui extends JFrame implements Runnable {
                 boolean decodeZWF = client.settings.getLong("emojiZWJ") > 0;
                 String text = decodeZWF ? EmojiUtil.decodeZWJ(text2) : text2;
                 
-                MsgTags tags = tags0;
+                MsgTags tags = tags1;
                 Channel chan;
                 String channel = user.getChannel();
                 boolean whisper = false;
@@ -3744,10 +3747,10 @@ public class MainGui extends JFrame implements Runnable {
                 // Update User
                 String hypeChatAmount = tags.getHypeChatAmountText();
                 if (hypeChatAmount != null) {
-                    user.addSub(processMessage(text), tags.getHypeChatInfo(), tags.getId());
+                    user.addSub(processMessage(text), tags.getHypeChatInfo(), tags.getId(), tags.getSourceId(), tags.getSourceChannel());
                 }
                 else {
-                    user.addMessage(processMessage(text), action, tags.getId(), tags.getHistoricTimeStamp());
+                    user.addMessage(processMessage(text), action, tags.getId(), tags.getSourceId(), tags.getSourceChannel(), tags.getHistoricTimeStamp());
                 }
                 if (highlighted) {
                     user.setHighlighted();
@@ -3755,10 +3758,16 @@ public class MainGui extends JFrame implements Runnable {
                 updateUserInfoDialog(user);
             }
         });
+        
+        
+        });
     }
     
     public void printSubscriberMessage(final User user, final String text,
-            final String message, final MsgTags tags) {
+            final String message, final MsgTags tags0) {
+        client.resolveSourceData(user, tags0, tags -> {
+            
+            
         SwingUtilities.invokeLater(() -> {
             SubscriberMessage m = new SubscriberMessage(user, text, message, tags);
 
@@ -3766,6 +3775,9 @@ public class MainGui extends JFrame implements Runnable {
             if (printed) {
                 notificationManager.newSubscriber(user, client.getLocalUser(user.getChannel()), text, message);
             }
+        });
+        
+        
         });
     }
     
@@ -3796,10 +3808,16 @@ public class MainGui extends JFrame implements Runnable {
     }
     
     public void printUsernotice(final String type, final User user, final String text,
-            final String message, final MsgTags tags) {
-        SwingUtilities.invokeLater(() -> {
-            UserNotice m = new UserNotice(type, user, text, message, tags);
-            printUsernotice(m);
+            final String message, final MsgTags tags0) {
+        client.resolveSourceData(user, tags0, tags -> {
+            
+            
+            SwingUtilities.invokeLater(() -> {
+                UserNotice m = new UserNotice(type, user, text, message, tags);
+                printUsernotice(m);
+            });
+            
+            
         });
     }
     
@@ -3811,9 +3829,9 @@ public class MainGui extends JFrame implements Runnable {
             String message = m.attachedMessage != null ? processMessage(m.attachedMessage) : "";
             String text = m.infoText;
             if (m instanceof SubscriberMessage) {
-                m.user.addSub(message, text, m.tags.getId());
+                m.user.addSub(message, text, m.tags.getId(), m.tags.getSourceId(), m.tags.getSourceChannel());
             } else {
-                m.user.addInfo(message, m.text);
+                m.user.addInfo(message, m.text, m.tags.isSharedMessage(), m.tags.getSourceChannel());
             }
             updateUserInfoDialog(m.user);
         }

@@ -785,6 +785,10 @@ public class SettingsManager {
         settings.addBoolean("rulesAutoShow", true);
         settings.addList("rulesShown", new HashSet(), Setting.STRING);
 
+        // Shared Chat
+        settings.addLong("sharedBadges", 1);
+        settings.addLong("sharedLogoSize", 22);
+        
         //===============
         // Other Features
         //===============

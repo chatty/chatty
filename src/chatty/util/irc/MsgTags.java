@@ -135,6 +135,26 @@ public class MsgTags extends IrcMsgTags {
         return hasValue(IS_HIGHLIGHTED);
     }
     
+    public boolean isSharedMessage() {
+        return hasValue("source-room-id") && !get("source-room-id").equals(get("room-id"));
+    }
+    
+    public static final String SHARED_MESSAGE_SOURCE_CHANNEL = "chatty-source-channel";
+    
+    /**
+     * May be null even for shared messages when an error occured getting the
+     * channel name/logo from the API.
+     * 
+     * @return 
+     */
+    public String getSourceChannel() {
+        return get(SHARED_MESSAGE_SOURCE_CHANNEL);
+    }
+    
+    public String getSourceId() {
+        return get("source-id");
+    }
+    
     //================
     // Factory Methods
     //================

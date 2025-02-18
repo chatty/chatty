@@ -150,6 +150,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         IGNORE("Ignore", Language.getString("settings.page.ignore")),
         FILTER("Filter", Language.getString("settings.page.filter")),
         CUSTOM_TABS("Custom Tabs", Language.getString("settings.page.customTabs")),
+        SHARED_CHAT("Shared Chat", Language.getString("settings.page.sharedChat")),
         HISTORY("History", Language.getString("settings.page.history")),
         NOTIFICATIONS("Notifications", Language.getString("settings.page.notifications")),
         LIVE_STREAMS("Live Streams", Language.getString("settings.page.liveStreams")),
@@ -212,6 +213,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
             Page.FILTER,
             Page.CUSTOM_TABS,
             Page.LOGGING,
+            Page.SHARED_CHAT,
         }));
         MENU.put(Page.WINDOW, Arrays.asList(new Page[]{
             Page.TABS,
@@ -304,6 +306,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
         panels.put(Page.IGNORE, new IgnoreSettings(this));
         panels.put(Page.FILTER, new FilterSettings(this));
         panels.put(Page.CUSTOM_TABS, new RoutingSettings(this));
+        panels.put(Page.SHARED_CHAT, new SharedChatSettings(this));
         panels.put(Page.MSGCOLORS, new MsgColorSettings(this));
         panels.put(Page.HISTORY, new HistorySettings(this));
         panels.put(Page.NOTIFICATIONS, new NotificationSettings(this, settings));

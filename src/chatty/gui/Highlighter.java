@@ -1166,6 +1166,17 @@ public class Highlighter {
                                 return msgs != -1 && msgs < matchNumber;
                             });
                         }
+                        else if (part.startsWith("shared")) {
+                            String[] split = part.split("\\|");
+                            Set<String> sourceChans = new HashSet<>();
+                            for (int i=1;i<split.length;i++) {
+                                sourceChans.add(Helper.toChannel(split[i]));
+                            }
+                            addTagsItem("Shared Message", sourceChans, t -> {
+                                return t.isSharedMessage()
+                                        && (sourceChans.isEmpty() || sourceChans.contains(t.getSourceChannel()));
+                            });
+                        }
                     });
                     parseBadges(list);
                     parseTags(list);

@@ -212,16 +212,23 @@ public class UsericonManager {
                 icons.add(0, icon);
             }
         }
-        Usericon channelIcon = getChannelIcon(user, channelLogoSize);
+        Usericon channelIcon = getChannelIcon(user.getChannel(), channelLogoSize);
         if (channelIcon != null) {
             icons.add(0, channelIcon);
         }
         return icons;
     }
     
-    public synchronized Usericon getChannelIcon(User user, int channelLogoSize) {
+    public synchronized Usericon getChannelIcon(String channel, int channelLogoSize) {
         if (channelLogoSize > 0) {
-            return getChannelLogo(user.getChannel(), channelLogoSize);
+            return getChannelLogo(channel, channelLogoSize);
+        }
+        return null;
+    }
+    
+    public synchronized Usericon getSourceChannelIcon(String channel, String msgId, int size) {
+        if (size > 0) {
+            return getChannelLogo(channel, size);
         }
         return null;
     }

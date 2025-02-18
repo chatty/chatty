@@ -163,6 +163,7 @@ public class PastMessages extends JTextArea {
                     b.append(" [").append(simPercentage).append("%]");
                     endHighlight(b.length(), REPEATED_MSG);
                 }
+                addSourceChannel(tm, b);
                 if (tm.action) {
                     b.append("* ");
                 } else {
@@ -241,6 +242,7 @@ public class PastMessages extends JTextArea {
                     endHighlight(b.length(), REPEATED_MSG);
                 }
                 
+                addSourceChannel(sm, b);
                 b.append("$ ");
                 b.append(sm.system_msg);
                 if (!sm.attached_message.isEmpty()) {
@@ -249,9 +251,13 @@ public class PastMessages extends JTextArea {
                 b.append("\n");
             }
             else if (m instanceof User.InfoMessage) {
-                User.InfoMessage sm = (User.InfoMessage)m;
-                b.append(timestampFormat.make(m.getTime(), user.getRoom())).append("I ");
-                b.append(sm.full_text);
+                User.InfoMessage im = (User.InfoMessage)m;
+                
+                b.append(timestampFormat.make(m.getTime(), user.getRoom()));
+                addSourceChannel(im, b);
+                b.append("I ");
+                
+                b.append(im.full_text);
                 b.append("\n");
             }
             else if (m instanceof User.WarnMessage) {
@@ -299,6 +305,16 @@ public class PastMessages extends JTextArea {
     public void setTimestampFormat(Timestamp timestampFormat) {
         if (timestampFormat != null) {
             this.timestampFormat = timestampFormat;
+        }
+    }
+    
+    private void addSourceChannel(User.Message m, StringBuilder b) {
+        if (m instanceof User.SharedMessage) {
+            User.SharedMessage sm = (User.SharedMessage) m;
+            String channel = sm.getSourceChannel();
+            b.append("[");
+            b.append(channel != null ? channel : "?");
+            b.append("]");
         }
     }
     

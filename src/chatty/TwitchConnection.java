@@ -1110,6 +1110,10 @@ public class TwitchConnection {
             if (!onChannel(channel)) {
                 return;
             }
+            if (tags.isValue("msg-id", "sharedchatnotice")) {
+                // Overwrite msg-id with original msg-id, so it can be handled properly here
+                tags = MsgTags.addTag(tags, "msg-id", tags.get("source-msg-id"));
+            }
             String login = tags.get("login");
             String text = StringUtil.removeLinebreakCharacters(tags.get("system-msg"));
             int months = tags.getInteger("msg-param-cumulative-months", -1);
