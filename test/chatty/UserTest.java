@@ -75,7 +75,7 @@ public class UserTest {
         }
         assertFalse(otherTypes.linesCleared());
         assertFalse(otherTypes.maxLinesExceeded());
-        otherTypes.addInfo(null, null);
+        otherTypes.addInfo(null, null, false, null);
         assertFalse(otherTypes.linesCleared());
         assertTrue(otherTypes.maxLinesExceeded());
         otherTypes.clearLinesIfInactive(0);

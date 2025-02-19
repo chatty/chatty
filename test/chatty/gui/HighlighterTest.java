@@ -1576,15 +1576,15 @@ public class HighlighterTest {
         updateFalse(msgsUser, "", "msgs:!live");
         updateBlacklist("");
         
-        msgsUser.addMessage("abc", false, "abc", System.currentTimeMillis() - TimeUnit.DAYS.toMillis(10));
+        msgsUser.addMessage("abc", false, "abc", null, null, System.currentTimeMillis() - TimeUnit.DAYS.toMillis(10));
         assertFalse(highlighter.check(msgsUser, "abc"));
         
-        msgsUser.addMessage("!live", false, "abc", System.currentTimeMillis() - TimeUnit.DAYS.toMillis(8));
+        msgsUser.addMessage("!live", false, "abc", null, null, System.currentTimeMillis() - TimeUnit.DAYS.toMillis(8));
         assertTrue(highlighter.check(msgsUser, "abc"));
         
         updateTrue(msgsUser, "", "msgs:\"mlimit:1 !live\"");
         
-        msgsUser.addMessage("123", false, "abc", System.currentTimeMillis() - TimeUnit.DAYS.toMillis(5));
+        msgsUser.addMessage("123", false, "abc", null, null, System.currentTimeMillis() - TimeUnit.DAYS.toMillis(5));
         assertFalse(highlighter.check(msgsUser, "abc"));
         
         updateTrue(msgsUser, "", "msgs:\"mlimit:2 !live\"");
