@@ -515,33 +515,7 @@ public class TwitchCommands {
         c.info(channel, message, null);
     }
     
-    //==================
-    // Silent Mods List
-    //==================
-    // For updating who is mod, probably mostly obsolete
-    
-    public void modsSilent(String channel) {
-        if (onChannel(channel, true)) {
-            printLine(channel, "Trying to fix moderators..");
-            requestModsSilent(channel);
-        }
-    }
-    
-    public void requestModsSilent(String channel) {
-        if (onChannel(channel, false)) {
-            silentModsRequestChannel.add(channel);
-            c.sendSpamProtectedMessage(channel, ".mods", false);
-        }
-    }
-    
-    public boolean removeModsSilent(String channel) {
-        return silentModsRequestChannel.remove(channel);
-    }
-    
-    public boolean waitingForModsSilent() {
-        return !silentModsRequestChannel.isEmpty();
-    }
-    
+
     /**
      * Prase the list of mods as returned from the Twitch Chat. The
      * comma-separated list should start after the first colon ("The moderators
