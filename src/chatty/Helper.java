@@ -72,6 +72,57 @@ public class Helper {
      * @param prepend Whether to prepend # if necessary
      * @return Set of channels sorted as in the String
      */
+
+
+    private static HashMap<String,Boolean> setPossibleChannelType(String[] catSplit, HashMap<String,Boolean> channelType){
+
+        for (int i = 1; i < catSplit.length; i++) {
+            if (catSplit[i].equals("#")) {
+                channelType.put("onlyChans",true);
+            }
+            else if (catSplit[i].equals("!#")) {
+                channelType.put("noChans",true);
+
+            }
+            else if (catSplit[i].equals("live")) {
+                channelType.put("onlyLive",true);
+            }
+        }
+        return channelType;
+    }
+
+    private static List<String> storePossibleChannelNamesToList(String cat, HashMap<String,Boolean> channelType){
+        List<String> chans = new ArrayList<>();
+        if (cat.equals("*")) {
+            chans = new ArrayList<>(parseChannelHelper.getFavorites());
+        }
+        else {
+            for (String name : parseChannelHelper.getNamesByCategory(cat)) {
+                if ((!channelType.get("noChans") || !name.startsWith("#"))
+                        && (!channelType.get("onlyChans") || name.startsWith("#"))) {
+                    chans.add(name);
+                }
+            }
+        }
+        return chans;
+    }
+
+    private static void getPossibleChannelNames(String channel, boolean prepend, Set<String> result){
+        String[] channelTypes = new String[]{"noChans","onlyChans","onlyLive"};
+        HashMap<String,Boolean> channelTypeHM = new HashMap<>();
+        for(String channelType: channelTypes){
+            channelTypeHM.put(channelType,false);
+        }
+        String[] catSplit = channel.substring(1, channel.length() - 1).split(" ");
+        String cat = catSplit[0];
+        channelTypeHM = setPossibleChannelType(catSplit,channelTypeHM);
+        List<String> chans = storePossibleChannelNamesToList(cat,channelTypeHM);
+        for (String chan : chans) {
+            if (!channelTypeHM.get("onlyLive") || parseChannelHelper.isStreamLive(Helper.toStream(chan))) {
+                addValidChannel(chan, prepend, result);
+            }
+        }
+    }
     public static Set<String> parseChannelsFromString(String channels, boolean prepend) {
         String[] parts = channels.split(",");
         Set<String> result = new LinkedHashSet<>();
@@ -82,39 +133,7 @@ public class Helper {
                 addValidChannel(channel, prepend, result);
             }
             else if (channel.startsWith("[") && channel.endsWith("]") && channel.length() > 2 && parseChannelHelper != null) {
-                String[] catSplit = channel.substring(1, channel.length() - 1).split(" ");
-                String cat = catSplit[0];
-                boolean noChans = false;
-                boolean onlyChans = false;
-                boolean onlyLive = false;
-                for (int i = 1; i < catSplit.length; i++) {
-                    if (catSplit[i].equals("#")) {
-                        onlyChans = true;
-                    }
-                    else if (catSplit[i].equals("!#")) {
-                        noChans = true;
-                    }
-                    else if (catSplit[i].equals("live")) {
-                        onlyLive = true;
-                    }
-                }
-                List<String> chans = new ArrayList<>();
-                if (cat.equals("*")) {
-                    chans = new ArrayList<>(parseChannelHelper.getFavorites());
-                }
-                else {
-                    for (String name : parseChannelHelper.getNamesByCategory(cat)) {
-                        if ((!noChans || !name.startsWith("#"))
-                                && (!onlyChans || name.startsWith("#"))) {
-                            chans.add(name);
-                        }
-                    }
-                }
-                for (String chan : chans) {
-                    if (!onlyLive || parseChannelHelper.isStreamLive(Helper.toStream(chan))) {
-                        addValidChannel(chan, prepend, result);
-                    }
-                }
+                getPossibleChannelNames(channel,prepend,result);
             }
         }
         return result;
@@ -641,62 +660,8 @@ public class Helper {
         System.out.println(nf.format(Math.round(74/30.0)*30/60.0));
     }
     
-    /**
-     * Checks if the id matches the given User. The id can be one of: $mod,
-     * $sub, $turbo, $admin, $broadcaster, $staff, $bot. If the user has the
-     * appropriate user status, this returns true. If the id is unknown or the
-     * user doesn't have the required status, this returns false.
-     * 
-     * @param id The id that is required
-     * @param user The User object to check against
-     * @return true if the id is known and matches the User, false otherwise
-     */
-    public static boolean matchUserStatus(String id, User user) {
-        if (id.equals("$mod")) {
-            if (user.isModerator()) {
-                return true;
-            }
-        } else if (id.equals("$sub")) {
-            if (user.isSubscriber()) {
-                return true;
-            }
-        } else if (id.equals("$turbo")) {
-            if (user.hasTurbo()) {
-                return true;
-            }
-        } else if (id.equals("$admin")) {
-            if (user.isAdmin()) {
-                return true;
-            }
-        } else if (id.equals("$broadcaster")) {
-            if (user.isBroadcaster()) {
-                return true;
-            }
-        } else if (id.equals("$staff")) {
-            if (user.isStaff()) {
-                return true;
-            }
-        } else if (id.equals("$bot")) {
-            if (user.isBot()) {
-                return true;
-            }
-        } else if (id.equals("$globalmod")) {
-            if (user.isGlobalMod()) {
-                return true;
-            }
-        } else if (id.equals("$anymod")) {
-            if (user.isAdmin() || user.isBroadcaster() || user.isGlobalMod()
-                    || user.isModerator() || user.isStaff()) {
-                return true;
-            }
-        } else if (id.equals("$vip")) {
-            if (user.hasTwitchBadge("vip")) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
+
+
     public static String checkHttpUrl(String url) {
         if (url == null) {
             return null;
@@ -1219,6 +1184,133 @@ public class Helper {
     
     public static boolean isBeforeChatCommandsShutoff() {
         return Instant.now().isBefore(CHAT_COMMAND_SHUTOFF);
+    }
+    
+    public interface UserStatusMatcher {
+        boolean matchUserStatus(User user);
+    }
+    
+    public static class ModeratorMatcher implements UserStatusMatcher {
+        @Override
+        public boolean matchUserStatus(User user) {
+            return user.isModerator();
+        }
+    }
+    
+    public static class SubscriberMatcher implements UserStatusMatcher {
+        @Override
+        public boolean matchUserStatus(User user) {
+            return user.isSubscriber();
+        }
+    }
+    
+    public static class TurboMatcher implements UserStatusMatcher {
+        @Override
+        public boolean matchUserStatus(User user) {
+            return user.hasTurbo();
+        }
+    }
+    
+    public static class AdminMatcher implements UserStatusMatcher {
+        @Override
+        public boolean matchUserStatus(User user) {
+            return user.isAdmin();
+        }
+    }
+    
+    public static class BroadcasterMatcher implements UserStatusMatcher {
+        @Override
+        public boolean matchUserStatus(User user) {
+            return user.isBroadcaster();
+        }
+    }
+    
+    public static class StaffMatcher implements UserStatusMatcher {
+        @Override
+        public boolean matchUserStatus(User user) {
+            return user.isStaff();
+        }
+    }
+    
+    public static class BotMatcher implements UserStatusMatcher {
+        @Override
+        public boolean matchUserStatus(User user) {
+            return user.isBot();
+        }
+    }
+    
+    public static class GlobalModMatcher implements UserStatusMatcher {
+        @Override
+        public boolean matchUserStatus(User user) {
+            return user.isGlobalMod();
+        }
+    }
+    
+    public static class AnyModMatcher implements UserStatusMatcher {
+        @Override
+        public boolean matchUserStatus(User user) {
+            return user.isAdmin() || user.isBroadcaster() || user.isGlobalMod()
+                    || user.isModerator() || user.isStaff();
+        }
+    }
+    
+    public static class VipMatcher implements UserStatusMatcher {
+        @Override
+        public boolean matchUserStatus(User user) {
+            return user.hasTwitchBadge("vip");
+        }
+    }
+
+    /**
+     * Checks if the id matches the given User. The id can be one of: $mod,
+     * $sub, $turbo, $admin, $broadcaster, $staff, $bot. If the user has the
+     * appropriate user status, this returns true. If the id is unknown or the
+     * user doesn't have the required status, this returns false.
+     *
+     * @param id The id that is required
+     * @param user The User object to check against
+     * @return true if the id is known and matches the User, false otherwise
+     */
+    
+    public static boolean matchUserStatus(String id, User user) {
+
+
+    UserStatusMatcher matcher = null;
+    
+    switch (id) {
+        case "$mod":
+            matcher = new ModeratorMatcher();
+            break;
+        case "$sub":
+            matcher = new SubscriberMatcher();
+            break;
+        case "$turbo":
+            matcher = new TurboMatcher();
+            break;
+        case "$admin":
+            matcher = new AdminMatcher();
+            break;
+        case "$broadcaster":
+            matcher = new BroadcasterMatcher();
+            break;
+        case "$staff":
+            matcher = new StaffMatcher();
+            break;
+        case "$bot":
+            matcher = new BotMatcher();
+            break;
+        case "$globalmod":
+            matcher = new GlobalModMatcher();
+            break;
+        case "$anymod":
+            matcher = new AnyModMatcher();
+            break;
+        case "$vip":
+            matcher = new VipMatcher();
+            break;
+    }
+        
+        return matcher != null ? matcher.matchUserStatus(user): false;
     }
     
 }

@@ -225,7 +225,7 @@ public class TwitchClient {
     
     private boolean fixServer = false;
     private String launchCommand;
-    
+
     public TwitchClient(Map<String, String> args) {
         // Logging
         new Logging(this);
@@ -1731,8 +1731,9 @@ public class TwitchClient {
             }
         });
         commands.add("runin", p -> {
-            String[] split;
-            if (!p.hasArgs() || (split = p.getArgs().split(" ", 2)).length != 2) {
+            String[] split = p.getArgs().split(" ", 2);
+            Boolean isCommandIncomplete = !p.hasArgs() || split.length != 2;
+            if (isCommandIncomplete) {
                 g.printSystem("Usage: /runin [channel] [command]");
                 return;
             }
@@ -3503,7 +3504,11 @@ public class TwitchClient {
                 pubsub.listenPoints(user.getStream(), settings.getString("token"));
             }
         }
-        
+
+        private boolean isEventForUserBasedOnScope(String scope, User user){
+            return settings.listContains("scopes", scope)
+                    && (user.isModerator() || user.isBroadcaster());
+        }
         private void checkEventSubListen(User user) {
             // Is user the local user (can be on any channel though)
             if (!user.getName().equals(c.getUsername())
@@ -3516,13 +3521,11 @@ public class TwitchClient {
                     && user.isBroadcaster()) {
                 eventSub.listenPoll(user.getStream());
             }
-            if (settings.listContains("scopes", TokenInfo.Scope.MANAGE_SHIELD.scope)
-                    && (user.isModerator() || user.isBroadcaster())) {
+            if (isEventForUserBasedOnScope(TokenInfo.Scope.MANAGE_SHIELD.scope,user)) {
                 eventSub.listenShield(user.getStream());
                 api.getShieldMode(user.getRoom(), true);
             }
-            if (settings.listContains("scopes", TokenInfo.Scope.MANAGE_SHOUTOUTS.scope)
-                    && (user.isModerator() || user.isBroadcaster())) {
+            if (isEventForUserBasedOnScope(TokenInfo.Scope.MANAGE_SHOUTOUTS.scope,user)) {
                 eventSub.listenShoutouts(user.getStream());
             }
         }
