@@ -5,20 +5,16 @@ import chatty.Chatty;
 import chatty.Helper;
 import chatty.Room;
 import chatty.User;
-import chatty.gui.components.textpane.ModLogInfo;
 import chatty.util.DateTime;
 import chatty.util.DateTime.Formatting;
 import chatty.util.Timestamp;
-import chatty.util.api.ChannelInfo;
 import chatty.util.api.StreamInfo.ViewerStats;
 import chatty.util.api.UserInfo;
-import chatty.util.api.pubsub.ModeratorActionData;
+import chatty.util.api.eventsub.payloads.ModActionPayload;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
 import chatty.util.settings.Settings;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -164,16 +160,15 @@ public class ChatLog {
         }
     }
     
-    public void modAction(ModeratorActionData data) {
+    public void modAction(ModActionPayload data) {
         if (!Helper.isValidStream(data.stream)) {
             return;
         }
         String channel = Helper.toChannel(data.stream);
         if (isSettingEnabled("logModAction") && isChanEnabled(channel)) {
-            writeLine(channel, timestamp()+String.format("MOD_ACTION: %s (%s%s)",
+            writeLine(channel, timestamp()+String.format("MOD_ACTION: %s (%s)",
                     data.created_by,
-                    data.moderation_action,
-                    data.args.isEmpty() ? "" : " "+ModLogInfo.makeArgsText(data)));
+                    data.getPseudoCommandStringNoSlash()));
         }
     }
 

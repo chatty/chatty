@@ -3,7 +3,6 @@ package chatty.gui;
 
 import chatty.gui.transparency.TransparencyManager;
 import chatty.gui.laf.LaF;
-import chatty.util.api.pubsub.LowTrustUserMessageData;
 import chatty.util.colors.HtmlColors;
 import chatty.Addressbook;
 import chatty.ChannelState;
@@ -86,7 +85,9 @@ import chatty.gui.notifications.NotificationWindowManager;
 import chatty.lang.Language;
 import chatty.util.api.Emoticons.TagEmotes;
 import chatty.util.api.TwitchApi.RequestResultCode;
-import chatty.util.api.pubsub.ModeratorActionData;
+import chatty.util.api.eventsub.payloads.ModActionPayload;
+import chatty.util.api.eventsub.payloads.ModActionPayload.AutoModMessageUpdate;
+import chatty.util.api.eventsub.payloads.SuspiciousMessagePayload;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
 import chatty.util.dnd.DockContent;
@@ -4270,7 +4271,7 @@ public class MainGui extends JFrame implements Runnable {
         GuiUtil.edt(() -> debugWindow.printTimerLog(line));
     }
     
-    public void printModerationAction(final ModeratorActionData data,
+    public void printModerationAction(final ModActionPayload data,
             final boolean ownAction) {
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -4284,14 +4285,15 @@ public class MainGui extends JFrame implements Runnable {
                 // AutoMod only seems to work in Stream Chat
                 if (channels.isChannel(channel)) {
                     Channel chan = channels.getExistingChannel(channel);
-                    if (data.type == ModeratorActionData.Type.AUTOMOD_REJECTED
-                            && data.args.size() > 1) {
+                    if (data.type == ModActionPayload.Type.AUTOMOD_FILTERED
+                            && data.action instanceof AutoModMessageUpdate) {
+                        AutoModMessageUpdate update = (AutoModMessageUpdate) data.action;
                         // Automod
-                        String username = data.args.get(0);
-                        String message = data.args.get(1);
+                        String username = update.getUsername();
+                        String message = update.getMessage();
                         if (client.settings.getBoolean("showAutoMod")) {
                             User user = client.getUser(channel, username);
-                            printInfo(chan, new AutoModMessage(user, message, data.msgId));
+                            printInfo(chan, new AutoModMessage(user, message, update.getMsgId()));
                         }
                         notificationManager.autoModMessage(channel, username, message);
                     }
@@ -4300,13 +4302,13 @@ public class MainGui extends JFrame implements Runnable {
                 // Moderator Actions apparently apply to all rooms
                 Collection<Channel> chans = channels.getExistingChannelsByOwner(channel);
                 if (!chans.isEmpty()
-                        && data.type != ModeratorActionData.Type.AUTOMOD_REJECTED
-                        && data.type != ModeratorActionData.Type.UNMODDED) {
+                        && data.type != ModActionPayload.Type.AUTOMOD_FILTERED
+                        && data.type != ModActionPayload.Type.UNMODDED) {
                     boolean showActions = client.settings.getBoolean("showModActions");
                     boolean showActionsRestrict = client.settings.getBoolean("showModActionsRestrict");
                     boolean showMessage =
                                showActions
-                            && (!ownAction || ModLogInfo.isIndirectAction(data))
+                            && (!ownAction || data.action.isIndirectAction())
                             && !(showActionsRestrict && ModLogInfo.isAssociated(data));
                     boolean showActionby = client.settings.getBoolean("showActionBy");
                     for (Channel chan : chans) {
@@ -4322,7 +4324,7 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
 
-    public void printLowTrustUserInfo(User user, final LowTrustUserMessageData data) {
+    public void printLowTrustUserInfo(User user, final SuspiciousMessagePayload data) {
         String channel = Helper.toValidChannel(data.stream);
         if (channels.isChannel(channel)) {
             data.fetchUserInfoForBannedChannels(client.api, () -> SwingUtilities.invokeLater(() -> {
@@ -4330,7 +4332,7 @@ public class MainGui extends JFrame implements Runnable {
                 // Restricted Message
                 //--------------------------
                 Channel chan = channels.getExistingChannel(channel);
-                if (data.treatment == LowTrustUserMessageData.Treatment.RESTRICTED
+                if (data.treatment == SuspiciousMessagePayload.Treatment.RESTRICTED
                         && client.settings.getBoolean("showRestrictedMessages")) {
                     // Message is not being posted to actual chat, display it here anyway
                     MsgTags tags = MsgTags.create(

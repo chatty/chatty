@@ -487,19 +487,27 @@ public class DateTime {
     private static final Pattern DURATION_PARSER = Pattern.compile("(?<num>[0-9]+)(?<unit>ms|s|m|h|d)?");
     
     public static long parseDurationSeconds(String text) {
+        return parseDurationSeconds(text, TimeUnit.SECONDS);
+    }
+    
+    public static long parseDurationSeconds(String text, TimeUnit defaultUnit) {
         if (text == null) {
             return -1;
         }
-        return parseDuration(text) / 1000;
+        return parseDuration(text, defaultUnit) / 1000;
     }
     
     public static long parseDuration(String text) {
+        return parseDuration(text, TimeUnit.SECONDS);
+    }
+    
+    public static long parseDuration(String text, TimeUnit defaultUnit) {
         if (text == null) {
             return -1;
         }
         Matcher m = DURATION_PARSER.matcher(text);
         long ms = 0;
-        TimeUnit unit = TimeUnit.SECONDS;
+        TimeUnit unit = defaultUnit;
         while (m.find()) {
             long num = Long.parseLong(m.group("num"));
             String unitText = m.group("unit");

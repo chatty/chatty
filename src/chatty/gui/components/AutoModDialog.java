@@ -10,10 +10,12 @@ import chatty.gui.MainGui;
 import chatty.gui.components.menus.AutoModContextMenu;
 import chatty.util.DateTime;
 import chatty.util.MiscUtil;
+import chatty.util.StringUtil;
 import chatty.util.api.TwitchApi;
 import chatty.util.api.TwitchApi.AutoModAction;
 import chatty.util.api.TwitchApi.AutoModActionResult;
-import chatty.util.api.pubsub.ModeratorActionData;
+import chatty.util.api.eventsub.payloads.ModActionPayload;
+import chatty.util.api.eventsub.payloads.ModActionPayload.AutoModMessageUpdate;
 import chatty.util.dnd.DockContent;
 import java.awt.Color;
 import java.awt.Component;
@@ -305,17 +307,17 @@ public class AutoModDialog extends JDialog {
         }
     }
     
-    public void addData(ModeratorActionData modData) {
+    public void addData(ModActionPayload modData) {
         if (modData.stream == null) {
             return;
         }
-        if (modData.type == ModeratorActionData.Type.AUTOMOD_REJECTED) {
+        if (modData.type == ModActionPayload.Type.AUTOMOD_FILTERED) {
             addItem(modData);
         }
-        if (modData.type == ModeratorActionData.Type.AUTOMOD_APPROVED) {
+        if (modData.type == ModActionPayload.Type.AUTOMOD_APPROVED) {
             handledExternally(modData, Item.STATUS_APPROVED);
         }
-        if (modData.type == ModeratorActionData.Type.AUTOMOD_DENIED) {
+        if (modData.type == ModActionPayload.Type.AUTOMOD_DENIED) {
             handledExternally(modData, Item.STATUS_DENIED);
         }
     }
@@ -355,7 +357,7 @@ public class AutoModDialog extends JDialog {
     private Item findItemByMsgId(String msgId) {
         for (List<Item> items : cache.values()) {
             for (Item item : items) {
-                if (item.data.msgId.equals(msgId)) {
+                if (getMsgId(item.data).equals(msgId)) {
                     return item;
                 }
             }
@@ -363,16 +365,17 @@ public class AutoModDialog extends JDialog {
         return null;
     }
     
-    private void addItem(ModeratorActionData modData) {
-        if (modData.args.size() < 2 || modData.msgId.isEmpty()) {
+    private void addItem(ModActionPayload modData) {
+        AutoModMessageUpdate eventData = (AutoModMessageUpdate) modData.action;
+        if (StringUtil.isNullOrEmpty(eventData.getMsgId())) {
             return;
         }
         
         String room = modData.stream;
         String channel = Helper.toValidChannel(modData.stream);
-        String username = modData.args.get(0);
-        String message = modData.args.get(1);
-        String reason = modData.getArg(2, null);
+        String username = eventData.getUsername();
+        String message = eventData.getMessage();
+        String reason = eventData.getReason();
         if (channel == null) {
             return;
         }
@@ -381,7 +384,7 @@ public class AutoModDialog extends JDialog {
         }
         
         User user = client.getUser(channel, username);
-        user.addAutoModMessage(message, modData.msgId, reason);
+        user.addAutoModMessage(message, eventData.getMsgId(), reason, modData.type);
         gui.updateUserinfo(user);
         Item item = new Item(modData, user);
 
@@ -410,22 +413,28 @@ public class AutoModDialog extends JDialog {
      * @param modData
      * @param status 
      */
-    private void handledExternally(ModeratorActionData modData, int status) {
-        if (modData.args.size() != 1 || modData.created_by.isEmpty()) {
-            return;
-        }
+    private void handledExternally(ModActionPayload modData, int status) {
+        AutoModMessageUpdate update = (AutoModMessageUpdate) modData.action;
         String handledBy = modData.created_by;
-        String targetUsername = modData.args.get(0);
+        String targetUsername = update.getUsername();
         String room = modData.stream;
+        String msgId = update.getMsgId();
         Item item;
-        if (!modData.msgId.isEmpty()) {
-            item = findItemByMsgId(modData.msgId);
+        if (!StringUtil.isNullOrEmpty(msgId)) {
+            item = findItemByMsgId(msgId);
         } else {
             item = findItemByUsername(room, targetUsername);
         }
         if (item != null && !item.hasRequestPending && !item.isHandled()) {
             item.setStatus(status, handledBy);
             repaintFor(item);
+        }
+        
+        String channel = Helper.toValidChannel(modData.stream);
+        if (channel != null) {
+            User user = client.getUser(channel, targetUsername);
+            user.addAutoModMessage(update.getMessage(), update.getMsgId(), update.getReason(), modData.type);
+            gui.updateUserinfo(user);
         }
     }
     
@@ -532,10 +541,17 @@ public class AutoModDialog extends JDialog {
         }
     }
     
+    private String getMsgId(ModActionPayload data) {
+        if (data.action instanceof AutoModMessageUpdate) {
+            return ((AutoModMessageUpdate) data.action).getMsgId();
+        }
+        return null;
+    }
+    
     private void openUserInfoDialog() {
         Item item = list.getSelectedValue();
         if (item != null) {
-            gui.openUserInfoDialog(item.targetUser, null, item.data.msgId);
+            gui.openUserInfoDialog(item.targetUser, null, getMsgId(item.data));
         }
     }
     
@@ -547,7 +563,7 @@ public class AutoModDialog extends JDialog {
             return;
         }
         setPending(item);
-        api.autoModApprove(item.data.msgId);
+        api.autoModApprove(getMsgId(item.data));
     }
     
     private void deny(Item item) {
@@ -558,7 +574,7 @@ public class AutoModDialog extends JDialog {
             return;
         }
         setPending(item);
-        api.autoModDeny(item.data.msgId);
+        api.autoModDeny(getMsgId(item.data));
     }
     
     private void setPending(Item item) {
@@ -668,13 +684,13 @@ public class AutoModDialog extends JDialog {
         public static final int STATUS_APPROVED = 5;
         public static final int STATUS_DENIED = 6;
         
-        public final ModeratorActionData data;
+        public final ModActionPayload data;
         public final User targetUser;
         private int status;
         private String handledBy;
         private boolean hasRequestPending;
         
-        private Item(ModeratorActionData data, User targetUser) {
+        private Item(ModActionPayload data, User targetUser) {
             this.data = data;
             this.targetUser = targetUser;
         }
@@ -715,10 +731,11 @@ public class AutoModDialog extends JDialog {
         
         @Override
         public String toString() {
+            AutoModMessageUpdate update = (AutoModMessageUpdate) data.action;
             return String.format("[%s] <%s> %s",
                     DateTime.format(data.created_at),
-                    data.args.get(0),
-                    data.args.get(1));
+                    update.getUsername(),
+                    update.getMessage());
         }
         
         public String getStatusText() {
@@ -761,6 +778,7 @@ public class AutoModDialog extends JDialog {
             }
             //System.out.println("Getting rubberstamp for "+value);
             Item item = (Item)value;
+            AutoModMessageUpdate updateData = (AutoModMessageUpdate) item.data.action;
             
             // Make Text
             String agoText;
@@ -780,8 +798,8 @@ public class AutoModDialog extends JDialog {
             String text = String.format("%s[%s] <%s> %s",
                     status,
                     agoText,
-                    item.data.args.get(0),
-                    item.data.args.get(1));
+                    updateData.getUsername(),
+                    updateData.getMessage());
             area.setText(text);
             
             // Adjust size

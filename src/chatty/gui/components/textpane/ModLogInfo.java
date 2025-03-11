@@ -3,8 +3,7 @@ package chatty.gui.components.textpane;
 
 import chatty.Helper;
 import chatty.gui.components.Channel;
-import chatty.util.StringUtil;
-import chatty.util.api.pubsub.ModeratorActionData;
+import chatty.util.api.eventsub.payloads.ModActionPayload;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,12 +20,12 @@ public class ModLogInfo extends InfoMessage {
     private static final Set<String> UNBAN_COMMANDS
             = new HashSet<>(Arrays.asList(new String[]{"untimeout", "unban"}));
     
-    public final ModeratorActionData data;
+    public final ModActionPayload data;
     public final boolean showActionBy;
     public final boolean ownAction;
     public final Channel chan;
     
-    public ModLogInfo(Channel chan, ModeratorActionData data,
+    public ModLogInfo(Channel chan, ModActionPayload data,
             boolean showActionBy, boolean ownAction) {
         super(Type.INFO, makeText(data));
         this.chan = chan;
@@ -48,29 +47,10 @@ public class ModLogInfo extends InfoMessage {
         return new ModLogInfo(this);
     }
     
-    private static String makeText(ModeratorActionData data) {
-        return String.format("[ModAction] %s: /%s %s",
+    private static String makeText(ModActionPayload data) {
+        return String.format("[ModAction] %s: %s",
                 data.created_by,
-                data.moderation_action,
-                makeArgsText(data));
-    }
-    
-    public static String makeArgsText(ModeratorActionData data) {
-        if (data.type == ModeratorActionData.Type.AUTOMOD_REJECTED && data.args.size() == 3) {
-            return String.format("[%s] <%s> %s",
-                    data.args.get(2), data.args.get(0), data.args.get(1));
-        }
-        if ((data.type == ModeratorActionData.Type.AUTOMOD_APPROVED || data.type == ModeratorActionData.Type.AUTOMOD_DENIED) && data.args.size() > 1) {
-            return String.format("<%s> %s",
-                    data.args.get(0), data.args.get(1));
-        }
-        if (data.moderation_action.equals("delete") && data.args.size() > 1) {
-            return String.format("%s (%s)", data.args.get(0), data.args.get(1));
-        }
-        if (data.moderation_action.equals("warn") && data.args.size() > 1) {
-            return String.format("%s %s", data.args.get(0), getWarnReason(data));
-        }
-        return StringUtil.join(data.args, " ");
+                data.getPseudoCommandString());
     }
     
     @Override
@@ -78,7 +58,7 @@ public class ModLogInfo extends InfoMessage {
         return makeCommand(data);
     }
     
-    public static String makeCommand(ModeratorActionData data) {
+    public static String makeCommand(ModActionPayload data) {
         switch (data.moderation_action) {
             case "timeout": return makeTimeoutCommand(data);
             case "ban": return makeBanCommand(data);
@@ -91,62 +71,51 @@ public class ModLogInfo extends InfoMessage {
         return isBanCommand(data);
     }
     
-    public static boolean isBanCommand(ModeratorActionData data) {
+    public static boolean isBanCommand(ModActionPayload data) {
         return BAN_COMMANDS.contains(data.moderation_action);
     }
     
-    public static boolean isUnbanCommand(ModeratorActionData data) {
+    public static boolean isUnbanCommand(ModActionPayload data) {
         return UNBAN_COMMANDS.contains(data.moderation_action);
     }
     
-    public static boolean isBanOrInfoAssociated(ModeratorActionData data) {
+    public static boolean isBanOrInfoAssociated(ModActionPayload data) {
         return isBanCommand(data) || InfoMessage.msgIdHasCommand(data.moderation_action);
     }
     
-    public static boolean isAssociated(ModeratorActionData data) {
+    public static boolean isAssociated(ModActionPayload data) {
         return isBanOrInfoAssociated(data) || isAutoModAction(data);
-    }
-    
-    /**
-     * An action that is attributed to the user, but not actually performed
-     * directly by the user. For example accepting/rejecting an AutoMod message,
-     * which can trigger terms being permitted/blocked without the moderator
-     * explicitly doing it.
-     * 
-     * @param data
-     * @return 
-     */
-    public static boolean isIndirectAction(ModeratorActionData data) {
-        return data.moderation_action.equals("add_permitted_term")
-                || data.moderation_action.equals("add_blocked_term");
     }
     
     public boolean isAutoModAction() {
         return isAutoModAction(data);
     }
     
-    public static boolean isAutoModAction(ModeratorActionData data) {
-        return data.type == ModeratorActionData.Type.AUTOMOD_APPROVED
-                || data.type == ModeratorActionData.Type.AUTOMOD_DENIED;
+    public static boolean isAutoModAction(ModActionPayload data) {
+        return data.type == ModActionPayload.Type.AUTOMOD_APPROVED
+                || data.type == ModActionPayload.Type.AUTOMOD_DENIED;
     }
     
-    public static String makeDeleteCommand(ModeratorActionData data) {
-        if (data.args.size() > 2) {
-            return data.moderation_action+" "+data.args.get(2);
+    public static String makeDeleteCommand(ModActionPayload data) {
+        if (data.action instanceof ModActionPayload.Delete) {
+            ModActionPayload.Delete delete = (ModActionPayload.Delete) data.action;
+            return data.moderation_action+" "+delete.getMsgId();
         }
         return "";
     }
     
-    public static String makeBanCommand(ModeratorActionData data) {
-        if (data.args.size() > 0) {
-            return data.moderation_action+" "+data.args.get(0);
+    public static String makeBanCommand(ModActionPayload data) {
+        if (data.action instanceof ModActionPayload.Ban) {
+            ModActionPayload.Ban ban = (ModActionPayload.Ban) data.action;
+            return data.moderation_action+" "+ban.getTargetUsername();
         }
         return "";
     }
     
-    public static String makeTimeoutCommand(ModeratorActionData data) {
-        if (data.args.size() > 1) {
-            return data.moderation_action+" "+data.args.get(0)+" "+data.args.get(1);
+    public static String makeTimeoutCommand(ModActionPayload data) {
+        if (data.action instanceof ModActionPayload.Timeout) {
+            ModActionPayload.Timeout timeout = (ModActionPayload.Timeout) data.action;
+            return data.moderation_action+" "+timeout.getTargetUsername(); // Duration is inaccurate now
         }
         return "";
     }
@@ -155,63 +124,46 @@ public class ModLogInfo extends InfoMessage {
         return getReason(data);
     }
     
-    public static String getReason(ModeratorActionData data) {
+    public static String getReason(ModActionPayload data) {
         switch (data.moderation_action) {
-            case "timeout": return getReason(data, 2);
-            case "ban": return getReason(data, 1);
+            case "timeout": return ((ModActionPayload.Timeout) data.action).getReason();
+            case "ban": return ((ModActionPayload.Ban) data.action).getReason();
             default: return null;
         }
     }
     
-    private static String getReason(ModeratorActionData data, int index) {
-        if (data.args.size() > index && !data.args.get(index).isEmpty()) {
-            return data.args.get(index);
-        }
-        return null;
-    }
-    
-    public static String getBannedUsername(ModeratorActionData data) {
-        if (isBanCommand(data) && data.args.size() > 0
-                && Helper.isValidStream(data.args.get(0))) {
-            return data.args.get(0);
-        }
-        return null;
-    }
-    
-    public static String getUnbannedUsername(ModeratorActionData data) {
-        if (isUnbanCommand(data) && data.args.size() > 0
-                && Helper.isValidStream(data.args.get(0))) {
-            return data.args.get(0);
-        }
-        return null;
-    }
-    
-    public static String getTargetUsername(ModeratorActionData data) {
-        if (!data.args.isEmpty()) {
-            String username = data.args.get(0);
-            if (Helper.isValidStream(username)) {
-                return username;
+    public static String getTargetUsername(ModActionPayload data) {
+        if (data.action instanceof ModActionPayload.ModActionUser) {
+            ModActionPayload.ModActionUser userAction = (ModActionPayload.ModActionUser) data.action;
+            if (Helper.isValidStream(userAction.getTargetUsername())) {
+                return userAction.getTargetUsername();
             }
         }
         return null;
     }
-    
-    public static String getWarnReason(ModeratorActionData data) {
-        StringBuilder result = new StringBuilder();
-        // First arg is target username
-        for (int i = 1; i < data.args.size(); i++) {
-            String item = data.args.get(i);
-            if (item.isEmpty() && i == 1) {
-                result.append("Selected rules: ");
-            }
-            if (!item.isEmpty()) {
-                if (result.length() > 0) {
-                    result.append(", ");
-                }
-                result.append(item);
-            }
+
+    public static String getBannedUsername(ModActionPayload data) {
+        if (isBanCommand(data)) {
+            return getTargetUsername(data);
         }
-        return result.toString();
+        return null;
+    }
+    
+    public static String getUnbannedUsername(ModActionPayload data) {
+        if (isUnbanCommand(data)) {
+            return getTargetUsername(data);
+        }
+        return null;
+    }
+    
+    public static String getTargetUserInfo(ModActionPayload data) {
+        String targetUser = getTargetUsername(data);
+        if (targetUser != null) {
+            return String.format("@%s used \"%s\" on this user",
+                                 data.created_by,
+                                 data.getPseudoCommandString());
+        }
+        return null;
     }
     
     @Override

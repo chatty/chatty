@@ -507,6 +507,12 @@ public class Settings {
             return getListInternal(settingName).contains(value);
         }
     }
+    
+    public boolean listContainsAll(String settingName, Object... values) {
+        synchronized(LOCK) {
+            return getListInternal(settingName).containsAll(Arrays.asList(values));
+        }
+    }
 
     /**
      * Removes {@code value} from the List setting with the name

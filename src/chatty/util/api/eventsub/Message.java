@@ -1,6 +1,7 @@
 
 package chatty.util.api.eventsub;
 
+import chatty.util.Debugging;
 import chatty.util.JSONUtil;
 import java.util.Map;
 import java.util.Objects;
@@ -55,7 +56,7 @@ public class Message {
             Payload data = Payload.decode(payload, userIds, type, subType);
             return new Message(type, id, subType, subVersion, timestamp, data);
         } catch (Exception ex) {
-            LOGGER.warning("Error parsing EventSub message: "+ex);
+            LOGGER.warning("Error parsing EventSub message: "+Debugging.getStacktraceFilteredFlat(ex));
             return null;
         }
     }

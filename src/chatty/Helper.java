@@ -853,7 +853,7 @@ public class Helper {
     
     public static String makeBanCommand(User user, long duration, String id) {
         if (duration > 0) {
-            return StringUtil.concats("timeout", user.getName(), duration).trim();
+            return StringUtil.concats("timeout", user.getName()).trim();
         }
         if (duration == -2) {
             return StringUtil.concats("delete", id).trim();

@@ -10,6 +10,7 @@ import static chatty.util.DateTime.M;
 import static chatty.util.DateTime.MINUTE;
 import static chatty.util.DateTime.N;
 import static chatty.util.DateTime.S;
+import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -120,6 +121,10 @@ public class DateTimeTest {
         assertEquals(60*60, DateTime.parseDurationSeconds("1h"));
         assertEquals(65*60, DateTime.parseDurationSeconds("1h 5m"));
         assertEquals(24*60*60*5 + 60*60, DateTime.parseDurationSeconds("5d 1"));
+        assertEquals(62, DateTime.parseDurationSeconds("1m 2"));
+        assertEquals(30*60*1000, DateTime.parseDuration("30", TimeUnit.MINUTES));
+        assertEquals(30*60*1000, DateTime.parseDuration("30m", TimeUnit.MINUTES));
+        assertEquals(30*60*1000 + 1*1000, DateTime.parseDuration("30 1", TimeUnit.MINUTES));
     }
     
 }

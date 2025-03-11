@@ -167,6 +167,52 @@ public class EventSubManager {
         removeTopic(new ShoutoutCreate(username));
     }
     
+    public void listenModActions(String username) {
+        addTopic(new ChannelModerate(username));
+    }
+    
+    public void unlistenModActions(String username) {
+        removeTopic(new ChannelModerate(username));
+    }
+    
+    public void listenAutoMod(String username) {
+        addTopic(new AutoModMessageHold(username));
+        addTopic(new AutoModMessageUpdate(username));
+    }
+    
+    public void unlistenAutoMod(String username) {
+        removeTopic(new AutoModMessageHold(username));
+        removeTopic(new AutoModMessageUpdate(username));
+    }
+    
+    public void listenSuspiciousMessage(String username) {
+        addTopic(new SuspiciousMessage(username));
+        addTopic(new SuspiciousUpdate(username));
+    }
+    
+    public void unlistenSuspicousMessage(String username) {
+        removeTopic(new SuspiciousMessage(username));
+        removeTopic(new SuspiciousUpdate(username));
+    }
+    
+    public void listenWarnings(String username) {
+        addTopic(new WarningAcknowledge(username));
+    }
+    
+    public void unlistenWarnings(String username) {
+        removeTopic(new WarningAcknowledge(username));
+    }
+    
+    public void listenMessageHeld(String username) {
+        addTopic(new UserMessageHeld(username));
+        addTopic(new UserMessageUpdate(username));
+    }
+    
+    public void unlistenMessageHeld(String username) {
+        removeTopic(new UserMessageHeld(username));
+        removeTopic(new UserMessageUpdate(username));
+    }
+    
     /**
      * Adds the given topic to be requested. If the topic is already being
      * listened to, it will still be added, processed and tried to listen to
@@ -540,6 +586,246 @@ public class EventSubManager {
         @Override
         public Topic copy() {
             return new ShoutoutCreate(stream);
+        }
+
+    }
+    
+    private class ChannelModerate extends StreamTopic {
+
+        ChannelModerate(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make(String sessionId) {
+            String userId = getUserId(stream);
+            if (userId != null && localUserId != null) {
+                Map<String, String> condition = new HashMap<>();
+                condition.put("broadcaster_user_id", userId);
+                condition.put("moderator_user_id", localUserId);
+                return Helper.makeAddEventSubBody("channel.moderate", condition, sessionId, "2");
+            }
+            return null;
+        }
+
+        @Override
+        public int getExpectedCost() {
+            return 0;
+        }
+        
+        @Override
+        public Topic copy() {
+            return new ChannelModerate(stream);
+        }
+
+    }
+    
+    private class AutoModMessageHold extends StreamTopic {
+
+        AutoModMessageHold(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make(String sessionId) {
+            String userId = getUserId(stream);
+            if (userId != null && localUserId != null) {
+                Map<String, String> condition = new HashMap<>();
+                condition.put("broadcaster_user_id", userId);
+                condition.put("moderator_user_id", localUserId);
+                return Helper.makeAddEventSubBody("automod.message.hold", condition, sessionId, "2");
+            }
+            return null;
+        }
+
+        @Override
+        public int getExpectedCost() {
+            return 0;
+        }
+        
+        @Override
+        public Topic copy() {
+            return new AutoModMessageHold(stream);
+        }
+
+    }
+    
+    private class AutoModMessageUpdate extends StreamTopic {
+
+        AutoModMessageUpdate(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make(String sessionId) {
+            String userId = getUserId(stream);
+            if (userId != null && localUserId != null) {
+                Map<String, String> condition = new HashMap<>();
+                condition.put("broadcaster_user_id", userId);
+                condition.put("moderator_user_id", localUserId);
+                return Helper.makeAddEventSubBody("automod.message.update", condition, sessionId, "2");
+            }
+            return null;
+        }
+
+        @Override
+        public int getExpectedCost() {
+            return 0;
+        }
+        
+        @Override
+        public Topic copy() {
+            return new AutoModMessageUpdate(stream);
+        }
+
+    }
+    
+    private class SuspiciousMessage extends StreamTopic {
+
+        SuspiciousMessage(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make(String sessionId) {
+            String userId = getUserId(stream);
+            if (userId != null && localUserId != null) {
+                Map<String, String> condition = new HashMap<>();
+                condition.put("broadcaster_user_id", userId);
+                condition.put("moderator_user_id", localUserId);
+                return Helper.makeAddEventSubBody("channel.suspicious_user.message", condition, sessionId, "1");
+            }
+            return null;
+        }
+
+        @Override
+        public int getExpectedCost() {
+            return 0;
+        }
+        
+        @Override
+        public Topic copy() {
+            return new SuspiciousMessage(stream);
+        }
+
+    }
+    
+    private class SuspiciousUpdate extends StreamTopic {
+
+        SuspiciousUpdate(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make(String sessionId) {
+            String userId = getUserId(stream);
+            if (userId != null && localUserId != null) {
+                Map<String, String> condition = new HashMap<>();
+                condition.put("broadcaster_user_id", userId);
+                condition.put("moderator_user_id", localUserId);
+                return Helper.makeAddEventSubBody("channel.suspicious_user.update", condition, sessionId, "1");
+            }
+            return null;
+        }
+
+        @Override
+        public int getExpectedCost() {
+            return 0;
+        }
+        
+        @Override
+        public Topic copy() {
+            return new SuspiciousUpdate(stream);
+        }
+
+    }
+    
+    private class WarningAcknowledge extends StreamTopic {
+
+        WarningAcknowledge(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make(String sessionId) {
+            String userId = getUserId(stream);
+            if (userId != null && localUserId != null) {
+                Map<String, String> condition = new HashMap<>();
+                condition.put("broadcaster_user_id", userId);
+                condition.put("moderator_user_id", localUserId);
+                return Helper.makeAddEventSubBody("channel.warning.acknowledge", condition, sessionId, "1");
+            }
+            return null;
+        }
+
+        @Override
+        public int getExpectedCost() {
+            return 0;
+        }
+        
+        @Override
+        public Topic copy() {
+            return new WarningAcknowledge(stream);
+        }
+
+    }
+    
+    private class UserMessageHeld extends StreamTopic {
+
+        UserMessageHeld(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make(String sessionId) {
+            String userId = getUserId(stream);
+            if (userId != null && localUserId != null) {
+                Map<String, String> condition = new HashMap<>();
+                condition.put("broadcaster_user_id", userId);
+                condition.put("user_id", localUserId);
+                return Helper.makeAddEventSubBody("channel.chat.user_message_hold", condition, sessionId, "1");
+            }
+            return null;
+        }
+
+        @Override
+        public int getExpectedCost() {
+            return 0;
+        }
+        
+        @Override
+        public Topic copy() {
+            return new UserMessageHeld(stream);
+        }
+
+    }
+    
+    private class UserMessageUpdate extends StreamTopic {
+
+        UserMessageUpdate(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make(String sessionId) {
+            String userId = getUserId(stream);
+            if (userId != null && localUserId != null) {
+                Map<String, String> condition = new HashMap<>();
+                condition.put("broadcaster_user_id", userId);
+                condition.put("user_id", localUserId);
+                return Helper.makeAddEventSubBody("channel.chat.user_message_update", condition, sessionId, "1");
+            }
+            return null;
+        }
+
+        @Override
+        public int getExpectedCost() {
+            return 0;
+        }
+        
+        @Override
+        public Topic copy() {
+            return new UserMessageUpdate(stream);
         }
 
     }

@@ -10,8 +10,8 @@ import chatty.gui.NamedColor;
 import chatty.gui.components.textpane.ModLogInfo;
 import chatty.util.Debugging;
 import chatty.util.StringUtil;
-import chatty.util.api.pubsub.LowTrustUserMessageData;
-import chatty.util.api.pubsub.ModeratorActionData;
+import chatty.util.api.eventsub.payloads.ModActionPayload;
+import chatty.util.api.eventsub.payloads.SuspiciousMessagePayload;
 import chatty.util.irc.IrcBadges;
 import chatty.util.irc.MsgTags;
 import java.awt.Color;
@@ -411,22 +411,27 @@ public class User implements Comparable<User> {
         addLine(new WarnMessage(System.currentTimeMillis(), null, null));
     }
     
-    public synchronized void addModAction(ModeratorActionData data) {
+    public synchronized void addModAction(ModActionPayload data) {
         setFirstSeen();
-        addLine(new ModAction(System.currentTimeMillis(), data.moderation_action+" "+ModLogInfo.makeArgsText(data)));
+        if (data.created_by.equals(nick)) {
+            addLine(new ModAction(System.currentTimeMillis(), data.getPseudoCommandString()));
+        }
+        else if (ModLogInfo.getTargetUserInfo(data) != null) {
+            addLine(new ModAction(System.currentTimeMillis(), ModLogInfo.getTargetUserInfo(data)));
+        }
     }
     
-    private List<ModeratorActionData> cachedBanInfo;
+    private List<ModActionPayload> cachedBanInfo;
     
     /**
      * Add ban info (by/reason) for this user. Must be for this user.
      * 
      * @param data 
      */
-    public synchronized void addBanInfo(ModeratorActionData data) {
+    public synchronized void addBanInfo(ModActionPayload data) {
         if (!addBanInfoNow(data)) {
             // Adding failed, cache and wait to see if it works later
-            Debugging.println("modlog", "[UserModLogInfo] Caching: %s", data.getCommandAndParameters());
+            Debugging.println("modlog", "[UserModLogInfo] Caching: %s", data.getPseudoCommandString());
             if (cachedBanInfo == null) {
                 cachedBanInfo = new ArrayList<>();
             }
@@ -441,9 +446,9 @@ public class User implements Comparable<User> {
             return;
         }
         Debugging.println("modlog", "[UserModLogInfo] Replaying: %s", cachedBanInfo);
-        Iterator<ModeratorActionData> it = cachedBanInfo.iterator();
+        Iterator<ModActionPayload> it = cachedBanInfo.iterator();
         while (it.hasNext()) {
-            ModeratorActionData data = it.next();
+            ModActionPayload data = it.next();
             if (System.currentTimeMillis() - data.created_at > BAN_INFO_WAIT) {
                 it.remove();
                 Debugging.println("modlog", "[UserModLogInfo] Abandoned: %s", data);
@@ -459,7 +464,7 @@ public class User implements Comparable<User> {
         }
     }
     
-    private synchronized boolean addBanInfoNow(ModeratorActionData data) {
+    private synchronized boolean addBanInfoNow(ModActionPayload data) {
         if (lines == null) {
             return false;
         }
@@ -494,14 +499,14 @@ public class User implements Comparable<User> {
         return false;
     }
     
-    private List<LowTrustUserMessageData> cachedLowTrust;
+    private List<SuspiciousMessagePayload> cachedLowTrust;
     
     /**
      * Add ban info (by/reason) for this user. Must be for this user.
      * 
      * @param data 
      */
-    public synchronized void addLowTrust(LowTrustUserMessageData data) {
+    public synchronized void addLowTrust(SuspiciousMessagePayload data) {
         if (!addLowTrustNow(data)) {
             // Adding failed, cache and wait to see if it works later
             if (cachedLowTrust == null) {
@@ -515,9 +520,9 @@ public class User implements Comparable<User> {
         if (cachedLowTrust == null) {
             return;
         }
-        Iterator<LowTrustUserMessageData> it = cachedLowTrust.iterator();
+        Iterator<SuspiciousMessagePayload> it = cachedLowTrust.iterator();
         while (it.hasNext()) {
-            LowTrustUserMessageData data = it.next();
+            SuspiciousMessagePayload data = it.next();
             if (System.currentTimeMillis() - data.created_at > BAN_INFO_WAIT) {
                 it.remove();
             } else {
@@ -531,7 +536,7 @@ public class User implements Comparable<User> {
         }
     }
     
-    private synchronized boolean addLowTrustNow(LowTrustUserMessageData data) {
+    private synchronized boolean addLowTrustNow(SuspiciousMessagePayload data) {
         if (lines == null) {
             return false;
         }
@@ -552,8 +557,8 @@ public class User implements Comparable<User> {
         return false;
     }
     
-    public synchronized void addAutoModMessage(String line, String id, String reason) {
-        addLine(new AutoModMessage(line, id, reason));
+    public synchronized void addAutoModMessage(String line, String id, String reason, ModActionPayload.Type type) {
+        addLine(new AutoModMessage(line, id, reason, type));
     }
     
     /**
@@ -1291,9 +1296,9 @@ public class User implements Comparable<User> {
         public final String text;
         public final boolean action;
         public final String id;
-        public final LowTrustUserMessageData lowTrust;
+        public final SuspiciousMessagePayload lowTrust;
         
-        public TextMessage(long time, String message, boolean action, String id, LowTrustUserMessageData lowTrust) {
+        public TextMessage(long time, String message, boolean action, String id, SuspiciousMessagePayload lowTrust) {
             super(time);
             this.text = message;
             this.action = action;
@@ -1309,7 +1314,7 @@ public class User implements Comparable<User> {
             return action;
         }
         
-        public TextMessage addLowTrust(LowTrustUserMessageData data) {
+        public TextMessage addLowTrust(SuspiciousMessagePayload data) {
             return new TextMessage(getTime(), text, action, id, data);
         }
         
@@ -1320,14 +1325,14 @@ public class User implements Comparable<User> {
         public final String sourceId;
         public final String sourceChannel;
         
-        public SharedTextMessage(long time, String message, boolean action, String id, String sourceId, String sourceChannel, LowTrustUserMessageData lowTrust) {
+        public SharedTextMessage(long time, String message, boolean action, String id, String sourceId, String sourceChannel, SuspiciousMessagePayload lowTrust) {
             super(time, message, action, id, lowTrust);
             this.sourceId = sourceId;
             this.sourceChannel = sourceChannel;
         }
         
         @Override
-        public TextMessage addLowTrust(LowTrustUserMessageData data) {
+        public TextMessage addLowTrust(SuspiciousMessagePayload data) {
             return new SharedTextMessage(getTime(), text, action, id, sourceId, sourceChannel, data);
         }
 
@@ -1514,12 +1519,14 @@ public class User implements Comparable<User> {
         public final String message;
         public final String id;
         public final String reason;
+        public final ModActionPayload.Type status;
         
-        public AutoModMessage(String message, String id, String reason) {
+        public AutoModMessage(String message, String id, String reason, ModActionPayload.Type status) {
             super(System.currentTimeMillis());
             this.message = message;
             this.id = id;
             this.reason = reason;
+            this.status = status;
         }
         
     }

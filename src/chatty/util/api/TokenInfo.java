@@ -21,6 +21,7 @@ public class TokenInfo {
         BASIC("basic",
                 Scope.CHAT_READ,
                 Scope.CHAT_EDIT,
+                Scope.USER_READ_CHAT,
                 Scope.WHISPER_READ,
                 Scope.WHISPER_EDIT,
                 Scope.WHISPER_MANAGE,
@@ -41,7 +42,11 @@ public class TokenInfo {
                 Scope.ANNOUNCEMENTS,
                 Scope.MANAGE_SHIELD,
                 Scope.MANAGE_SHOUTOUTS,
-                Scope.CHANNEL_FOLLOWERS
+                Scope.CHANNEL_FOLLOWERS,
+                Scope.MANAGE_UNBAN_REQUESTS,
+                Scope.READ_MODS,
+                Scope.READ_VIPS,
+                Scope.READ_SUSPICIOUS_USERS
         ),
         BROADCASTER("broadcaster",
                 Scope.MANAGE_MODS,
@@ -108,7 +113,12 @@ public class TokenInfo {
         MANAGE_POLLS("channel:manage:polls", "managePolls"),
         MANAGE_SHOUTOUTS("moderator:manage:shoutouts", "manageShoutouts"),
         MANAGE_WARNINGS("moderator:manage:warnings", "manageWarnings"),
-        CLIPS_EDIT("clips:edit", "editClips");
+        MANAGE_UNBAN_REQUESTS("moderator:manage:unban_requests", "manageUnbanRequests"),
+        READ_MODS("moderator:read:moderators", "readMods"),
+        READ_VIPS("moderator:read:vips", "readVips"),
+        READ_SUSPICIOUS_USERS("moderator:read:suspicious_users", "readSuspiciousUsers"),
+        CLIPS_EDIT("clips:edit", "editClips"),
+        USER_READ_CHAT("user:read:chat", "userReadChat");
         
         public String scope;
         public String label;

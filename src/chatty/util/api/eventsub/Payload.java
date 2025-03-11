@@ -1,12 +1,17 @@
 
 package chatty.util.api.eventsub;
 
+import chatty.util.api.eventsub.payloads.ModActionPayload;
 import chatty.util.api.eventsub.payloads.PollPayload;
 import chatty.util.api.eventsub.payloads.RaidPayload;
 import chatty.util.api.eventsub.payloads.SubscriptionPayload;
 import chatty.util.api.eventsub.payloads.SessionPayload;
 import chatty.util.api.eventsub.payloads.ShieldModePayload;
 import chatty.util.api.eventsub.payloads.ShoutoutPayload;
+import chatty.util.api.eventsub.payloads.SuspiciousMessagePayload;
+import chatty.util.api.eventsub.payloads.SuspiciousUpdatePayload;
+import chatty.util.api.eventsub.payloads.UserMessageHeldPayload;
+import chatty.util.api.eventsub.payloads.WarningAcknowledgePayload;
 import java.util.Map;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -44,6 +49,22 @@ public class Payload {
                     return ShieldModePayload.decode(payload);
                 case "channel.shoutout.create":
                     return ShoutoutPayload.decode(payload);
+                case "channel.moderate":
+                    return ModActionPayload.decode(payload);
+                case "automod.message.hold":
+                    return ModActionPayload.decodeAutomodHeld(payload);
+                case "automod.message.update":
+                    return ModActionPayload.decodeAutomodUpdate(payload);
+                case "channel.suspicious_user.message":
+                    return SuspiciousMessagePayload.decode(payload);
+                case "channel.suspicious_user.update":
+                    return SuspiciousUpdatePayload.decode(payload);
+                case "channel.warning.acknowledge":
+                    return WarningAcknowledgePayload.decode(payload);
+                case "channel.chat.user_message_hold":
+                    return UserMessageHeldPayload.decode(payload);
+                case "channel.chat.user_message_update":
+                    return UserMessageHeldPayload.decode(payload);
             }
         }
         

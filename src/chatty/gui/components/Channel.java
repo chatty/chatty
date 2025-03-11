@@ -18,11 +18,9 @@ import chatty.gui.components.textpane.Message;
 import chatty.util.StringUtil;
 import chatty.util.api.AccessChecker;
 import chatty.util.api.TokenInfo;
-import chatty.util.api.pubsub.LowTrustUserMessageData;
-import chatty.util.api.usericons.Usericon;
+import chatty.util.api.eventsub.payloads.SuspiciousMessagePayload;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
-import chatty.util.irc.MsgTags;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -395,7 +393,7 @@ public final class Channel extends JPanel {
         text.printMessage(message);
     }
 
-    public void printLowTrustInfo(User user, LowTrustUserMessageData data) {
+    public void printLowTrustInfo(User user, SuspiciousMessagePayload data) {
         text.printLowTrustInfo(user, data);
     }
     

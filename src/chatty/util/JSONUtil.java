@@ -106,6 +106,14 @@ public class JSONUtil {
         return errorValue;
     }
     
+    public static JSONObject getOrEmpty(JSONObject data, Object key) {
+        Object value = data.get(key);
+        if (value != null && value instanceof JSONObject) {
+            return (JSONObject) value;
+        }
+        return new JSONObject();
+    }
+    
     @SuppressWarnings("unchecked") // Raw type
     public static String listToJSON(Object... args) {
         JSONArray o = new JSONArray();

@@ -24,6 +24,7 @@ public class InfoMessage {
         COMMANDS.put("subs_on", "subscribers");
         COMMANDS.put("subs_off", "subscribersoff");
         COMMANDS.put("followers_on", "followers");
+        COMMANDS.put("followers_on_zero", "followers");
         COMMANDS.put("followers_off", "followersoff");
         COMMANDS.put("emote_only_on", "emoteonly");
         COMMANDS.put("emote_only_off", "emoteonlyoff");

@@ -4,11 +4,9 @@ package chatty.gui.components;
 import chatty.gui.DockedDialogHelper;
 import chatty.gui.DockedDialogManager;
 import chatty.gui.MainGui;
-import chatty.gui.components.textpane.ModLogInfo;
 import chatty.util.DateTime;
-import chatty.util.api.pubsub.ModeratorActionData;
+import chatty.util.api.eventsub.payloads.ModActionPayload;
 import chatty.util.dnd.DockContent;
-import chatty.util.dnd.DockContentContainer;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -169,17 +167,16 @@ public class ModerationLog extends JDialog {
         }
     }
     
-    public void add(ModeratorActionData data) {
+    public void add(ModActionPayload data) {
         if (data.stream == null) {
             return;
         }
         String channel = data.stream;
         
-        String line = String.format("[%s] <%s> /%s %s",
+        String line = String.format("[%s] <%s> %s",
                 DateTime.currentTime(),
                 data.created_by,
-                data.moderation_action,
-                ModLogInfo.makeArgsText(data));
+                data.getPseudoCommandString());
         
         if (channel.equals(currentLoadedChannel)) {
             printLine(log, line);

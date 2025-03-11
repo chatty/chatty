@@ -211,8 +211,9 @@ public class PastMessages extends JTextArea {
                 User.MsgDeleted md = (User.MsgDeleted)m;
                 b.append(timestampFormat.make(m.getTime(), user.getRoom())).append(">");
                 startHighlight(b.length(), MOD_ACTION);
-                b.append("Message deleted: ").append(md.msg);
+                b.append("Message deleted:");
                 endHighlight(b.length(), MOD_ACTION);
+                b.append(" ").append(md.msg);
                 if (md.by != null) {
                     b.append(" (@").append(md.by).append(")");
                 }
@@ -274,7 +275,7 @@ public class PastMessages extends JTextArea {
             else if (m instanceof User.ModAction) {
                 User.ModAction ma = (User.ModAction)m;
                 b.append(timestampFormat.make(m.getTime(), user.getRoom())).append(">");
-                b.append("ModAction: /");
+                b.append("ModAction: ");
                 b.append(ma.commandAndParameters);
                 b.append("\n");
             }
@@ -287,6 +288,10 @@ public class PastMessages extends JTextArea {
                 b.append(timestampFormat.make(m.getTime(), user.getRoom())).append(">");
                 startHighlight(b.length(), AUTO_MOD);
                 b.append("Filtered by AutoMod");
+                switch (ma.status) {
+                    case AUTOMOD_APPROVED: b.append(":APPROVED");
+                    case AUTOMOD_DENIED: b.append(":DENIED");
+                }
                 endHighlight(b.length(), AUTO_MOD);
                 if (!StringUtil.isNullOrEmpty(ma.reason)) {
                     b.append(" [").append(ma.reason).append("]");
