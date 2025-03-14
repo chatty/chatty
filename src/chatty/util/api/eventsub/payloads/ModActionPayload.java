@@ -92,7 +92,7 @@ public class ModActionPayload extends Payload {
                         action.action,
                         JSONUtil.getString(event, "moderator_user_login"),
                         action,
-                        JSONUtil.getString(event, "broadcaster_user_name"),
+                        JSONUtil.getString(event, "broadcaster_user_login"),
                         JSONUtil.getString(event, "source_broadcaster_user_login"));
             }
             else {
@@ -111,7 +111,7 @@ public class ModActionPayload extends Payload {
                         "automod_filtered",
                         "",
                         new AutoModMessageUpdate(payload),
-                        JSONUtil.getString(event, "broadcaster_user_name"),
+                        JSONUtil.getString(event, "broadcaster_user_login"),
                         JSONUtil.getString(event, "source_broadcaster_user_login"));
             }
         }
@@ -127,7 +127,7 @@ public class ModActionPayload extends Payload {
                         action.action,
                         JSONUtil.getString(event, "moderator_user_login"),
                         action,
-                        JSONUtil.getString(event, "broadcaster_user_name"),
+                        JSONUtil.getString(event, "broadcaster_user_login"),
                         JSONUtil.getString(event, "source_broadcaster_user_login"));
             }
         }

@@ -557,8 +557,8 @@ public class User implements Comparable<User> {
         return false;
     }
     
-    public synchronized void addAutoModMessage(String line, String id, String reason, ModActionPayload.Type type) {
-        addLine(new AutoModMessage(line, id, reason, type));
+    public synchronized void addAutoModMessage(String line, String id, String reason, ModActionPayload.Type type, String moderatorName) {
+        addLine(new AutoModMessage(line, id, reason, type, moderatorName));
     }
     
     /**
@@ -1520,13 +1520,15 @@ public class User implements Comparable<User> {
         public final String id;
         public final String reason;
         public final ModActionPayload.Type status;
+        public final String moderatorName;
         
-        public AutoModMessage(String message, String id, String reason, ModActionPayload.Type status) {
+        public AutoModMessage(String message, String id, String reason, ModActionPayload.Type status, String moderatorName) {
             super(System.currentTimeMillis());
             this.message = message;
             this.id = id;
             this.reason = reason;
             this.status = status;
+            this.moderatorName = moderatorName;
         }
         
     }

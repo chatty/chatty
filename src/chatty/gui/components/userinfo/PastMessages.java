@@ -297,6 +297,9 @@ public class PastMessages extends JTextArea {
                     b.append(" [").append(ma.reason).append("]");
                 }
                 b.append(": ").append(ma.message);
+                if (ma.moderatorName != null) {
+                    b.append(" (@").append(ma.moderatorName).append(")");
+                }
                 b.append("\n");
             }
         }

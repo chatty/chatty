@@ -384,7 +384,7 @@ public class AutoModDialog extends JDialog {
         }
         
         User user = client.getUser(channel, username);
-        user.addAutoModMessage(message, eventData.getMsgId(), reason, modData.type);
+        user.addAutoModMessage(message, eventData.getMsgId(), reason, modData.type, null);
         gui.updateUserinfo(user);
         Item item = new Item(modData, user);
 
@@ -433,7 +433,7 @@ public class AutoModDialog extends JDialog {
         String channel = Helper.toValidChannel(modData.stream);
         if (channel != null) {
             User user = client.getUser(channel, targetUsername);
-            user.addAutoModMessage(update.getMessage(), update.getMsgId(), update.getReason(), modData.type);
+            user.addAutoModMessage(update.getMessage(), update.getMsgId(), update.getReason(), modData.type, modData.created_by);
             gui.updateUserinfo(user);
         }
     }

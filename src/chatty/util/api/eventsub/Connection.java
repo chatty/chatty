@@ -17,7 +17,7 @@ import java.util.Set;
  */
 public class Connection extends JWSClient {
     
-    private static final int MAX_TOPICS = 100;
+    private static final int MAX_TOPICS = 300;
 
     private final MessageHandler handler;
     private final Map<Topic, Topic> topics;
