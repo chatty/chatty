@@ -276,6 +276,9 @@ public class FollowerManager {
     }
     
     private FollowerInfo parseOwnFollow(String stream, String userName, String json) {
+        if (json == null) {
+            return null;
+        }
         try {
             JSONParser parser = new JSONParser();
             JSONObject root = (JSONObject) parser.parse(json);
@@ -290,7 +293,7 @@ public class FollowerManager {
                 return new FollowerInfo(type, stream, result, -1, -1);
             }
             return new FollowerInfo(type, stream, new ArrayList<>(), -1, -1);
-        } catch (ParseException ex) {
+        } catch (Exception ex) {
             LOGGER.warning("Error parsing "+type+": "+ex);
             return null;
         }
@@ -315,7 +318,7 @@ public class FollowerManager {
                 }
             }
             total = JSONUtil.getInteger(root, "total", -1);
-        } catch (ParseException ex) {
+        } catch (Exception ex) {
             LOGGER.warning("Error parsing "+type+": "+ex);
             return null;
         }
