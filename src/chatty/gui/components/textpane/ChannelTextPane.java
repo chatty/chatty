@@ -844,9 +844,18 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                 }
             }
         }
-        // Don't output while in loop
-        for (ModLogInfo info : print) {
-            main.printAbandonedModLogInfo(info);
+        /**
+         * Only regular channels (not Custom Tabs) should send it back to the
+         * start, to prevent duplicating the message when it can't find a
+         * message to append the info. For modlog messages that are usually
+         * hidden, depending on setting (e.g. timeout) it would output the
+         * message as a regular info message another time for each Custom Tab.
+         */
+        if (channel != null && Helper.isRegularChannelStrict(channel.getChannel())) {
+            // Don't output while in loop
+            for (ModLogInfo info : print) {
+                main.printAbandonedModLogInfo(info);
+            }
         }
     }
     
