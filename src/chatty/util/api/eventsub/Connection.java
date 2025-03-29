@@ -25,8 +25,7 @@ public class Connection extends JWSClient {
     
     private volatile String sessionId;
     private volatile Connection replacesConnection;
-    private volatile int connectionTimeoutSeconds;
-    
+
     public Connection(URI server, MessageHandler handler, TwitchApi api) {
         super(server);
         this.handler = handler;
@@ -37,21 +36,7 @@ public class Connection extends JWSClient {
     public void setConnectionTimeout(int seconds) {
         this.connectionTimeoutSeconds = seconds;
     }
-    
-    public void checkTimeout() {
-        if (!isOpen() && getConnectionSeconds() > 30) {
-            return;
-        }
-        if (connectionTimeoutSeconds > 0) {
-            if (getLastReceivedSecondsAgo() > connectionTimeoutSeconds * 2) {
-                forceReconnect();
-            }
-            else if (getLastReceivedSecondsAgo() > connectionTimeoutSeconds) {
-                reconnect();
-            }
-        }
-    }
-    
+
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
     }
