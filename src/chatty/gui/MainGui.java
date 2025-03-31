@@ -856,6 +856,35 @@ public class MainGui extends JFrame implements Runnable {
             }
         });
         
+        hotkeyManager.registerAction("window.minimizeToTray", "Window: Minimize to Tray", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                minimizeToTray();
+            }
+        });
+        
+        hotkeyManager.registerAction("window.restoreFromTray", "Window: Restore from Tray/Minimized", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                makeVisible();
+            }
+        });
+        
+        hotkeyManager.registerAction("window.toggleMinimizeToTray", "Window: Toggle Minimize to Tray", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (isMinimized()) {
+                    makeVisible();
+                }
+                else {
+                    minimizeToTray();
+                }
+            }
+        });
+        
         hotkeyManager.registerAction("window.toggleCompact", "Window: Toggle Compact Mode", new AbstractAction() {
 
             @Override
