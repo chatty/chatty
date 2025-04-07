@@ -1,6 +1,7 @@
 
 package chatty.util.api.eventsub;
 
+import chatty.util.Debugging;
 import chatty.util.api.eventsub.payloads.SessionPayload;
 import chatty.util.api.eventsub.payloads.SubscriptionPayload;
 import chatty.util.api.TwitchApi;
@@ -8,9 +9,11 @@ import chatty.util.jws.JWSClient;
 import chatty.util.jws.MessageHandler;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -36,9 +39,26 @@ public class Connections {
     private final TwitchApi api;
     private final Timer timer = new Timer("EventSub");
     
+    /**
+     * These topics will pontentially be registered when possible, but they are
+     * not added to a specific connection.
+     */
     private final Set<Topic> errorTopics = new HashSet<>();
     private final Set<Topic> errorLimitReachedTopics = new HashSet<>();
     private final Set<Topic> removedAuthTopics = new HashSet<>();
+    
+    /**
+     * These topics will be unregistered when possible, while they are still
+     * added to a specific connection.
+     */
+    private final Set<Topic> toRemove = new HashSet<>();
+    
+    /**
+     * Topics waiting to be added while they are still being removed.
+     */
+    private final Set<Topic> toAdd = new HashSet<>();
+    
+    private final Set<Topic> requestPending = new HashSet<>();
     
     private int totalCost = 0;
     private int maxTotalCost = 0;
@@ -55,12 +75,24 @@ public class Connections {
             public void run() {
                 checkConnection();
                 checkRetry();
+                // Unregister first, which will also check if topic is to be added
+                unregisterTopics();
+                addTopics();
             }
         }, 5000, 5000);
     }
     
     public synchronized boolean addTopic(Topic topic) {
-        if (hasTopic(topic)) {
+        // If a topic will be removed, it's not really added
+        if (hasTopic(topic) && !toRemove.contains(topic)) {
+            Debugging.println("es", "Add Topic: %s (already added)", topic);
+            return true;
+        }
+        if (toRemove.contains(topic)) {
+            // Could re-add immediately if no remove request pending, but doing it on a timer should do
+            Debugging.println("es", "Add Topic: %s (try again later)", topic);
+            toAdd.add(topic);
+            // Don't actually know if it can be added in this case
             return true;
         }
         return addTopicInternal(topic);
@@ -69,6 +101,7 @@ public class Connections {
     private synchronized boolean addTopicInternal(Topic topic) {
         for (Connection c : connections.values()) {
             if (c.addTopic(topic)) {
+                Debugging.println("es", "Add Topic: %s (added to %s)", topic, c.id);
                 if (c.getSessionId() != null) {
                     registerTopic(c, topic);
                 }
@@ -79,6 +112,7 @@ public class Connections {
         if (connections.size() < MAX_CONNECTIONS) {
             Connection c = addConnection(server);
             boolean result = c.addTopic(topic);
+            Debugging.println("es", "Add Topic: %s (added to new %s)", topic, c.id);
             c.init();
             return result;
         }
@@ -87,52 +121,85 @@ public class Connections {
     
     private synchronized Connection addConnection(URI server) {
         int connId = connIdCounter++;
-        Connection c = new Connection(server, createHandler(connId), api);
+        Connection c = new Connection(server, createHandler(connId), connId);
         c.setDebugPrefix(String.format(Locale.ROOT, "[EventSub][%d] ", connId));
         connections.put(connId, c);
         return c;
     }
     
     /**
-     * No longer listen to a topic.
+     * No longer listen to a topic. If the topic is added to a connection, but
+     * not registered yet, it will wait a bit to unregister it.
+     *
+     * @param topic
+     */
+    public synchronized void removeTopic(Topic topic) {
+        Debugging.println("es", "Remove Topic: %s", topic);
+        errorLimitReachedTopics.remove(topic);
+        errorTopics.remove(topic);
+        removedAuthTopics.remove(topic);
+        toAdd.remove(topic);
+        
+        // Need the object that may have the id set (none may be found)
+        Topic existingTopic = null;
+        for (Connection c : connections.values()) {
+            existingTopic = c.getTopic(topic);
+            if (existingTopic != null) {
+                break;
+            }
+        }
+        
+        /**
+         * If it is already set to remove then don't try immediately (since it
+         * would have already done that), but wait for the unregisterTopics()
+         * timer.
+         */
+        if (existingTopic != null
+                && !toRemove.contains(existingTopic)) {
+            toRemove.add(existingTopic);
+            unregisterTopic(existingTopic);
+        }
+    }
+    
+    /**
+     * Called when the topic is not registered with the connection, for example
+     * because it has been unregistered or access revoked.
      * 
      * @param topic
      * @return 
      */
-    public synchronized boolean removeTopic(Topic topic) {
-        return removeTopic(topic, true);
-    }
-    
-    public synchronized boolean removeTopic(Topic topic, boolean externalRemove) {
+    private synchronized boolean removeTopicInternal(Topic topic) {
+        Debugging.println("es", "Remove Topic: %s (internal)", topic);
+        toRemove.remove(topic);
         for (Connection c : connections.values()) {
-            Topic removedTopic;
-            if ((removedTopic = c.removeTopic(topic)) != null) {
-                if (externalRemove) {
-                    unregisterTopic(removedTopic);
-                }
+            if (c.removeTopic(topic) != null) {
                 if (c.numTopics() == 0) {
                     disconnect(c);
                 }
                 return true;
             }
         }
-        if (externalRemove) {
-            errorLimitReachedTopics.remove(topic);
-            errorTopics.remove(topic);
-            removedAuthTopics.remove(topic);
-        }
         return false;
     }
     
-    private void retryFailedTopic() {
+    private void retryFailedTopic(boolean withCost) {
         if (errorLimitReachedTopics.isEmpty()) {
             return;
         }
+        // Get the first topic with no cost or just any if cost was reduced
         Iterator<Topic> it = errorLimitReachedTopics.iterator();
-        Topic topic = it.next();
-        it.remove();
-        LOGGER.info("[EventSub] Retrying: " + topic + " "+totalCost);
-        addTopicInternal(topic);
+        Topic topic = null;
+        while (it.hasNext()) {
+            topic = it.next();
+            if (topic.getCost() == 0 || withCost) {
+                it.remove();
+                break;
+            }
+        }
+        if (topic != null) {
+            LOGGER.info("[EventSub] Retrying: " + topic + " "+totalCost);
+            addTopicInternal(topic);
+        }
     }
     
     /**
@@ -265,7 +332,7 @@ public class Connections {
         for (Connection c : connections.values()) {
             Topic topic = c.getTopicById(id);
             if (topic != null) {
-                removeTopic(topic, false);
+                removeTopicInternal(topic);
                 return topic;
             }
         }
@@ -353,18 +420,24 @@ public class Connections {
         else if (msg.type.equals("revocation")) {
             SubscriptionPayload subscription = (SubscriptionPayload) msg.data;
             Topic topic = removeTopicById(subscription.id);
+            
+            // Topic is now removed, check if it should be tried again
             if (topic != null) {
                 // Topic is no longer registered, so reset associated stuff
                 topic.setId(null);
                 topic.setCost(0);
                 if ("authorization_revoked".equals(subscription.status)) {
-                    removedAuthTopics.add(topic);
+                    if (!toRemove.contains(topic)) {
+                        removedAuthTopics.add(topic);
+                    }
                 }
                 else if ("moderator_removed".equals(subscription.status)) {
-                    // Just remove topic
+                    // Don't add to a set to try to register again
                 }
                 else {
-                    errorTopics.add(topic);
+                    if (!toRemove.contains(topic)) {
+                        errorTopics.add(topic);
+                    }
                 }
             }
         }
@@ -401,6 +474,7 @@ public class Connections {
     
     private void registerTopic(Connection c, Topic topic) {
         String sessionId = c.getSessionId();
+        requestPending.add(topic);
         api.addEventSub(topic.make(sessionId), r -> {
             if (!r.hasError) {
                 synchronized (Connections.this) {
@@ -411,52 +485,154 @@ public class Connections {
                         topic.setCost(r.cost);
                         topic.setId(r.id);
                     }
+                    requestPending.remove(topic);
                 }
-                log("+"+topic);
+                log("+"+topic, c.id);
             }
             else {
+                boolean reportError = false;
                 synchronized (Connections.this) {
-                    if (r.responseCode == 429) {
-                        errorLimitReachedTopics.add(topic);
-                        if (maxTotalCost > 0) {
-                            totalCost = maxTotalCost;
+                    // If registering failed, but it has to be removed anyway,
+                    // don't add to error sets
+                    if (!toRemove.contains(topic)) {
+                        reportError = true;
+                        if (r.responseCode == 429) {
+                            errorLimitReachedTopics.add(topic);
+                            // Error 429 is not just due to cost
+//                            if (maxTotalCost > 0) {
+//                                totalCost = maxTotalCost;
+//                            }
+                        }
+                        else {
+                            topic.increaseErrorCount();
+                            errorTopics.add(topic);
                         }
                     }
-                    else {
-                        topic.increaseErrorCount();
-                        errorTopics.add(topic);
-                    }
-                    removeTopic(topic, false);
+                    removeTopicInternal(topic);
+                    requestPending.remove(topic);
                 }
-                log("Error: "+topic);
+                // Outside lock, just in case
+                if (reportError) {
+                    handler.handleRegisterError(r.responseCode);
+                }
+                log("Error: "+topic+" / "+getDebugText(), c.id);
             }
         });
     }
     
-    private void unregisterTopic(Topic topic) {
-        if (topic.getId() == null) {
+    /**
+     * Unregister topics that are waiting to be removed, but weren't registered
+     * yet. To be called from the timer in the expected order.
+     */
+    private synchronized void unregisterTopics() {
+        if (toRemove.isEmpty()) {
             return;
         }
+        Iterator<Topic> it = toRemove.iterator();
+        while (it.hasNext()) {
+            Topic topic = it.next();
+            /**
+             * If a request is pending (which could be registering or
+             * unregistering it) neither try to register or unregister it again.
+             */
+            if (!requestPending.contains(topic)) {
+                if (toAdd.contains(topic)) {
+                    // Adding will be checked next in the timer
+                    it.remove();
+                }
+                else {
+                    // Keep topic in toRemove in case it fails
+                    unregisterTopic(topic);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Add topics that are queued to be added while they were still being
+     * removed. Clears toAdd since added topics will retry registering if
+     * necessary, although it may fail to add them if there is no space, but
+     * that's the case when normally adding them as well.
+     */
+    private synchronized void addTopics() {
+        Set<Topic> toAddCopy = new HashSet<>(toAdd);
+        toAdd.clear();
+        for (Topic topic : toAddCopy) {
+            Debugging.println("es", "Re-adding: %s", topic);
+            addTopic(topic);
+        }
+    }
+    
+    private boolean unregisterTopic(Topic topic) {
+        if (topic.getId() == null) {
+            Debugging.println("es", "Unregister %s (no id)", topic);
+            return false;
+        }
+        if (!topic.shouldRequest()) {
+            Debugging.println("es", "Unregister %s (wait)", topic);
+            return false;
+        }
+        Debugging.println("es", "Unregister %s", topic);
+        requestPending.add(topic);
         api.removeEventSub(topic.getId(), r -> {
             if (r == 204 || r == 404) {
                 synchronized (Connections.this) {
                     if (topic.getCost() > 0 && r == 204) {
                         totalCost -= topic.getCost();
-                        retryFailedTopic();
                     }
+                    removeTopicInternal(topic);
+                    requestPending.remove(topic);
+                    
+                    // Space may have opened up, not just when cost is involved
+                    retryFailedTopic(topic.getCost() > 0);
                 }
                 log("-"+topic);
             }
+            else {
+                synchronized (Connections.this) {
+                    topic.increaseErrorCount();
+                    requestPending.remove(topic);
+                }
+            }
         });
+        return true;
+    }
+    
+    private void log(String event, int connectionId) {
+        LOGGER.info(String.format("[EventSub]%s %s",
+                                  getConnectionPrefix(connectionId), event));
     }
     
     private void log(String event) {
-        LOGGER.info("[EventSub] "+event+" / "+getDebugText());
+        LOGGER.info(String.format("[EventSub] %s",
+                                  event));
     }
     
-    private synchronized String getDebugText() {
-        return String.format("Cost: %d/%d %s%s%s",
-                totalCost, maxTotalCost, errorLimitReachedTopics, errorTopics, removedAuthTopics);
+    public String getConnectionPrefix(int connectionId) {
+        return String.format(Locale.ROOT, "[%d(%3d)/%d(%3d)]",
+                             connectionId,
+                             getNumTopics(connectionId),
+                             getNumConnections(),
+                             getNumTopics());
+    }
+    
+    public String getDebugText() {
+        String result;
+        synchronized (Connections.this) {
+            result = String.format("Cost: %d/%d L:%s E:%s A:%s R:%s",
+                totalCost, maxTotalCost, errorLimitReachedTopics, errorTopics, removedAuthTopics, toRemove);
+        }
+        return result;
+    }
+    
+    public Map<String, List<Topic>> getTopics() {
+        Map<String, List<Topic>> result = new HashMap<>();
+        for (Connection c : connections.values()) {
+            List<Topic> topics = new ArrayList<>();
+            topics.addAll(c.getTopics());
+            result.put(c.getSessionId(), topics);
+        }
+        return result;
     }
     
     public synchronized void tokenUpdated() {

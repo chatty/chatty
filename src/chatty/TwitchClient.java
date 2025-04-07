@@ -33,6 +33,7 @@ import chatty.gui.components.updating.Stuff;
 import chatty.gui.defaults.DefaultsDialog;
 import chatty.splash.Splash;
 import chatty.util.BTTVEmotes;
+import chatty.util.BatchAction;
 import chatty.util.BotNameManager;
 import chatty.util.DateTime;
 import chatty.util.Debugging;
@@ -1991,6 +1992,13 @@ public class TwitchClient {
             eventSub.reconnect();
         } else if (command.equals("simulateeventsub")) {
             eventSub.simulate(parameter);
+        } else if (command.equals("es_s")) {
+            api.getEventSubSubs(s -> {
+                LOGGER.info(s.total+" "+s.getCountBySession());
+                LOGGER.info(s.toString());
+            });
+        } else if (command.equals("es_t")) {
+            LOGGER.info(eventSub.getTopics());
         } else if (command.equals("repeat")) {
             String[] split = parameter.split(" ", 2);
             int count = Integer.parseInt(split[0]);
@@ -2581,7 +2589,8 @@ public class TwitchClient {
     }
     
     private void handleModAction(ModActionPayload data) {
-        if (data.stream != null && data.source_stream == null) {
+        if (data.stream != null
+                && (data.stream.equals(data.source_stream) || data.source_stream == null)) {
             String channel = Helper.toChannel(data.stream);
             g.printModerationAction(data, data.created_by.equals(c.getUsername()));
             chatLog.modAction(data);
@@ -2721,6 +2730,12 @@ public class TwitchClient {
                 User user = c.getUser(Helper.toChannel(data.stream), data.username);
                 user.addWarningAcknowledged();
                 g.updateUserinfo(user);
+                g.printModerationAction(
+                        new ModActionPayload(
+                                "acknowledge_warning", 
+                                data.username, null, 
+                                data.stream, null),
+                        false);
             }
             if (message.data instanceof UserMessageHeldPayload) {
                 UserMessageHeldPayload data = (UserMessageHeldPayload) message.data;
@@ -3384,6 +3399,16 @@ public class TwitchClient {
                     || user.getStream() == null) {
                 return;
             }
+            
+            Debugging.println("es", "Check %s (mod: %s)", user.getChannel(), user.hasChannelModeratorRights());
+            
+            // Mainly for listen/unlisten message held
+            BatchAction.queue(eventSub, 100, false, true, () -> {
+                checkEventSubListenInternal(user);
+            });
+        }
+        
+        private void checkEventSubListenInternal(User user) {
             eventSub.setLocalUsername(c.getUsername());
             eventSub.listenRaid(user.getStream());
             if (settings.listContains("scopes", TokenInfo.Scope.MANAGE_POLLS.scope)
@@ -3435,6 +3460,7 @@ public class TwitchClient {
             else {
                 eventSub.unlistenMessageHeld(user.getStream());
             }
+            
         }
         
         @Override

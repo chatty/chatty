@@ -17,4 +17,6 @@ interface ConnectionsMessageHandler {
 
     public void handleDisconnect(int connection);
     
+    public void handleRegisterError(int responseCode);
+    
 }

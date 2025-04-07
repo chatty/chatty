@@ -77,6 +77,7 @@ public class BatchAction {
                 return true;
             }
             else if (overwrite) {
+                Debugging.println("batchaction", "Overwriting %s", id);
                 queued.put(id, runnable);
             }
             return false;

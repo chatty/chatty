@@ -8,10 +8,12 @@ import chatty.util.api.TwitchApi;
 import chatty.util.jws.JWSClient;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -56,11 +58,8 @@ public class EventSubManager {
                 
                 @Override
                 public void handleReceived(int id, String received) {
-                    listener.info(String.format(Locale.ROOT, "[%d(%d)/%d(%d)]--> %s",
-                            id,
-                            c.getNumTopics(id),
-                            c.getNumConnections(),
-                            c.getNumTopics(),
+                    listener.info(String.format(Locale.ROOT, "%s--> %s",
+                            c.getConnectionPrefix(id),
                             StringUtil.trim(received)));
                     Message message = Message.fromJson(received, userIds);
                     if (message != null && message.data != null) {
@@ -87,6 +86,20 @@ public class EventSubManager {
                 public void handleConnect(int id, JWSClient c) {
                     
                 }
+
+                @Override
+                public void handleRegisterError(int responseCode) {
+                    if (responseCode == 429) {
+                        EventLog.addSystemEvent("session.eventsub.limit",
+                                                "EventSub error",
+                                                "EventSub has reached an unexpected request limit, "
+                                                + "which will cause some features to not fully work, "
+                                                + "such as displaying Mod Actions, AutoMod and others. "
+                                                + "Note that API limits are per Twitch account/Client ID, "
+                                                + "so if you have other Chatty instances running it may affect limits on this one.");
+                    }
+                }
+                
             }, api);
         }
         catch (URISyntaxException ex) {
@@ -204,12 +217,19 @@ public class EventSubManager {
     }
     
     public void listenMessageHeld(String username) {
-        addTopic(new UserMessageHeld(username));
+        /**
+         * Currently IRC sends a message about a message held, so don't need
+         * this, just not for apporved/denied. For private terms (even when
+         * triggered by mods) EventSub seems to be silent both for the
+         * broadcaster and the affected user (but at message from IRC is still
+         * received for the message being held).
+         */
+//        addTopic(new UserMessageHeld(username));
         addTopic(new UserMessageUpdate(username));
     }
     
     public void unlistenMessageHeld(String username) {
-        removeTopic(new UserMessageHeld(username));
+//        removeTopic(new UserMessageHeld(username));
         removeTopic(new UserMessageUpdate(username));
     }
     
@@ -262,19 +282,19 @@ public class EventSubManager {
                 }
             }
         }
-        Debugging.println("pubsub", "[PubSub] Send: %s, Pending: %s",
+        Debugging.println("es", "[EventSub] Send: %s, Pending: %s",
                 readyTopics, pendingTopics);
         for (Topic topic : readyTopics) {
             boolean success = c.addTopic(topic);
             if (!success) {
                 // Prefixed with "session" so it can create a notification again
                 // next session, even if marked as read
-//                EventLog.addSystemEvent("session.pubsub.maxtopics",
-//                        "Too many channels",
-//                        "The amount of channels you have joined (especially "
-//                        + "where you are a moderator) will cause some features "
-//                                + "to not fully work, such as displaying Mod "
-//                                + "Actions, AutoMod and others.");
+                EventLog.addSystemEvent("session.eventsub.maxtopics",
+                        "EventSub max channels reached",
+                        "The amount of channels you have joined (especially "
+                        + "where you are a moderator) will cause some features "
+                                + "to not fully work, such as displaying Mod "
+                                + "Actions, AutoMod and others.");
             }
         }
     }
@@ -358,6 +378,41 @@ public class EventSubManager {
     
     public void tokenUpdated() {
         c.tokenUpdated();
+    }
+    
+    public String getTopics() {
+        Map<String, List<Topic>> topics = c.getTopics();
+        StringBuilder b = new StringBuilder();
+        for (Map.Entry<String, List<Topic>> entry : topics.entrySet()) {
+            b.append("\n[").append(entry.getKey()).append("]\n");
+            List<StreamTopic> topics2 = new ArrayList<>();
+            entry.getValue().forEach(t -> {
+                if (t instanceof StreamTopic) {
+                    topics2.add((StreamTopic) t);
+                }
+                else {
+                    LOGGER.warning("Unexpected topic: "+t);
+                }
+            });
+            Collections.sort(topics2, (o1, o2) -> {
+                         return o1.stream.compareTo(o2.stream);
+                     });
+            int count = 0;
+            String currentStream = null;
+            for (StreamTopic t : topics2) {
+                if (currentStream != null
+                        && !t.stream.equals(currentStream)) {
+                    b.append("\n---\n");
+                    count = 0;
+                }
+                count++;
+                currentStream = t.stream;
+                b.append(count).append(".");
+                b.append(t).append("(").append(t.getCost()).append(")\n");
+            }
+        }
+        b.append(c.getDebugText());
+        return b.toString();
     }
     
     //==========================

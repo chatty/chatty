@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 import chatty.util.api.ResultManager.CategoryResult;
 import chatty.util.api.ResultManager.CreateClipResult;
 import chatty.util.api.eventsub.EventSubAddResult;
+import chatty.util.api.eventsub.EventSubSubs;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -773,6 +774,10 @@ public class TwitchApi {
     
     public void removeEventSub(String id, Consumer<Integer> listener) {
         requests.removeEventSub(id, listener);
+    }
+    
+    public void getEventSubSubs(Consumer<EventSubSubs> listener) {
+        requests.getEventSubSubs(null, listener, null);
     }
     
 }

@@ -181,10 +181,28 @@ public class Request implements Runnable {
                 responseText != null ? responseText.length() : -1,
                 responseEncoding != null ? ", " + responseEncoding : "",
                 url,
-                requestError != null ? " ["+requestError+"]" : ""));
+                makeErrorText(errorText, requestError)));
         
         
         listener.requestResult(responseText, responseCode, errorText, ratelimitRemaining);
+    }
+    
+    /**
+     * If the request got a response then the error text from the response is
+     * probably more informative than the IOException text.
+     * 
+     * @param responseErrorText
+     * @param requestError
+     * @return 
+     */
+    private static String makeErrorText(String responseErrorText, String requestError) {
+        if (responseErrorText != null) {
+            return " ["+responseErrorText+"]";
+        }
+        if (requestError != null) {
+            return " ["+requestError+"]";
+        }
+        return "";
     }
     
     private static int getIntHeader(Header header, int defaultValue) {
@@ -285,7 +303,7 @@ public class Request implements Runnable {
                 responseText != null ? responseText.length() : -1,
                 responseEncoding != null ? ", " + responseEncoding : "",
                 url,
-                requestError != null ? " ["+requestError+"]" : ""));
+                makeErrorText(errorText, requestError)));
         
         listener.requestResult(responseText, responseCode, errorText, ratelimitRemaining);
     }
