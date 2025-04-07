@@ -25,6 +25,7 @@ public class Logging {
     
     private static final String LOG_FILE = Chatty.getPath(PathType.DEBUG).toString()+File.separator+"debug%g.log";
     private static final String LOG_FILE_IRC = Chatty.getPath(PathType.DEBUG).toString()+File.separator+"debug_irc%g.log";
+    private static final String LOG_FILE_EVENTSUB = Chatty.getPath(PathType.DEBUG).toString()+File.separator+"debug_eventsub%g.log";
     
     /**
      * Maximum log file size in bytes.
@@ -39,6 +40,8 @@ public class Logging {
     private final RingBuffer<LogRecord> lastMessages = new RingBuffer<>(8);
     
     private static TwitchClient client;
+    
+    private static Logger LOGGER_EVENTSUB;
     
     public Logging(final TwitchClient client) {
         Logging.client = client;
@@ -88,6 +91,7 @@ public class Logging {
                     if (record.getMessage().startsWith("[EventSub]")
                             || record.getMessage().contains("https://api.twitch.tv/helix/eventsub/subscriptions")) {
                         client.debugEventSub(record.getMessage());
+                        LOGGER_EVENTSUB.info(record.getMessage());
                     }
                 }
                 if (record.getLevel() == Level.SEVERE) {
@@ -118,6 +122,8 @@ public class Logging {
         };
         guiHandler.setLevel(Level.INFO);
         Logger.getLogger("").addHandler(guiHandler);
+        
+        createEventSubLogger();
     }
     
     /**
@@ -200,10 +206,27 @@ public class Logging {
         
     }
     
+    private static void createEventSubLogger() {
+        LOGGER_EVENTSUB = Logger.getLogger(Logging.class.getName() + "EVENTSUB");
+        LOGGER_EVENTSUB.setUseParentHandlers(false);
+        FileHandler handler = getExtraFileHandler(LOG_FILE_EVENTSUB);
+        if (handler != null) {
+            LOGGER_EVENTSUB.addHandler(handler);
+        }
+    }
+    
+    public static void logEventSub(String line) {
+        LOGGER_EVENTSUB.info(line);
+    }
+    
     public static FileHandler getIrcFileHandler() {
+        return getExtraFileHandler(LOG_FILE_IRC);
+    }
+    
+    public static FileHandler getExtraFileHandler(String path) {
         createLogDir();
         try {
-            FileHandler file = new FileHandler(LOG_FILE_IRC,MAX_LOG_SIZE*4,2,true);
+            FileHandler file = new FileHandler(path, MAX_LOG_SIZE * 4, 2, true);
             file.setFormatter(new Formatter() {
 
                 @Override

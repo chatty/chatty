@@ -1999,6 +1999,8 @@ public class TwitchClient {
             });
         } else if (command.equals("es_t")) {
             LOGGER.info(eventSub.getTopics());
+        } else if (command.equals("es_lt")) {
+            eventSub.logActiveTopics();
         } else if (command.equals("repeat")) {
             String[] split = parameter.split(" ", 2);
             int count = Integer.parseInt(split[0]);
@@ -2748,6 +2750,7 @@ public class TwitchClient {
         @Override
         public void info(String info) {
             g.printDebugEventSub(info);
+            Logging.logEventSub(info);
         }
         
     }

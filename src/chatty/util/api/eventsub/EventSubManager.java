@@ -1,6 +1,7 @@
 
 package chatty.util.api.eventsub;
 
+import chatty.Logging;
 import chatty.gui.components.eventlog.EventLog;
 import chatty.util.Debugging;
 import chatty.util.StringUtil;
@@ -44,6 +45,8 @@ public class EventSubManager {
     private volatile String localUsername;
     
     private final RaidTopicManager raidTopicManager;
+    
+    private boolean loggedTopicsYet;
     
     public EventSubManager(String server, final EventSubListener listener, TwitchApi api) {
         this.api = api;
@@ -97,6 +100,11 @@ public class EventSubManager {
                                                 + "such as displaying Mod Actions, AutoMod and others. "
                                                 + "Note that API limits are per Twitch account/Client ID, "
                                                 + "so if you have other Chatty instances running it may affect limits on this one.");
+                        if (!loggedTopicsYet) {
+                            // Only log on error once per session
+                            logActiveTopics();
+                            loggedTopicsYet = true;
+                        }
                     }
                 }
                 
@@ -117,6 +125,14 @@ public class EventSubManager {
         c.simulate(input);
     }
     
+    public void logActiveTopics() {
+        api.getEventSubSubs(s -> {
+            listener.info(String.format("[Current topics according to API]\n%s total\nPer sesssion: %s\n%s",
+                                              s.total, s.getCountBySession(), s.toString()));
+        });
+        listener.info(String.format("[Current topics according to Chatty]%s\n",
+                                          getTopics()));
+    }
     
     //==========================
     // Topics / various
@@ -411,6 +427,7 @@ public class EventSubManager {
                 b.append(t).append("(").append(t.getCost()).append(")\n");
             }
         }
+        b.append("\n");
         b.append(c.getDebugText());
         return b.toString();
     }
