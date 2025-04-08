@@ -9,7 +9,7 @@ import chatty.util.jws.JWSClient;
  */
 interface ConnectionsMessageHandler {
     
-    public void handleReceived(int connection, String text);
+    public void handleReceived(int connection, String text, Message message);
 
     public void handleSent(int connection, String text);
 

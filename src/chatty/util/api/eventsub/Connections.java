@@ -344,8 +344,9 @@ public class Connections {
             
             @Override
             public void handleReceived(String text) {
-                handler.handleReceived(id, text);
-                handleMessage2(id, text);
+                Message msg = Message.fromJson(text);
+                handler.handleReceived(id, text, msg);
+                handleMessage2(id, msg);
             }
 
             @Override
@@ -368,16 +369,15 @@ public class Connections {
     
     /**
      * Handle messages that are relevant for managing connections/topics.
-     * 
+     *
      * @param id
-     * @param text 
+     * @param msg
      */
-    private synchronized void handleMessage2(int id, String text) {
+    private synchronized void handleMessage2(int id, Message msg) {
         Connection c = getConnection(id);
         if (c == null) {
             return;
         }
-        Message msg = Message.fromJson(text, null);
         if (msg == null) {
             return;
         }

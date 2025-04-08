@@ -187,9 +187,11 @@ public class SuspiciousMessagePayload extends Payload {
         for (Type userType : userTypes) {
             String str = userType.description;
 
-            if (userType == Type.BANNED_IN_SHARED_CHANNEL
-                    && !bannedInChannelsNames.isEmpty()) {
-                str += ": " + String.join("/", bannedInChannelsNames);
+            synchronized (bannedInChannelsNames) {
+                if (userType == Type.BANNED_IN_SHARED_CHANNEL
+                        && !bannedInChannelsNames.isEmpty()) {
+                    str += ": " + String.join("/", bannedInChannelsNames);
+                }
             }
 
             elements.add(str);
@@ -215,7 +217,9 @@ public class SuspiciousMessagePayload extends Payload {
         
         api.getCachedUserInfoById(new ArrayList<>(bannedInChannels), userInfoMap -> {
             // Result may contain null values in case of errors, so filter out
-            bannedInChannelsNames.addAll(userInfoMap.values().stream().filter(Objects::nonNull).map(u -> u.displayName).collect(Collectors.toSet()));
+            synchronized (bannedInChannelsNames) {
+                bannedInChannelsNames.addAll(userInfoMap.values().stream().filter(Objects::nonNull).map(u -> u.displayName).collect(Collectors.toSet()));
+            }
             reportDone.run();
         });
     }

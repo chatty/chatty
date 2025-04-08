@@ -25,7 +25,7 @@ public class Payload {
 
     public final long created_at = System.currentTimeMillis();
 
-    public static Payload decode(JSONObject payload, Map<String, String> userIds, String msgType, String subType) throws ParseException {
+    public static Payload decode(JSONObject payload, String msgType, String subType) throws ParseException {
         if (payload == null) {
             return null;
         }

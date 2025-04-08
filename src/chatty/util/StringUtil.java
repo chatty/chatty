@@ -831,6 +831,12 @@ public class StringUtil {
         return string;
     }
     
+    public static String codePointSubstring(String input, int start, int end) {
+        int correctedStart = input.offsetByCodePoints(0, start);
+        int correctedEnd = input.offsetByCodePoints(correctedStart, end - start);
+        return input.substring(correctedStart, correctedEnd);
+    }
+    
     public static final void main(String[] args) {
         System.out.println(shortenTo("abcdefghi", 8, 5));
         System.out.println(concats("a", null, "b", null));

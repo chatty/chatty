@@ -289,8 +289,8 @@ public class PastMessages extends JTextArea {
                 startHighlight(b.length(), AUTO_MOD);
                 b.append("Filtered by AutoMod");
                 switch (ma.status) {
-                    case AUTOMOD_APPROVED: b.append(":APPROVED");
-                    case AUTOMOD_DENIED: b.append(":DENIED");
+                    case AUTOMOD_APPROVED: b.append(":APPROVED"); break;
+                    case AUTOMOD_DENIED: b.append(":DENIED"); break;
                 }
                 endHighlight(b.length(), AUTO_MOD);
                 if (!StringUtil.isNullOrEmpty(ma.reason)) {

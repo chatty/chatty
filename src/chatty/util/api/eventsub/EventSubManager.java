@@ -60,11 +60,10 @@ public class EventSubManager {
             return new Connections(new URI(server), new ConnectionsMessageHandler() {
                 
                 @Override
-                public void handleReceived(int id, String received) {
+                public void handleReceived(int id, String received, Message message) {
                     listener.info(String.format(Locale.ROOT, "%s--> %s",
                             c.getConnectionPrefix(id),
                             StringUtil.trim(received)));
-                    Message message = Message.fromJson(received, userIds);
                     if (message != null && message.data != null) {
                         listener.messageReceived(message);
                     }

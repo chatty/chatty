@@ -226,4 +226,22 @@ public class StringUtilTest {
         assertEquals("!\uDC31!↗", StringUtil.removeWhitespaceAndMore("!🐱!↗", new char[]{'\uD83D'}));
     }
     
+    @Test
+    public void testCodePointSubstring() {
+        assertEquals("test", StringUtil.codePointSubstring("𤭢 test", 2, 6));
+        assertEquals(" tes", "𤭢 test".substring(2, 6));
+        
+        assertEquals("test", StringUtil.codePointSubstring("test 𤭢", 0, 4));
+        assertEquals("test", "test 𤭢".substring(0, 4));
+        
+        assertEquals("𤭢", StringUtil.codePointSubstring("test 𤭢", 5, 6));
+        assertEquals("\uD852", "test 𤭢".substring(5, 6));
+        
+        assertEquals("𤭢", StringUtil.codePointSubstring("test 𤭢 ", 5, 6));
+        assertEquals("\uD852", "test 𤭢 ".substring(5, 6));
+        
+        assertEquals("𤭢𤭢", StringUtil.codePointSubstring("test 𤭢𤭢", 5, 7));
+        assertEquals("𤭢", "test 𤭢𤭢 ".substring(5, 7));
+    }
+    
 }

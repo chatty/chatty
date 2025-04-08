@@ -2,6 +2,7 @@
 package chatty.util.api.eventsub.payloads;
 
 import chatty.TwitchCommands;
+import chatty.util.BatchAction;
 import chatty.util.DateTime;
 import chatty.util.JSONUtil;
 import chatty.util.StringUtil;
@@ -292,7 +293,7 @@ public class ModActionPayload extends Payload {
                     List<String> fragments = new ArrayList<>();
                     JSONArray boundaries = (JSONArray) automod.get("boundaries");
                     for (Object boundary : boundaries) {
-                        String fragment = getFrament((JSONObject) boundary);
+                        String fragment = getFragment((JSONObject) boundary);
                         if (fragment != null) {
                             fragments.add(fragment);
                         }
@@ -306,7 +307,7 @@ public class ModActionPayload extends Payload {
                     List<String> result = new ArrayList<>();
                     for (Object o : terms) {
                         JSONObject term = (JSONObject) o;
-                        String fragment = getFrament((JSONObject) term.get("boundary"));
+                        String fragment = getFragment((JSONObject) term.get("boundary"));
                         if (fragment != null) {
                             String term_stream = JSONUtil.getString(term, "owner_broadcaster_user_login");
                             if (term_stream != null && !term_stream.equals(stream)) {
@@ -325,11 +326,35 @@ public class ModActionPayload extends Payload {
             return JSONUtil.getString(event, "category");
         }
         
-        private String getFrament(JSONObject boundary) {
+        private String getFragment(JSONObject boundary) {
             int start = JSONUtil.getInteger((JSONObject) boundary, "start_pos", -1);
             int end = JSONUtil.getInteger((JSONObject) boundary, "end_pos", -1);
             if (start > -1 && end > -1) {
-                return getMessage().substring(start, end + 1);
+                /**
+                 * Error before using codePointSubstring(), although it's
+                 * unclear if that error could even happen due to that (if
+                 * Chatty sees it as more characters than the API), so catching
+                 * error here now since it's more important for the AutoMod
+                 * message to appear at all than the reason being wrong.
+                 *
+                 * [2025-03-31 01:09:23/654 WARNING] Error parsing EventSub
+                 * message: java.lang.StringIndexOutOfBoundsException: begin 9, end 17, length 8
+                 * [java.base/java.lang.String.checkBoundsBeginEnd,
+                 * java.base/java.lang.String.substring,
+                 * chatty.util.api.eventsub.payloads.ModActionPayload$AutoModMessageUpdate.getFrament(ModActionPayload.java:332),
+                 * chatty.util.api.eventsub.payloads.ModActionPayload$AutoModMessageUpdate.getReason(ModActionPayload.java:309),
+                 * chatty.util.api.eventsub.payloads.ModActionPayload$AutoModMessageUpdate.isValid(ModActionPayload.java:339)...]
+                 */
+                try {
+                    return StringUtil.codePointSubstring(getMessage(), start, end + 1);
+                }
+                catch (Exception ex) {
+                    // Would output several times otherwise
+                    BatchAction.queue(event, 100, false, false, () -> {
+                        LOGGER.warning("[EventSub] Error getting AutoMod reason: "+ex+" ["+event+"]");
+                    });
+                    return "error, check debug log";
+                }
             }
             return null;
         }
