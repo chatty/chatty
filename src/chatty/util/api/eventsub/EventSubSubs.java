@@ -42,7 +42,7 @@ public class EventSubSubs {
     
     public static EventSubSubs decode(String json) {
         try {
-        JSONParser parser = new JSONParser();
+            JSONParser parser = new JSONParser();
             JSONObject root = (JSONObject) parser.parse(json);
             int total = JSONUtil.getInteger(root, "total", -1);
             int totalCost = JSONUtil.getInteger(root, "total_cost", -1);
