@@ -134,7 +134,7 @@ public final class Channel extends JPanel {
     }
     
     public void updateModButton() {
-        boolean hasAccess = AccessChecker.instance().check(room.getChannel(), TokenInfo.Scope.MANAGE_CHAT, true, false);
+        boolean hasAccess = AccessChecker.isModerator(room.getChannel(), TokenInfo.Scope.MANAGE_CHAT);
         modPanelButton.setVisible(hasAccess);
         
         // Not sure if this looks good

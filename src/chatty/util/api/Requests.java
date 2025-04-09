@@ -83,7 +83,7 @@ public class Requests {
     }
     
     public void requestFollowersNew(String streamId, String stream) {
-        boolean modAccess = AccessChecker.instance().check(Helper.toChannel(stream), TokenInfo.Scope.CHANNEL_FOLLOWERS, true, false);
+        boolean modAccess = AccessChecker.isModerator(Helper.toChannel(stream), TokenInfo.Scope.CHANNEL_FOLLOWERS);
         // Use old API in some cases while still available
         if (!modAccess && !FollowerManager.forceNewFollowsApi()) {
             requestFollowers(streamId, stream);
@@ -265,7 +265,7 @@ public class Requests {
     }
     
     public void getSingleFollowerNew(String stream, String streamID, String user, String userID) {
-        boolean modAccess = AccessChecker.instance().check(Helper.toChannel(stream), TokenInfo.Scope.CHANNEL_FOLLOWERS, true, false);
+        boolean modAccess = AccessChecker.isModerator(Helper.toChannel(stream), TokenInfo.Scope.CHANNEL_FOLLOWERS);
         // Use old API in some cases while still available
         if (!modAccess && !FollowerManager.forceNewFollowsApi()) {
             getSingleFollower(stream, streamID, user, userID);

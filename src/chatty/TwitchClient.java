@@ -3414,49 +3414,39 @@ public class TwitchClient {
         private void checkEventSubListenInternal(User user) {
             eventSub.setLocalUsername(c.getUsername());
             eventSub.listenRaid(user.getStream());
-            if (settings.listContains("scopes", TokenInfo.Scope.MANAGE_POLLS.scope)
-                    && user.isBroadcaster()) {
+            if (AccessChecker.isBroadcaster(user, TokenInfo.Scope.MANAGE_POLLS)) {
                 eventSub.listenPoll(user.getStream());
             }
-            if (settings.listContains("scopes", TokenInfo.Scope.MANAGE_SHIELD.scope)
-                    && (user.isModerator() || user.isBroadcaster())) {
+            if (AccessChecker.isModerator(user, TokenInfo.Scope.MANAGE_SHIELD)) {
                 eventSub.listenShield(user.getStream());
                 api.getShieldMode(user.getRoom(), true);
             }
-            if (settings.listContains("scopes", TokenInfo.Scope.MANAGE_SHOUTOUTS.scope)
-                    && (user.isModerator() || user.isBroadcaster())) {
+            if (AccessChecker.isModerator(user, TokenInfo.Scope.MANAGE_SHOUTOUTS)) {
                 eventSub.listenShoutouts(user.getStream());
             }
-            if (settings.listContainsAll("scopes",
-                                         TokenInfo.Scope.BLOCKED_READ.scope,
-                                         TokenInfo.Scope.MANAGE_CHAT.scope,
-                                         TokenInfo.Scope.MANAGE_UNBAN_REQUESTS.scope,
-                                         TokenInfo.Scope.MANAGE_BANS.scope,
-                                         TokenInfo.Scope.MANAGE_MSGS.scope,
-                                         TokenInfo.Scope.MANAGE_WARNINGS.scope,
-                                         TokenInfo.Scope.READ_MODS.scope,
-                                         TokenInfo.Scope.READ_VIPS.scope)
-                    && (user.isModerator() || user.isBroadcaster())) {
+            if (AccessChecker.isModerator("modActions", user,
+                                          TokenInfo.Scope.BLOCKED_READ,
+                                          TokenInfo.Scope.MANAGE_CHAT,
+                                          TokenInfo.Scope.MANAGE_UNBAN_REQUESTS,
+                                          TokenInfo.Scope.MANAGE_BANS,
+                                          TokenInfo.Scope.MANAGE_MSGS,
+                                          TokenInfo.Scope.MANAGE_WARNINGS,
+                                          TokenInfo.Scope.READ_MODS,
+                                          TokenInfo.Scope.READ_VIPS)) {
                 eventSub.listenModActions(user.getStream());
             }
-            if (settings.listContainsAll("scopes",
-                                         TokenInfo.Scope.AUTOMOD.scope)
-                    && (user.isModerator() || user.isBroadcaster())) {
+            if (AccessChecker.isModerator(user, TokenInfo.Scope.AUTOMOD)) {
                 eventSub.listenAutoMod(user.getStream());
             }
-            if (settings.listContainsAll("scopes",
-                                         TokenInfo.Scope.READ_SUSPICIOUS_USERS.scope)
-                    && (user.isModerator() || user.isBroadcaster())) {
+            if (AccessChecker.isModerator(user, TokenInfo.Scope.READ_SUSPICIOUS_USERS)) {
                 eventSub.listenSuspiciousMessage(user.getStream());
             }
-            if (settings.listContainsAll("scopes",
-                                         TokenInfo.Scope.MANAGE_WARNINGS.scope)
-                    && (user.isModerator() || user.isBroadcaster())) {
+            if (AccessChecker.isModerator(user, TokenInfo.Scope.MANAGE_WARNINGS)) {
                 eventSub.listenWarnings(user.getStream());
             }
             
             if (!user.hasChannelModeratorRights()) {
-                if (settings.listContains("scopes", TokenInfo.Scope.USER_READ_CHAT.scope)) {
+                if (AccessChecker.hasScope(TokenInfo.Scope.USER_READ_CHAT)) {
                     eventSub.listenMessageHeld(user.getStream());
                 }
             }
