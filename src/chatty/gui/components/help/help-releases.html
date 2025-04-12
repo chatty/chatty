@@ -77,12 +77,35 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.27">Version 0.27</a> <a name="latest">(This one!)</a> (2024-??-??)
+        <a name="0.27">Version 0.27</a> <a name="latest">(This one!)</a> (2025-04-13)
         <a href="#top" class="top">[back to top]</a>
     </h2>
-    <p>Due to the migration of several features to a new API you will need to
-        reconnect your Twitch Account under "Main - Account".</p>
-    <p>Beta, see list of changes on GitHub</p>
+    
+    <p>Twitch is turning off the PubSub API, so all features that relied on it had to be replaced with EventSub (e.g. Mod Actions, AutoMod and more). <strong>You will need to reconnect your Twitch Account under "Main - Account" due to the new API requiring new access scopes.</strong> Channel Points Redemptions are only available for the broadcaster in the new API and haven't been implemented in Chatty yet.</p>
+    <h3>Other changes</h3>
+    <ul>
+        <li>Added manual refresh button to Followers/Subscribers List</li>
+        <li>Added <code>/warn</code> command</li>
+        <li>Added gigantified emote support</li>
+        <li>Added some initial support for shared chat
+            <ul>
+                <li>Display source channel logo and badges in chat</li>
+                <li>Display source channel name for User Dialog messages</li>
+                <li>Added config:shared matching prefix</li>
+            </ul>
+        </li>
+        <li>Added Highlight matching prefixes <code>config:highlighted</code>, <code>config:followup</code>, <code>config:shared</code></li>
+        <li>Custom Tabs
+            <ul>
+                <li>Added channel logo setting</li>
+                <li>Don't apply log mode to Custom Tabs</li>
+            </ul>
+        </li>
+        <li>Use channel context for <code>/insert</code> command, added more advanced <code>/insert2</code> command</li>
+        <li>Added hotkey actions related to minimizing to tray</li>
+        <li>Various bugfixes</li>
+        <li>Updated help</li>
+    </ul>
     
     <h2>
         <a name="0.26">Version 0.26</a> (2024-03-21)
