@@ -248,6 +248,16 @@ public class EventSubManager {
         removeTopic(new UserMessageUpdate(username));
     }
     
+    public void listenPoints(String username) {
+        addTopic(new ChannelPointsRedemption(username));
+        addTopic(new ChannelPointsRedemptionUpdate(username));
+    }
+    
+    public void unlistenPoints(String username) {
+        removeTopic(new ChannelPointsRedemption(username));
+        removeTopic(new ChannelPointsRedemptionUpdate(username));
+    }
+    
     /**
      * Adds the given topic to be requested. If the topic is already being
      * listened to, it will still be added, processed and tried to listen to
@@ -899,6 +909,64 @@ public class EventSubManager {
             return new UserMessageUpdate(stream);
         }
 
+    }
+    
+    private class ChannelPointsRedemption extends StreamTopic {
+
+        ChannelPointsRedemption(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make(String sessionId) {
+            String userId = getUserId(stream);
+            if (userId != null) {
+                Map<String, String> condition = new HashMap<>();
+                condition.put("broadcaster_user_id", userId);
+                return Helper.makeAddEventSubBody("channel.channel_points_custom_reward_redemption.add", condition, sessionId, "1");
+            }
+            return null;
+        }
+
+        @Override
+        public int getExpectedCost() {
+            return 0;
+        }
+        
+        @Override
+        public Topic copy() {
+            return new ChannelPointsRedemption(stream);
+        }
+        
+    }
+
+    private class ChannelPointsRedemptionUpdate extends StreamTopic {
+
+        ChannelPointsRedemptionUpdate(String stream) {
+            super(stream);
+        }
+        
+        @Override
+        public String make(String sessionId) {
+            String userId = getUserId(stream);
+            if (userId != null) {
+                Map<String, String> condition = new HashMap<>();
+                condition.put("broadcaster_user_id", userId);
+                return Helper.makeAddEventSubBody("channel.channel_points_custom_reward_redemption.update", condition, sessionId, "1");
+            }
+            return null;
+        }
+
+        @Override
+        public int getExpectedCost() {
+            return 0;
+        }
+        
+        @Override
+        public Topic copy() {
+            return new ChannelPointsRedemptionUpdate(stream);
+        }
+        
     }
     
 }

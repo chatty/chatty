@@ -737,6 +737,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             }
         } else if (message instanceof UserNotice) {
             printUsernotice((UserNotice) message, style);
+            // For Points messages
+            if (message.objectId != null) {
+                setObjectId(doc.getLength(), message.objectId);
+            }
         } else if (message instanceof AutoModMessage) {
             printAutoModMessage((AutoModMessage)message, style);
         } else {

@@ -1032,14 +1032,18 @@ public class Helper {
         if (result == null) {
             javax.swing.Timer timer = new javax.swing.Timer(1000, e -> {
                 pointsMerge.remove(newNotice);
-                g.printUsernotice(newNotice.type, newNotice.user, newNotice.infoText, newNotice.attachedMessage, newNotice.tags);
+                UserNotice m = new UserNotice(newNotice.type, newNotice.user, newNotice.infoText, newNotice.attachedMessage, newNotice.tags);
+                m.objectId = newNotice.objectId;
+                g.printUsernotice(m);
             });
             timer.setRepeats(false);
             pointsMerge.put(newNotice, timer);
             timer.start();
         }
         else {
-            g.printUsernotice(result.type, result.user, result.infoText, result.attachedMessage, result.tags);
+            UserNotice m = new UserNotice(result.type, result.user, result.infoText, result.attachedMessage, result.tags);
+            m.objectId = result.objectId;
+            g.printUsernotice(m);
         }
     }
     
@@ -1064,10 +1068,12 @@ public class Helper {
         }
         if (found != null) {
             pointsMerge.remove(found);
-            UserNotice ps = found.tags.isFromPubSub() ? found : newNotice;
-            UserNotice irc = found.tags.isFromPubSub() ? newNotice : found;
+            UserNotice ps = found.tags.isFromEventSub() ? found : newNotice;
+            UserNotice irc = found.tags.isFromEventSub() ? newNotice : found;
             // Use irc msg, since that would also have the emote tags
-            return new UserNotice(ps.type, ps.user, ps.infoText, irc.attachedMessage, MsgTags.merge(found.tags, newNotice.tags));
+            UserNotice result = new UserNotice(ps.type, ps.user, ps.infoText, irc.attachedMessage, MsgTags.merge(found.tags, newNotice.tags));
+            result.objectId = ps.objectId;
+            return result;
         }
         return null;
     }

@@ -1,6 +1,7 @@
 
 package chatty.util.api.eventsub;
 
+import chatty.util.api.eventsub.payloads.ChannelPointsRedemptionPayload;
 import chatty.util.api.eventsub.payloads.ModActionPayload;
 import chatty.util.api.eventsub.payloads.PollPayload;
 import chatty.util.api.eventsub.payloads.RaidPayload;
@@ -65,6 +66,10 @@ public class Payload {
                     return UserMessageHeldPayload.decode(payload);
                 case "channel.chat.user_message_update":
                     return UserMessageHeldPayload.decode(payload);
+                case "channel.channel_points_custom_reward_redemption.add":
+                    return ChannelPointsRedemptionPayload.decode(payload, false);
+                case "channel.channel_points_custom_reward_redemption.update":
+                    return ChannelPointsRedemptionPayload.decode(payload, true);
             }
         }
         

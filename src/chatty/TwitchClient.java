@@ -81,6 +81,7 @@ import chatty.util.api.TwitchApi.RequestResultCode;
 import chatty.util.api.UserInfo;
 import chatty.util.api.eventsub.EventSubListener;
 import chatty.util.api.eventsub.EventSubManager;
+import chatty.util.api.eventsub.payloads.ChannelPointsRedemptionPayload;
 import chatty.util.api.eventsub.payloads.ModActionPayload;
 import chatty.util.api.eventsub.payloads.PollPayload;
 import chatty.util.api.eventsub.payloads.RaidPayload;
@@ -2745,6 +2746,19 @@ public class TwitchClient {
                     g.printLine(c.getRoomByChannel(Helper.toChannel(data.stream)), data.info);
                 }
             }
+            if (message.data instanceof ChannelPointsRedemptionPayload) {
+                ChannelPointsRedemptionPayload data = (ChannelPointsRedemptionPayload) message.data;
+                if (c.isChannelOpen(Helper.toChannel(data.stream))) {
+                    User user = c.getUser(Helper.toChannel(data.stream), data.redeemedByUsername);
+                    // Uses added source and reward id for merging
+                    String text = String.format("%s redeemed %s (%,d)",
+                                                data.redeemedByUsername, data.rewardTitle, data.rewardCost);
+                    g.printPointsNotice(user, text, data.attachedMsg,
+                                        MsgTags.create("chatty-source", "eventsub",
+                                                       "custom-reward-id", data.rewardId),
+                                        data.redemptionId, data.isUpdate, data.status);
+                }
+            }
         }
 
         @Override
@@ -3454,6 +3468,9 @@ public class TwitchClient {
                 eventSub.unlistenMessageHeld(user.getStream());
             }
             
+            if (AccessChecker.isBroadcaster(user, TokenInfo.Scope.READ_POINTS)) {
+                eventSub.listenPoints(user.getStream());
+            }
         }
         
         @Override
@@ -3527,7 +3544,7 @@ public class TwitchClient {
                 String info = String.format("%s redeemed a custom reward (%s)",
                                             user.getDisplayNick(),
                                             rewardInfo != null ? rewardInfo : "unknown");
-                g.printPointsNotice(user, info, text, tags);
+                g.printPointsNotice(user, info, text, tags, null, false, null);
             }
             else {
                 if (!historyManager.addQueueMessage(user, text, tags, action)) {

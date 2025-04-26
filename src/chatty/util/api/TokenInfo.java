@@ -26,7 +26,6 @@ public class TokenInfo {
                 Scope.WHISPER_EDIT,
                 Scope.WHISPER_MANAGE,
                 Scope.MANAGE_COLOR,
-                Scope.POINTS,
                 Scope.FOLLOWS,
                 Scope.CLIPS_EDIT
         ),
@@ -56,7 +55,8 @@ public class TokenInfo {
                 Scope.COMMERICALS,
                 Scope.SUBSCRIBERS,
                 Scope.MANAGE_RAIDS,
-                Scope.MANAGE_POLLS
+                Scope.MANAGE_POLLS,
+                Scope.READ_POINTS
         );
         
         public List<Scope> scopes;
@@ -100,7 +100,7 @@ public class TokenInfo {
         AUTOMOD("moderator:manage:automod", "automod"),
         BLOCKED_READ("moderator:read:blocked_terms", "blockedRead"),
         BLOCKED_MANAGE("moderator:manage:blocked_terms", "blockedManage"),
-        POINTS("channel:read:redemptions", "points"),
+        READ_POINTS("channel:read:redemptions", "points"),
         ANNOUNCEMENTS("moderator:manage:announcements", "announcements"),
         MANAGE_BANS("moderator:manage:banned_users", "manageBans"),
         MANAGE_CHAT("moderator:manage:chat_settings", "manageChat"),

@@ -53,8 +53,8 @@ public class MsgTags extends IrcMsgTags {
         return get("custom-reward-id");
     }
     
-    public boolean isFromPubSub() {
-        return isValue("chatty-source", "pubsub");
+    public boolean isFromEventSub() {
+        return isValue("chatty-source", "eventsub");
     }
 
     public boolean isHistoricMsg() {

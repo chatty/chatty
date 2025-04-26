@@ -3801,7 +3801,7 @@ public class MainGui extends JFrame implements Runnable {
         SwingUtilities.invokeLater(() -> {
             SubscriberMessage m = new SubscriberMessage(user, text, message, tags);
 
-            boolean printed = printUsernotice(m);
+            boolean printed = printUsernoticeInternal(m);
             if (printed) {
                 notificationManager.newSubscriber(user, client.getLocalUser(user.getChannel()), text, message);
             }
@@ -3825,14 +3825,24 @@ public class MainGui extends JFrame implements Runnable {
      * @param message
      * @param tags 
      */
-    public void printPointsNotice(final User user, final String text, final String message, final MsgTags tags) {
+    public void printPointsNotice(final User user, final String text, final String message, final MsgTags tags, final String redemptionId, boolean isUpdate, String status) {
         SwingUtilities.invokeLater(() -> {
-            UserNotice m = new UserNotice("Points", user, text, message, tags);
-            if (message != null) {
-                Helper.pointsMerge(m, this);
+            if (isUpdate && redemptionId != null && status != null) {
+                channels.getChannel(user.getRoom()).printInfoMessage(InfoMessage.createAppend(redemptionId, String.format("(%s)", status)));
             }
             else {
-                printUsernotice(m);
+                UserNotice m = new UserNotice("Points", user, text, message, tags);
+                if (redemptionId != null) {
+                    // For appending status in an update
+                    m.objectId = redemptionId;
+                }
+                if (message != null) {
+                    // With EventSub this may always be non-null
+                    Helper.pointsMerge(m, this);
+                }
+                else {
+                    printUsernoticeInternal(m);
+                }
             }
         });
     }
@@ -3844,14 +3854,20 @@ public class MainGui extends JFrame implements Runnable {
             
             SwingUtilities.invokeLater(() -> {
                 UserNotice m = new UserNotice(type, user, text, message, tags);
-                printUsernotice(m);
+                printUsernoticeInternal(m);
             });
             
             
         });
     }
     
-    private boolean printUsernotice(UserNotice m) {
+    public void printUsernotice(UserNotice m) {
+        GuiUtil.edt(() -> {
+            printUsernoticeInternal(m);
+        });
+    }
+    
+    private boolean printUsernoticeInternal(UserNotice m) {
         boolean notIgnored = printInfo(channels.getChannel(m.user.getRoom()), m);
         
         // Only add if not dummy user (dummy user possibly not used anymore)
