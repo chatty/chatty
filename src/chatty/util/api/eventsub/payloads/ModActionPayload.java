@@ -1,6 +1,7 @@
 
 package chatty.util.api.eventsub.payloads;
 
+import chatty.Helper;
 import chatty.TwitchCommands;
 import chatty.util.BatchAction;
 import chatty.util.DateTime;
@@ -84,6 +85,14 @@ public class ModActionPayload extends Payload {
         return action.getEvent();
     }
     
+    public boolean isShared() {
+        return !StringUtil.isNullOrEmpty(source_stream) && !source_stream.equals(stream);
+    }
+    
+    public String getSourceChannel() {
+        return isShared() ? Helper.toChannel(source_stream) : null;
+    }
+    
     public static ModActionPayload decode(JSONObject payload) {
         JSONObject event = (JSONObject) payload.get("event");
         if (event != null) {
@@ -137,8 +146,7 @@ public class ModActionPayload extends Payload {
     
     private static ModAction getAction(JSONObject payload) {
         JSONObject event = (JSONObject) payload.get("event");
-        String action = JSONUtil.getString(event, "action");
-        switch (action) {
+        switch (ModAction2.getModAction(payload)) {
             case "mod":
                 return new Mod(payload);
             case "unmod":
@@ -387,9 +395,13 @@ public class ModActionPayload extends Payload {
             }
         }
         
-        private static String getModAction(JSONObject payload) {
+        public static String getModAction(JSONObject payload) {
             JSONObject event = (JSONObject) payload.get("event");
-            return JSONUtil.getString(event, "action");
+            String action = JSONUtil.getString(event, "action");
+            if (action.startsWith("shared_chat_")) {
+                action = action.substring("shared_chat_".length());
+            }
+            return action;
         }
         
         @Override

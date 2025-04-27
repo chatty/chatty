@@ -372,8 +372,13 @@ public class User implements Comparable<User> {
         replayCachedBanInfo();
     }
     
-    public synchronized void addUnban(int type, String by) {
-        addLine(new UnbanMessage(System.currentTimeMillis(), type, by));
+    public synchronized void addUnban(int type, String by, String sourceChannel) {
+        if (sourceChannel != null) {
+            addLine(new SharedUnbanMessage(System.currentTimeMillis(), type, by, sourceChannel));
+        }
+        else {
+            addLine(new UnbanMessage(System.currentTimeMillis(), type, by));
+        }
     }
     
     public synchronized void addMsgDeleted(String targetMsgId, String msg) {
@@ -414,10 +419,20 @@ public class User implements Comparable<User> {
     public synchronized void addModAction(ModActionPayload data) {
         setFirstSeen();
         if (data.created_by.equals(nick)) {
-            addLine(new ModAction(System.currentTimeMillis(), data.getPseudoCommandString()));
+            if (data.isShared()) {
+                addLine(new SharedModAction(System.currentTimeMillis(), data.getPseudoCommandString(), Helper.toChannel(data.source_stream)));
+            }
+            else {
+                addLine(new ModAction(System.currentTimeMillis(), data.getPseudoCommandString()));
+            }
         }
         else if (ModLogInfo.getTargetUserInfo(data) != null) {
-            addLine(new ModAction(System.currentTimeMillis(), ModLogInfo.getTargetUserInfo(data)));
+            if (data.isShared()) {
+                addLine(new SharedModAction(System.currentTimeMillis(), ModLogInfo.getTargetUserInfo(data), data.source_stream));
+            }
+            else {
+                addLine(new ModAction(System.currentTimeMillis(), ModLogInfo.getTargetUserInfo(data)));
+            }
         }
     }
     
@@ -485,13 +500,13 @@ public class User implements Comparable<User> {
             if (m instanceof BanMessage) {
                 BanMessage bm = (BanMessage)m;
                 if (bm.by == null && command.equals(Helper.makeBanCommand(this, bm.duration, bm.id))) {
-                    lines.set(i, bm.addModLogInfo(data.created_by, ModLogInfo.getReason(data)));
+                    lines.set(i, bm.addModLogInfo(data.created_by, ModLogInfo.getReason(data), data.getSourceChannel()));
                     return true;
                 }
             } else if (m instanceof MsgDeleted) {
                 MsgDeleted md = (MsgDeleted)m;
                 if (md.by == null && command.equals(Helper.makeBanCommand(this, -2, md.targetMsgId))) {
-                    lines.set(i, md.addModLogInfo(data.created_by));
+                    lines.set(i, md.addModLogInfo(data.created_by, data.getSourceChannel()));
                     return true;
                 }
             }
@@ -1359,12 +1374,31 @@ public class User implements Comparable<User> {
             this.by = by;
         }
         
-        public BanMessage addModLogInfo(String by, String reason) {
+        public BanMessage addModLogInfo(String by, String reason, String sourceChannel) {
             if (reason == null) {
                 // Probably not set anyway, but just in case
                 reason = this.reason;
             }
+            if (sourceChannel != null) {
+                return new SharedBanMessage(getTime(), duration, reason, id, by, sourceChannel);
+            }
             return new BanMessage(getTime(), duration, reason, id, by);
+        }
+        
+    }
+    
+    public static class SharedBanMessage extends BanMessage implements SharedMessage {
+        
+        public final String sourceChannel;
+        
+        public SharedBanMessage(long time, long duration, String reason, String id, String by, String sourceChannel) {
+            super(time, duration, reason, id, by);
+            this.sourceChannel = sourceChannel;
+        }
+
+        @Override
+        public String getSourceChannel() {
+            return sourceChannel;
         }
         
     }
@@ -1394,6 +1428,22 @@ public class User implements Comparable<User> {
         
     }
     
+    public static class SharedUnbanMessage extends UnbanMessage implements SharedMessage {
+
+        public final String sourceChannel;
+        
+        public SharedUnbanMessage(long time, int type, String by, String sourceChannel) {
+            super(time, type, by);
+            this.sourceChannel = sourceChannel;
+        }
+        
+        @Override
+        public String getSourceChannel() {
+            return sourceChannel;
+        }
+        
+    }
+    
     public static class MsgDeleted extends Message {
         
         public final String targetMsgId;
@@ -1407,9 +1457,29 @@ public class User implements Comparable<User> {
             this.by = by;
         }
         
-        public MsgDeleted addModLogInfo(String by) {
+        public MsgDeleted addModLogInfo(String by, String sourceChannel) {
+            if (sourceChannel != null) {
+                return new SharedMsgDeleted(getTime(), targetMsgId, msg, by, sourceChannel);
+            }
             return new MsgDeleted(getTime(), targetMsgId, msg, by);
         }
+        
+    }
+    
+    public static class SharedMsgDeleted extends MsgDeleted implements SharedMessage {
+        
+        public final String sourceChannel;
+        
+        public SharedMsgDeleted(long time, String targetMsgId, String msg, String by, String sourceChannel) {
+            super(time, targetMsgId, msg, by);
+            this.sourceChannel = sourceChannel;
+        }
+
+        @Override
+        public String getSourceChannel() {
+            return sourceChannel;
+        }
+        
     }
     
     public static class SubMessage extends Message {
@@ -1490,6 +1560,22 @@ public class User implements Comparable<User> {
         public ModAction(long time, String commandAndParameters) {
             super(time);
             this.commandAndParameters = commandAndParameters;
+        }
+        
+    }
+    
+    public static class SharedModAction extends ModAction implements SharedMessage {
+
+        public final String sourceChannel;
+        
+        public SharedModAction(long time, String commandAndParameters, String sourceChannel) {
+            super(time, commandAndParameters);
+            this.sourceChannel = sourceChannel;
+        }
+
+        @Override
+        public String getSourceChannel() {
+            return sourceChannel;
         }
         
     }

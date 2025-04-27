@@ -174,7 +174,10 @@ public class PastMessages extends JTextArea {
             }
             else if (m instanceof User.BanMessage) {
                 User.BanMessage bm = (User.BanMessage)m;
-                b.append(timestampFormat.make(m.getTime(), user.getRoom())).append(">");
+                b.append(timestampFormat.make(m.getTime(), user.getRoom()));
+                addSourceChannel(m, b);
+                b.append(">");
+                
                 startHighlight(b.length(), MOD_ACTION);
                 if (bm.duration > 0) {
                     b.append("Timed out (").append(bm.duration).append("s)");
@@ -196,7 +199,10 @@ public class PastMessages extends JTextArea {
             }
             else if (m instanceof User.UnbanMessage) {
                 User.UnbanMessage ubm = (User.UnbanMessage)m;
-                b.append(timestampFormat.make(m.getTime(), user.getRoom())).append(">");
+                b.append(timestampFormat.make(m.getTime(), user.getRoom()));
+                addSourceChannel(m, b);
+                b.append(">");
+                
                 startHighlight(b.length(), MOD_ACTION);
                 if (ubm.type == User.UnbanMessage.TYPE_UNBAN) {
                     b.append("Unbanned");
@@ -209,7 +215,10 @@ public class PastMessages extends JTextArea {
             }
             else if (m instanceof User.MsgDeleted) {
                 User.MsgDeleted md = (User.MsgDeleted)m;
-                b.append(timestampFormat.make(m.getTime(), user.getRoom())).append(">");
+                b.append(timestampFormat.make(m.getTime(), user.getRoom()));
+                addSourceChannel(m, b);
+                b.append(">");
+                
                 startHighlight(b.length(), MOD_ACTION);
                 b.append("Message deleted:");
                 endHighlight(b.length(), MOD_ACTION);
@@ -253,7 +262,6 @@ public class PastMessages extends JTextArea {
             }
             else if (m instanceof User.InfoMessage) {
                 User.InfoMessage im = (User.InfoMessage)m;
-                
                 b.append(timestampFormat.make(m.getTime(), user.getRoom()));
                 addSourceChannel(im, b);
                 b.append("I ");
@@ -274,7 +282,10 @@ public class PastMessages extends JTextArea {
             }
             else if (m instanceof User.ModAction) {
                 User.ModAction ma = (User.ModAction)m;
-                b.append(timestampFormat.make(m.getTime(), user.getRoom())).append(">");
+                b.append(timestampFormat.make(m.getTime(), user.getRoom()));
+                addSourceChannel(m, b);
+                b.append(">");
+                
                 b.append("ModAction: ");
                 b.append(ma.commandAndParameters);
                 b.append("\n");

@@ -2592,8 +2592,7 @@ public class TwitchClient {
     }
     
     private void handleModAction(ModActionPayload data) {
-        if (data.stream != null
-                && (data.stream.equals(data.source_stream) || data.source_stream == null)) {
+        if (data.stream != null) {
             String channel = Helper.toChannel(data.stream);
             g.printModerationAction(data, data.created_by.equals(c.getUsername()));
             chatLog.modAction(data);
@@ -2617,7 +2616,7 @@ public class TwitchClient {
                 // Add info to unbanned user
                 User unbannedUser = c.getUser(channel, unbannedUsername);
                 int type = User.UnbanMessage.getType(data.moderation_action);
-                unbannedUser.addUnban(type, data.created_by);
+                unbannedUser.addUnban(type, data.created_by, data.getSourceChannel());
                 g.updateUserinfo(unbannedUser);
                 addedTargetUserInfo = true;
             }

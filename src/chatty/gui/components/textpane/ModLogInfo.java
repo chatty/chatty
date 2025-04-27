@@ -3,6 +3,7 @@ package chatty.gui.components.textpane;
 
 import chatty.Helper;
 import chatty.gui.components.Channel;
+import chatty.util.StringUtil;
 import chatty.util.api.eventsub.payloads.ModActionPayload;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -48,9 +49,10 @@ public class ModLogInfo extends InfoMessage {
     }
     
     private static String makeText(ModActionPayload data) {
-        return String.format("[ModAction] %s: %s",
-                data.created_by,
-                data.getPseudoCommandString());
+        return String.format("[ModAction]%s %s: %s",
+                             data.isShared() ? String.format("[%s]", data.getSourceChannel()) : "",
+                             data.created_by,
+                             data.getPseudoCommandString());
     }
     
     @Override

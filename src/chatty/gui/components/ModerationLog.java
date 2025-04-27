@@ -173,8 +173,9 @@ public class ModerationLog extends JDialog {
         }
         String channel = data.stream;
         
-        String line = String.format("[%s] <%s> %s",
+        String line = String.format("[%s]%s <%s> %s",
                 DateTime.currentTime(),
+                data.isShared() ? String.format("[%s]", data.getSourceChannel()) : "",
                 data.created_by,
                 data.getPseudoCommandString());
         
