@@ -420,7 +420,7 @@ public class User implements Comparable<User> {
         setFirstSeen();
         if (data.created_by.equals(nick)) {
             if (data.isShared()) {
-                addLine(new SharedModAction(System.currentTimeMillis(), data.getPseudoCommandString(), Helper.toChannel(data.source_stream)));
+                addLine(new SharedModAction(System.currentTimeMillis(), data.getPseudoCommandString(), data.getSourceChannel()));
             }
             else {
                 addLine(new ModAction(System.currentTimeMillis(), data.getPseudoCommandString()));
@@ -428,7 +428,7 @@ public class User implements Comparable<User> {
         }
         else if (ModLogInfo.getTargetUserInfo(data) != null) {
             if (data.isShared()) {
-                addLine(new SharedModAction(System.currentTimeMillis(), ModLogInfo.getTargetUserInfo(data), data.source_stream));
+                addLine(new SharedModAction(System.currentTimeMillis(), ModLogInfo.getTargetUserInfo(data), data.getSourceChannel()));
             }
             else {
                 addLine(new ModAction(System.currentTimeMillis(), ModLogInfo.getTargetUserInfo(data)));

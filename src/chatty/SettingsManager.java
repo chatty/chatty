@@ -786,7 +786,7 @@ public class SettingsManager {
         settings.addList("rulesShown", new HashSet(), Setting.STRING);
 
         // Shared Chat
-        settings.addLong("sharedBadges", 1);
+        settings.addLong("sharedBadges", 11);
         settings.addLong("sharedLogoSize", 22);
         settings.addBoolean("sharedLogoAlways", true);
         

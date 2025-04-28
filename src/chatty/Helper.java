@@ -1068,11 +1068,16 @@ public class Helper {
         }
         if (found != null) {
             pointsMerge.remove(found);
-            UserNotice ps = found.tags.isFromEventSub() ? found : newNotice;
-            UserNotice irc = found.tags.isFromEventSub() ? newNotice : found;
+            UserNotice fromEventSub = found.tags.isFromEventSub() ? found : newNotice;
+            UserNotice fromIrc = found.tags.isFromEventSub() ? newNotice : found;
             // Use irc msg, since that would also have the emote tags
-            UserNotice result = new UserNotice(ps.type, ps.user, ps.infoText, irc.attachedMessage, MsgTags.merge(found.tags, newNotice.tags));
-            result.objectId = ps.objectId;
+            UserNotice result = new UserNotice(
+                    fromEventSub.type,
+                    fromEventSub.user,
+                    fromEventSub.infoText,
+                    fromIrc.attachedMessage,
+                    MsgTags.merge(found.tags, newNotice.tags));
+            result.objectId = fromEventSub.objectId;
             return result;
         }
         return null;

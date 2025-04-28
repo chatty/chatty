@@ -2235,7 +2235,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
      */
     private void printUserIcons(User user, User localUser, MsgTags tags) {
         if (tags != null && tags.isSharedChatActive()) {
-            // Regular channel logo for Custom Tabs (not shared chat one)
+            // This outputs regular channel logo for Custom Tabs (shared one is done in printSharedInfo())
             printChannelIcon(user, localUser);
             printSharedInfo(user, localUser, tags);
         }
