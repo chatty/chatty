@@ -219,6 +219,18 @@ public class RawMessageTest {
         if (type.equals("shared2")) {
             return "@badge-info=;badges=moderator/1,twitch-recap-2023/1;client-nonce=99a343c9cf2fcf4e96e0abc358f7b59b;color=#FF4500;display-name=Test;emotes=;flags=;id=abcd;mod=0;room-id=1234;source-badge-info=;source-badges=subscriber/1,twitch-recap-2023/1;source-id=1234;source-room-id=12826;subscriber=0;tmi-sent-ts=1725918561648;turbo=0;user-id=1234;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :Shared message";
         }
+        if (type.equals("shared3")) {
+            return "@badge-info=;badges=moderator/1,twitch-recap-2023/1;client-nonce=99a343c9cf2fcf4e96e0abc358f7b59b;color=#FF4500;display-name=Test;emotes=;flags=;id=abcd;mod=0;room-id=1234;source-badge-info=;source-badges=moderator/1,twitch-recap-2023/1;source-id=1234;source-room-id=12826;subscriber=0;tmi-sent-ts=1725918561648;turbo=0;user-id=1234;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :Shared message";
+        }
+        if (type.equals("shared4")) {
+            return "@badge-info=;badges=moderator/1,twitch-recap-2023/1;client-nonce=99a343c9cf2fcf4e96e0abc358f7b59b;color=#FF4500;display-name=Test;emotes=;flags=;id=abcd;mod=0;room-id=1234;source-badge-info=;source-badges=moderator/1,subscriber/1,twitch-recap-2023/1;source-id=1234;source-room-id=12826;subscriber=0;tmi-sent-ts=1725918561648;turbo=0;user-id=1234;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :Shared message";
+        }
+        if (type.equals("shared5")) {
+            return "@badge-info=;badges=;client-nonce=99a343c9cf2fcf4e96e0abc358f7b59b;color=#FF4500;display-name=Test;emotes=;flags=;id=abcd;mod=0;room-id=1234;source-badge-info=;source-badges=moderator/1,subscriber/1,twitch-recap-2023/1;source-id=1234;source-room-id=12826;subscriber=0;tmi-sent-ts=1725918561648;turbo=0;user-id=1234;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :Shared message";
+        }
+        if (type.equals("sharedbadgeinfo")) {
+            return "@badge-info=;badges=glhf-pledge/1;color=#9ACD32;display-name=Test;emotes=;flags=;id=1234;mod=0;room-id=1234;source-badge-info=subscriber/10;source-badges=subscriber/6,twitch-recap-2024/1;source-id=1234;source-room-id=12826;subscriber=0;tmi-sent-ts=1739666543843;turbo=0;user-id=1234;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :broooo";
+        }
         if (type.equals("sharednotice")) {
             return "@badge-info=subscriber/28;badges=broadcaster/1,subscriber/0,premium/1;color=#0000FF;display-name=ModeratorName;emotes=emotesv2_bc0b18e802fb430ca03f0ad04efea2d1:0-6;flags=;id=1234;login=moderatorname;mod=0;msg-id=sharedchatnotice;source-msg-id=announcement;msg-param-color=PRIMARY;room-id=1234;source-room-id=12826;subscriber=1;system-msg=;tmi-sent-ts=1648763597214;user-id=1234;user-type= :tmi.twitch.tv USERNOTICE "+channel+" :joshSss";
         }

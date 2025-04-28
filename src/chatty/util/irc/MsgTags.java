@@ -139,6 +139,10 @@ public class MsgTags extends IrcMsgTags {
         return hasValue("source-room-id") && !get("source-room-id").equals(get("room-id"));
     }
     
+    public boolean isSharedChatActive() {
+        return hasValue("source-room-id");
+    }
+    
     public static final String SHARED_MESSAGE_SOURCE_CHANNEL = "chatty-source-channel";
     
     /**

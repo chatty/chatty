@@ -27,14 +27,7 @@ public class UserTagsUtil {
             changed = true;
         }
 
-        IrcBadges badgeInfo = IrcBadges.parse(tags.get("badge-info"));
-        String subMonths = badgeInfo.get("subscriber");
-        if (subMonths == null) {
-            subMonths = badgeInfo.get("founder");
-        }
-        if (subMonths != null) {
-            user.setSubMonths(Helper.parseShort(subMonths, (short) 0));
-        }
+        updateUserBadgeInfo(user, tags, false);
         
         if (user.setDisplayNick(StringUtil.trim(tags.get("display-name")))) {
             changed = true;
@@ -70,6 +63,17 @@ public class UserTagsUtil {
         
         user.setId(tags.get("user-id"));
         return changed;
+    }
+    
+    public static void updateUserBadgeInfo(User user, MsgTags tags, boolean source) {
+        IrcBadges badgeInfo = IrcBadges.parse(tags.get(source ? "source-badge-info" : "badge-info"));
+        String subMonths = badgeInfo.get("subscriber");
+        if (subMonths == null) {
+            subMonths = badgeInfo.get("founder");
+        }
+        if (subMonths != null) {
+            user.setSubMonths(Helper.parseShort(subMonths, (short) 0));
+        }
     }
     
 }

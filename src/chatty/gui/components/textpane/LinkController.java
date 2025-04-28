@@ -312,7 +312,7 @@ public class LinkController extends MouseAdapter {
         if (emoteImage != null) {
             popup.show(textPane, element, p -> makeEmoticonPopupText(emoteImage, popupImagesEnabled, p, element), emoteImage.getImageIcon().getIconWidth());
         } else if (usericonImage != null) {
-            popup.show(textPane, element, p -> makeUsericonPopupText(usericonImage, getUsericonInfo(element), p), usericonImage.getImageIcon().getIconWidth());
+            popup.show(textPane, element, p -> makeUsericonPopupText(usericonImage, getUsericonInfo(element), getUsericonSharedInfo(element), p), usericonImage.getImageIcon().getIconWidth());
         } else if (replacedText != null) {
             popup.show(textPane, element, p -> makeReplacementPopupText(replacedText, p), 1);
         } else if (replyMsgId != null) {
@@ -407,6 +407,11 @@ public class LinkController extends MouseAdapter {
     
     private String getUsericonInfo(Element e) {
         return (String)(e.getAttributes().getAttribute(ChannelTextPane.Attribute.USERICON_INFO));
+    }
+    
+    @SuppressWarnings("unchecked")
+    private List<String> getUsericonSharedInfo(Element e) {
+        return (List<String>)(e.getAttributes().getAttribute(ChannelTextPane.Attribute.USERICON_SHARED_INFO));
     }
     
     private String getReplacedText(Element e) {
@@ -952,7 +957,7 @@ public class LinkController extends MouseAdapter {
     // Usericon Popup
     //----------------
     
-    private static void makeUsericonPopupText(CachedImage<Usericon> usericonImage, String moreInfo, MyPopup p) {
+    private void makeUsericonPopupText(CachedImage<Usericon> usericonImage, String moreInfo, List<String> sharedInfo, MyPopup p) {
         Usericon usericon = usericonImage.getObject();
         String info;
         if (!usericon.metaTitle.isEmpty()) {
@@ -979,6 +984,20 @@ public class LinkController extends MouseAdapter {
         }
         if (!StringUtil.isNullOrEmpty(moreInfo)) {
             info += "<br />("+moreInfo+")";
+        }
+        if (sharedInfo != null && !sharedInfo.isEmpty()) {
+            if (usericon.type == Usericon.Type.CHANNEL_LOGO) {
+                info += "<br />Shared Chat: "+StringUtil.join(sharedInfo, ", ")+"";
+            }
+            else {
+                String activeChannel = "";
+                // Don't modify original
+                List<String> chans = new ArrayList<>(sharedInfo);
+                if (chans.remove(channel.getName())) {
+                    activeChannel += " and here";
+                }
+                info += "<br />Badge from: "+StringUtil.join(chans, ", ")+activeChannel;
+            }
         }
         p.setText(info);
     }

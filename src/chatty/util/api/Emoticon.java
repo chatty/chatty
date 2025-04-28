@@ -656,7 +656,7 @@ public class Emoticon {
                 }
             }, ("emote_" + type).intern());
         }
-        return images.getIcon(scaleFactor, maxHeight, null, imageType, user);
+        return images.getIcon(scaleFactor, maxHeight, null, imageType, null, user);
     }
     
     /**

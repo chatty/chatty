@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.SwingWorker;
@@ -103,7 +104,7 @@ public class CachedImage<T> {
         public boolean loadImage() {
             return true;
         }
-        
+
         /**
          * Provides the ability to modify the loaded image before it is used.
          * 
@@ -147,8 +148,9 @@ public class CachedImage<T> {
     private long lastLoadingAttempt;
     private long lastUsed;
     private final String prefix;
+    private final Function<ImageIcon, Image> modifyImageFunction;
 
-    public CachedImage(T object, CachedImageRequester requester, String prefix, float scaleFactor, int maxHeight, Object customKey, ImageType imageType) {
+    public CachedImage(T object, CachedImageRequester requester, String prefix, float scaleFactor, int maxHeight, Object customKey, Function<ImageIcon, Image> modifyImageFunction, ImageType imageType) {
         this.object = object;
         this.scaleFactor = scaleFactor;
         this.maxHeight = maxHeight;
@@ -156,6 +158,7 @@ public class CachedImage<T> {
         this.imageType = imageType;
         this.requester = requester;
         this.prefix = prefix;
+        this.modifyImageFunction = modifyImageFunction;
     }
 
     /**
@@ -306,8 +309,17 @@ public class CachedImage<T> {
      * @return
      */
     private ImageIcon getDefaultIcon(boolean error) {
-        ImageIcon icon = new ImageIcon(getDefaultImage(error));
+        return modifyIconIfNecessary(new ImageIcon(getDefaultImage(error)));
+    }
+    
+    private ImageIcon modifyIconIfNecessary(ImageIcon icon) {
         Image modified = requester.modifyImage(icon);
+        if (modified != null) {
+            icon.setImage(modified);
+        }
+        if (modifyImageFunction != null) {
+            modified = modifyImageFunction.apply(icon);
+        }
         if (modified != null) {
             icon.setImage(modified);
         }
@@ -427,12 +439,7 @@ public class CachedImage<T> {
             }
 
             requester.imageLoaded(result);
-            
-            Image modifiedImage = requester.modifyImage(result.icon);
-            if (modifiedImage != null) {
-                result.icon.setImage(modifiedImage);
-            }
-            return result.icon;
+            return modifyIconIfNecessary(result.icon);
         }
 
         /**

@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -409,10 +410,11 @@ public class Usericon implements Comparable {
     private int customScaleMode;
     
     public CachedImage<Usericon> getIcon(float scale, int customUsericonScaleMode, CachedImage.CachedImageUser user) {
-        return getIcon(scale, customUsericonScaleMode, 0, user);
+        return getIcon(scale, customUsericonScaleMode, 0, -1, user);
     }
     
-    public CachedImage<Usericon> getIcon(float scale, int customUsericonScaleMode, int maxHeight, CachedImage.CachedImageUser user) {
+    public CachedImage<Usericon> getIcon(float scale, int customUsericonScaleMode, int maxHeight, float opacity0, CachedImage.CachedImageUser user) {
+        float opacity = opacity0 > 0 && opacity0 < 1 ? opacity0 : -1;
         this.customScaleMode = customUsericonScaleMode;
         if (images == null) {
             images = new CachedImageManager<>(this, new CachedImage.CachedImageRequester() {
@@ -450,6 +452,7 @@ public class Usericon implements Comparable {
                 
                 @Override
                 public Image modifyImage(ImageIcon icon) {
+                    // Default modification on every icon
                     icon = addColor(icon, color);
                     icon = substituteColor(icon);
                     icon = ChannelTextPane.addSpaceToIcon(icon);
@@ -475,7 +478,18 @@ public class Usericon implements Comparable {
                 customKey = 1;
             }
         }
-        return images.getIcon(scale, maxHeight, customKey, CachedImage.ImageType.STATIC, user);
+        Function<ImageIcon, Image> imageModifier = null;
+        if (opacity != -1) {
+            /**
+             * Custom key so that image is chached separate from non-opacity
+             * versions.
+             */
+            customKey = customKey+"/"+opacity;
+            imageModifier = (icon) -> {
+                return ChannelTextPane.getIconWithOpacity(icon, opacity).getImage();
+            };
+        }
+        return images.getIcon(scale, maxHeight, customKey, CachedImage.ImageType.STATIC, imageModifier, user);
     }
     
     private static Dimension toHeight(Dimension d, int targetHeight) {

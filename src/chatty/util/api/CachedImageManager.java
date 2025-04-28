@@ -10,6 +10,9 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Objects;
 import chatty.util.api.CachedImage.CachedImageUser;
+import java.awt.Image;
+import java.util.function.Function;
+import javax.swing.ImageIcon;
 
 /**
  * Provides a facility to manage loading and caching of images.
@@ -31,9 +34,9 @@ public class CachedImageManager<T> {
     
     /**
      * Get a cached image or create a new one if necessary. All the parameters
-     * (except for the CachedImageUser) have to match in order for a cached image
-     * to be selected.
-     * 
+     * (except for the CachedImageUser) have to match in order for a cached
+     * image to be selected.
+     *
      * @param scaleFactor How to scale the image (values equal or smaller 0
      * don't scale)
      * @param maxHeight The resulting scaled image won't be higher than this
@@ -41,11 +44,12 @@ public class CachedImageManager<T> {
      * @param customKey Doesn't affect the image, but provides an additional way
      * to differentiate between cached images
      * @param imageType Static, animated etc.
+     * @param modifyImage Additional optional per-request image modification
      * @param user Is informed when the image changes
      * @return An CachedImage, either containing a default placeholder image or
  the final cached image
      */
-    public CachedImage<T> getIcon(float scaleFactor, int maxHeight, Object customKey, ImageType imageType, CachedImageUser user) {
+    public CachedImage<T> getIcon(float scaleFactor, int maxHeight, Object customKey, ImageType imageType, Function<ImageIcon, Image> modifyImage, CachedImageUser user) {
         if (images == null) {
             images = new HalfWeakSet2<>();
         }
@@ -60,7 +64,7 @@ public class CachedImageManager<T> {
             }
         }
         if (resultImage == null) {
-            resultImage = new CachedImage<>(object, requester, prefix, scaleFactor, maxHeight, customKey, imageType);
+            resultImage = new CachedImage<>(object, requester, prefix, scaleFactor, maxHeight, customKey, modifyImage, imageType);
             images.add(resultImage);
         } else {
             images.markStrong(resultImage);
