@@ -2827,7 +2827,9 @@ public class MainGui extends JFrame implements Runnable {
                 parameter = client.settings.getString("username");
             }
             String[] split = parameter.split(" ");
-            String username = split[0];
+            final String username = (username.startsWith("@"))
+                ? split[0].substring(1)
+                : split[0];
             if (split.length > 1) {
                 channel = Helper.toChannel(split[1]);
             }
