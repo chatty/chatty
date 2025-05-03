@@ -307,7 +307,7 @@ public class TwitchClient {
         // Create after Logging is created, since that resets some stuff
         ircLogger = new IrcLogger();
 
-        createTestUser("tduva", "");
+        User.createTestUser("tduva", "");
         
         api = new TwitchApi(new TwitchApiResults(), new MyStreamInfoListener());
         addTwitchApiResultListeners();
@@ -658,26 +658,7 @@ public class TwitchClient {
      * @param name
      * @param channel 
      */
-    private void createTestUser(String name, String channel) {
-        testUser = new User(name, name, Room.createRegular(channel));
-        testUser.setColor(new Color(94, 0, 211));
-        // Force color correction for longer userinfo color label
-        testUser.setColor(new Color(255, 255, 255));
-        //testUser.setColor(new Color(0,216,107));
-        //testUser.setBot(true);
-        //testUser.setTurbo(true);
-        testUser.setModerator(true);
-        testUser.setSubscriber(true);
-        //testUser.setAdmin(true);
-        //testUser.setStaff(true);
-        //testUser.setBroadcaster(true);
-//        LinkedHashMap<String, String> badgesTest = new LinkedHashMap<>();
-//        badgesTest.put("global_mod", "1");
-//        badgesTest.put("moderator", "1");
-//        badgesTest.put("premium", "1");
-//        badgesTest.put("bits", "1000000");
-//        testUser.setTwitchBadges(badgesTest);
-    }
+
     
     /**
      * Close all channels except the ones in the given Array.
@@ -1820,7 +1801,7 @@ public class TwitchClient {
             g.switchToChannel(parameter);
         } else if (command.equals("settestuser")) {
             String[] split = parameter.split(" ");
-            createTestUser(split[0], split[1]);
+            User.createTestUser(split[0], split[1]);
         } else if (command.equals("getemoteset")) {
             g.printLine(g.emoticons.getEmoticonsBySet(parameter).toString());
         } else if (command.equals("testcolor")) {
