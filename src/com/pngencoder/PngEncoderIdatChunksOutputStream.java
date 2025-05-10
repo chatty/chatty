@@ -43,24 +43,30 @@ class PngEncoderIdatChunksOutputStream extends FilterOutputStream {
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
+        // Check for null input
+        if (b == null) {
+            throw new NullPointerException("Input byte array cannot be null");
+        }
+        
+        // Check array bounds
+        if (off < 0 || len < 0 || off + len > b.length) {
+            throw new ArrayIndexOutOfBoundsException("Invalid offset or length parameters");
+        }
+        
+        // Handle buffer management
         if (len >= buf.length) {
             flushBuffer();
             writeIdatChunk(b, off, len);
             return;
         }
+        
         if (len > buf.length - count) {
             flushBuffer();
         }
+        
         System.arraycopy(b, off, buf, count, len);
         count += len;
     }
-
-    @Override
-    public void flush() throws IOException {
-        flushBuffer();
-        super.flush();
-    }
-
     private void flushBuffer() throws IOException {
         if (count > 0) {
             writeIdatChunk(buf, 0, count);
