@@ -555,6 +555,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         closeCompactMode();
         printTimestamp(style);
         printChannelIcon(null, message.localUser);
+        // Also outputs badges
         printSharedInfo(message.user, message.localUser, message.tags);
         
         MutableAttributeSet userStyle;
@@ -2245,6 +2246,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     }
     
     private void printUsericonsDefault(User user, User localUser, MsgTags tags, int channelLogoSize) {
+        if (user == null) {
+            return;
+        }
         boolean botBadgeEnabled = styles.isEnabled(Setting.BOT_BADGE_ENABLED);
         java.util.List<Usericon> badges = user.getBadges(botBadgeEnabled, tags, localUser, channelLogoSize);
         if (badges != null) {
