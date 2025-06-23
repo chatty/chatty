@@ -167,6 +167,7 @@ public class DefaultsPanel extends JPanel {
         fontPanel.setBorder(BorderFactory.createTitledBorder(Language.getString("defaults.font")));
         
         fontPreview = new JTextPane();
+        GuiUtil.resetFocusTraversalKeys(fontPreview);
         gbc = GuiUtil.makeGbc(0, 5, 2, 1, GridBagConstraints.CENTER);
         gbc.weightx = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
