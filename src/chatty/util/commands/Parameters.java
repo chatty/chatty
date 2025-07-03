@@ -269,6 +269,11 @@ public class Parameters {
         }
         switch (name) {
             case "streamstatus": return streamInfo.getFullStatus();
+            case "streamname": return streamInfo.getCapitalizedName();
+            case "streamdisplayname": return streamInfo.getDisplayName();
+            case "streamdisplayname2": return streamInfo.hasRegularDisplayName()
+                    ? streamInfo.getDisplayName()
+                    : String.format("%s (%s)", streamInfo.getDisplayName(), streamInfo.getCapitalizedName());
         }
         if (streamInfo.getOnline()) {
             switch (name) {
