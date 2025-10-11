@@ -812,7 +812,7 @@ public class SettingsManager {
         settings.addString("streamHighlightCustom", "$(timestamp),$(chan),$(uptime),$(streamgame),$(chatuser),$quote($(rawcomment))");
         settings.addBoolean("streamHighlightExtra", true);
         settings.addLong("streamHighlightCooldown", 0);
-
+        
         // Stream Status Writer
         settings.addBoolean("enableStatusWriter", false);
         settings.addString("statusWriter", "");
@@ -821,6 +821,17 @@ public class SettingsManager {
         
         settings.addBoolean("pronouns", false);
         settings.addBoolean("pronounsChat", false);
+        
+        // TTS
+        settings.addBoolean("ttsEnabled", false);
+        settings.addMap("ttsVoice", new HashMap<>(), Setting.STRING);
+        settings.addLong("ttsMaxLength", 2000);
+        settings.addLong("ttsVolume", 100);
+        settings.addLong("ttsRate", 100);
+        settings.addLong("ttsPitch", 0);
+        settings.addLong("ttsHotkeysVolume", 80);
+        settings.addBoolean("ttsReadMessages", false);
+        settings.addBoolean("ttsIgnoreEmoteOnly", false);
     }
     
     private boolean loadSuccess;

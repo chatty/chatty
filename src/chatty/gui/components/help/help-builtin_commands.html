@@ -160,6 +160,16 @@
             </ul>
             (Example: <code>/exportText -n abc.txt one\ntwo</code> - Writes "one" and "two" as separate lines)</li>
         <li><code>/proc</code> - <a href="help.html#custom-processes">Execute a system process</a> (be careful with this)</li>
+        <li><code>/tts &lt;say|start|pause|clear|on|off&gt;</code> - Controls <a href="help-settings.html#TTS">Text to Speech</a>
+            <ul>
+                <li><code>say &lt;message&gt;</code> - add the given messages to the TTS queue (if TTS is enabled)</li>
+                <li><code>start</code> - start reading queued TTS messages again if it was paused before</li>
+                <li><code>pause</code> - pause reading queued TTS messages (queue active)</li>
+                <li><code>clear</code> - clear the current queue</li>
+                <li><code>on</code> - turn on TTS (queue active, start reading from queue)</li>
+                <li><code>off</code> - turn off TTS (clears queue, no new messages queued)</li>
+            </ul>
+        </li>
     </ul>
     
     <h3>Learn things about Chatty</h3>

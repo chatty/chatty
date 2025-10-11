@@ -1,6 +1,9 @@
 
 package chatty.gui.components.settings;
 
+import chatty.Helper;
+import chatty.Room;
+import chatty.User;
 import chatty.gui.GuiUtil;
 import chatty.util.colors.HtmlColors;
 import chatty.gui.components.LinkLabelListener;
@@ -14,6 +17,8 @@ import chatty.gui.notifications.NotificationWindow;
 import chatty.lang.Language;
 import chatty.util.Sound;
 import chatty.util.StringUtil;
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import chatty.util.settings.Settings;
 import java.awt.Color;
 import java.awt.Component;
@@ -77,6 +82,7 @@ class NotificationEditor extends TableEditor<Notification> {
         setRendererForColumn(1, new MyRenderer());
         setRendererForColumn(2, new MyRenderer());
         setRendererForColumn(3, new MyRenderer());
+        setRendererForColumn(4, new MyRenderer());
     }
     
     public void setSoundFiles(Path path, String[] fileNames) {
@@ -128,7 +134,7 @@ class NotificationEditor extends TableEditor<Notification> {
     private static class MyTableModel extends ListTableModel<Notification> {
 
         public MyTableModel() {
-            super(new String[]{l("column.event"), l("column.notification"), l("column.sound"), l("column.message")});
+            super(new String[]{l("column.event"), l("column.notification"), l("column.sound"), l("column.message"), l("column.tts")});
         }
         
         @Override
@@ -182,32 +188,42 @@ class NotificationEditor extends TableEditor<Notification> {
             }
             
             // Text
-            String text;
-            if (column == 0) {
-                String channel = n.hasChannels() ? " (" + n.serializeChannels() + ")" : "";
-                String matcher = n.hasMatcher() ? "&nbsp;"+n.getMatcherString() : "";
-                text = String.format("%s%s\n%s",
-                        n.type.label,
-                        channel,
-                        matcher);
-            } else if (column == 1) {
-                text = String.format("%s", n.getDesktopState());
-            } else if (column == 2) {
-                String cooldown = "";
-                if (n.soundCooldown > 0 || n.soundInactiveCooldown > 0) {
-                    cooldown = String.format("[%s/%s]",
-                            formatCooldown(n.soundCooldown),
-                            formatCooldown(n.soundInactiveCooldown));
-                }
-                text = String.format("%s\n%s %s",
-                        n.getSoundState(),
-                        cooldown,
-                        n.soundFile == null ? "No sound file" : n.soundFile);
-            } else {
-                text = String.format("%s%s\n%s",
-                        n.messageOverrideDefault ? "[!] " : "",
-                        n.getMessageState(),
-                        n.messageTarget);
+            String text = "";
+            switch (column) {
+                case 0:
+                    String channel = n.hasChannels() ? " (" + n.serializeChannels() + ")" : "";
+                    String matcher = n.hasMatcher() ? "&nbsp;" + n.getMatcherString() : "";
+                    text = String.format("%s%s\n%s",
+                                         n.type.label,
+                                         channel,
+                                         matcher);
+                    break;
+                case 1:
+                    text = String.format("%s", n.getDesktopState());
+                    break;
+                case 2:
+                    String cooldown = "";
+                    if (n.soundCooldown > 0 || n.soundInactiveCooldown > 0) {
+                        cooldown = String.format("[%s/%s]",
+                                             formatCooldown(n.soundCooldown),
+                                             formatCooldown(n.soundInactiveCooldown));
+                    }
+                    text = String.format("%s\n%s %s",
+                                             n.getSoundState(),
+                                             cooldown,
+                                             n.soundFile == null ? "No sound file" : n.soundFile);
+                    break;
+                case 3:
+                    text = String.format("%s%s\n%s",
+                                         n.messageOverrideDefault ? "[!] " : "",
+                                         n.getMessageState(),
+                                         n.messageTarget);
+                    break;
+                case 4:
+                    text = String.format("%s\n%s",
+                                         n.ttsState.label,
+                                         n.ttsFormat != null ? n.ttsFormat.getRaw() : "");
+                    break;
             }
             
             if (text.startsWith("Off")) {
@@ -241,6 +257,10 @@ class NotificationEditor extends TableEditor<Notification> {
                 + "[help-settings:Highlight Highlights] list, although some "
                 + "prefixes may have no effect.<br /><br />";
         
+        private static final String TTS_FORMAT_HELP = "<html><body width='300px'>"
+                + "Format for the spoken message. Possible parameters: $(title), $(message), $(stream), where available $(nick)"
+                + "<br /><br />";
+        
         private static final int VOLUME_MIN = 0;
         private static final int VOLUME_MAX = 100;
 
@@ -257,6 +277,7 @@ class NotificationEditor extends TableEditor<Notification> {
         private final GenericComboSetting<Notification.State> desktopState;
         private final GenericComboSetting<Notification.State> soundState;
         private final GenericComboSetting<Notification.State> messageState;
+        private final GenericComboSetting<Notification.State> ttsState;
         private final SimpleStringSetting channels;
         private final EditorStringSetting matcher;
         private final ColorTemplates colorTemplates;
@@ -271,6 +292,7 @@ class NotificationEditor extends TableEditor<Notification> {
         private final SimpleStringSetting messageTarget;
         private final JCheckBox messageUseColor;
         private final JCheckBox messageOverrideDefault;
+        private final EditorStringSetting ttsFormat;
 
         // State
         private JLabel description;
@@ -297,12 +319,14 @@ class NotificationEditor extends TableEditor<Notification> {
             
             
             desktopState = new GenericComboSetting<>(status);
-            desktopState.setToolTipText("abc");
+//            desktopState.setToolTipText("abc");
             
             soundState = new GenericComboSetting<>(status);
-            soundState.setToolTipText("abc");
+//            soundState.setToolTipText("abc");
             
             messageState = new GenericComboSetting<>(status);
+            
+            ttsState = new GenericComboSetting<>(status);
             
             desktopState.addItemListener(e -> {
                 tabs.setTitleAt(0, columnLabel("notification", desktopState.getSettingValue() != State.OFF));
@@ -319,9 +343,15 @@ class NotificationEditor extends TableEditor<Notification> {
                 updateMessageSettings();
             });
             
+            ttsState.addItemListener(e -> {
+                tabs.setTitleAt(3, columnLabel("tts", ttsState.getSettingValue() != State.OFF));
+                updateTTSSettings();
+            });
+            
             JPanel desktop = new JPanel(new GridBagLayout());
             JPanel sound = new JPanel(new GridBagLayout());
             JPanel message = new JPanel(new GridBagLayout());
+            JPanel tts = new JPanel(new GridBagLayout());
             
             JPanel optionsPanel = new JPanel(new GridBagLayout());
             //optionsPanel.setBorder(BorderFactory.createTitledBorder("Event"));
@@ -392,6 +422,44 @@ class NotificationEditor extends TableEditor<Notification> {
             messageTarget = new SimpleStringSetting(20, true, DataFormatter.TRIM);
             messageUseColor = new JCheckBox(Language.getString("settings.notifications.messageUseColor"));
             messageOverrideDefault = new JCheckBox(Language.getString("settings.notifications.messageOverrideDefault"));
+            
+            Editor.Tester tester = new Editor.Tester() {
+
+                @Override
+                public String test(Window parent, Component component, int x, int y, String value) {
+                    CustomCommand command = CustomCommand.parse(value);
+                    if (command.hasError()) {
+                        CommandSettings.showCommandInfoPopup(component, command);
+                    }
+                    else {
+                        Parameters params = Parameters.create("An example chat message");
+                        params.putObject("user", new User("testUser", Room.createRegular("#testChannel")));
+                        params.putObject("settings", settings);
+                        params.put("chan", "testchannel");
+                        params.put("stream", "testchannel");
+                        params.put("title", "[Message] testUser in #testchannel");
+                        params.put("message", "An example chat message");
+
+                        Parameters params2 = Parameters.create("An example chat message");
+                        params2.putObject("user", null);
+                        params2.putObject("settings", settings);
+                        params2.put("chan", "testchannel");
+                        params2.put("stream", "testchannel");
+                        params2.put("title", "[Info] #testchannel");
+                        params2.put("message", "An example info message");
+
+                        GuiUtil.showNonModalMessage(parent, "Example",
+                                                    String.format("Triggered by chat message:<br />%s<br /><br />"
+                                                            + "Triggered by info message:<br />%s",
+                                                                  Helper.htmlspecialchars_encode(command.replace(params)),
+                                                                  Helper.htmlspecialchars_encode(command.replace(params2))),
+                                                    JOptionPane.INFORMATION_MESSAGE, true);
+                    }
+                    return null;
+                }
+            };
+            
+            ttsFormat = new EditorStringSetting(dialog, "Text to Speech Message Format", 20, true, false, TTS_FORMAT_HELP, tester);
 
             GridBagConstraints gbc;
 
@@ -486,6 +554,20 @@ class NotificationEditor extends TableEditor<Notification> {
             gbc.anchor = GridBagConstraints.WEST;
             message.add(messageOverrideDefault, gbc);
             
+            //--------------
+            // TTS Settings
+            //--------------
+            JLabel ttsStateLabel = new JLabel("Status:");
+            ttsStateLabel.setLabelFor(ttsState);
+            gbc = GuiUtil.makeGbc(0, 0, 1, 1);
+            tts.add(ttsStateLabel, gbc);
+            
+            gbc = GuiUtil.makeGbc(1, 0, 3, 1);
+            gbc.anchor = GridBagConstraints.WEST;
+            tts.add(ttsState, gbc);
+            
+            SettingsUtil.addLabeledComponent(tts, "ttsNotificationFormat", 0, 1, 1, GridBagConstraints.WEST, ttsFormat);
+            
             //### Dialog ###
             
             gbc = GuiUtil.makeGbc(0, 2, 3, 1);
@@ -511,6 +593,7 @@ class NotificationEditor extends TableEditor<Notification> {
             tabs.addTab(columnLabel("notification", true), GuiUtil.northWrap(desktop));
             tabs.addTab(columnLabel("sound", true), GuiUtil.northWrap(sound));
             tabs.addTab(columnLabel("message", true), GuiUtil.northWrap(message));
+            tabs.addTab(columnLabel("tts", true), GuiUtil.northWrap(tts));
             
             ActionListener buttonAction = new ActionListener() {
 
@@ -617,6 +700,11 @@ class NotificationEditor extends TableEditor<Notification> {
             messageUseColor.setEnabled(enabled);
         }
         
+        private void updateTTSSettings() {
+            boolean enabled = ttsState.getSettingValue() != State.OFF;
+            ttsFormat.setEnabled(enabled);
+        }
+        
         @Override
         public Notification showEditor(Notification preset, Component c, boolean edit, int column) {
             if (edit) {
@@ -647,6 +735,10 @@ class NotificationEditor extends TableEditor<Notification> {
                 messageUseColor.setSelected(preset.messageUseColor);
                 messageOverrideDefault.setSelected(preset.messageOverrideDefault);
                 
+                // TTS
+                ttsState.setSettingValue(preset.ttsState);
+                ttsFormat.setSettingValue(preset.ttsFormat.getRaw());
+                
                 updateSubTypes();
             } else {
                 current = null;
@@ -671,22 +763,16 @@ class NotificationEditor extends TableEditor<Notification> {
                 messageUseColor.setSelected(false);
                 messageOverrideDefault.setSelected(false);
                 
+                // TTS
+                ttsState.setSettingValue(Notification.State.OFF);
+                ttsFormat.setSettingValue("$(title) $(message)");
+                
                 updateSubTypes();
                 create();
             }
             
             // Default selected tab based on which table column was clicked on
-            switch (column) {
-                case 2:
-                    tabs.setSelectedIndex(1);
-                    break;
-                case 3:
-                    tabs.setSelectedIndex(2);
-                    break;
-                default:
-                    tabs.setSelectedIndex(0);
-                    break;
-            }
+            tabs.setSelectedIndex(Math.max(column - 1, 0));
             colorTemplates.selectDefault();
             
             save = false;
@@ -713,6 +799,7 @@ class NotificationEditor extends TableEditor<Notification> {
             b.setDesktopEnabled(desktopState.getSettingValue());
             b.setSoundEnabled(soundState.getSettingValue());
             b.setMessageEnabled(messageState.getSettingValue());
+            b.setTTSEnabled(ttsState.getSettingValue());
             b.setForeground(foreground);
             b.setBackground(background);
             b.setSoundFile(soundFile.getSettingValue());
@@ -725,6 +812,7 @@ class NotificationEditor extends TableEditor<Notification> {
             b.setMessageTarget(messageTarget.getSettingValue());
             b.setMessageUseColor(messageUseColor.isSelected());
             b.setMessageOverrideDefault(messageOverrideDefault.isSelected());
+            b.setTTSFormat(ttsFormat.getSettingValue());
             
             current = new Notification(b);
             return current;

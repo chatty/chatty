@@ -7,6 +7,7 @@ import chatty.User;
 import chatty.gui.Highlighter;
 import chatty.util.colors.HtmlColors;
 import chatty.util.StringUtil;
+import chatty.util.commands.CustomCommand;
 import chatty.util.irc.MsgTags;
 import java.awt.Color;
 import java.util.ArrayList;
@@ -130,6 +131,7 @@ public class Notification {
         private State soundState = State.OFF;
         private State desktopState = State.OFF;
         private State messageState = State.OFF;
+        private State ttsState = State.OFF;
         private String matcher;
         
         private Color foregroundColor = Color.BLACK;
@@ -144,6 +146,7 @@ public class Notification {
         private String messageTarget;
         private boolean messageUseColor;
         private boolean messageOverrideDefault;
+        private String ttsFormat;
         
         public Builder(Type type) {
             this.type = type;
@@ -199,6 +202,11 @@ public class Notification {
             return this;
         }
         
+        public Builder setTTSEnabled(State enabled) {
+            this.ttsState = enabled;
+            return this;
+        }
+        
         public Builder setOptions(List<String> options) {
             this.options = options;
             return this;
@@ -226,6 +234,11 @@ public class Notification {
         
         public Builder setMessageOverrideDefault(boolean override) {
             this.messageOverrideDefault = override;
+            return this;
+        }
+        
+        public Builder setTTSFormat(String format) {
+            this.ttsFormat = format;
             return this;
         }
         
@@ -260,6 +273,10 @@ public class Notification {
     public final String messageTarget;
     public final boolean messageUseColor;
     public final boolean messageOverrideDefault;
+    
+    // TTS Notification
+    public final State ttsState;
+    public final CustomCommand ttsFormat;
 
     // State
     private long lastMatched;
@@ -297,6 +314,15 @@ public class Notification {
         this.messageTarget = builder.messageTarget;
         this.messageUseColor = builder.messageUseColor;
         this.messageOverrideDefault = builder.messageOverrideDefault;
+        
+        // TTS
+        this.ttsState = builder.ttsState;
+        if (builder.ttsFormat != null) {
+            this.ttsFormat = CustomCommand.parse(builder.ttsFormat);
+        }
+        else {
+            this.ttsFormat = null;
+        }
     }
 
     private static Set<String> parseChannels(String channels) {
@@ -326,7 +352,7 @@ public class Notification {
     }
     
     public boolean hasEnabled() {
-        return desktopState != State.OFF || soundState != State.OFF || messageState != State.OFF;
+        return desktopState != State.OFF || soundState != State.OFF || messageState != State.OFF || ttsState != State.OFF;
     }
 
     public void setMatched() {
@@ -409,6 +435,8 @@ public class Notification {
         result.add(messageTarget);
         result.add(messageUseColor);
         result.add(messageOverrideDefault);
+        result.add(ttsState.id);
+        result.add(ttsFormat != null ? ttsFormat.getRaw() : "");
         return result;
     }
     
@@ -439,6 +467,12 @@ public class Notification {
             if (list.size() > 16) {
                 messageOverrideDefault = (Boolean) list.get(16);
             }
+            State ttsState = State.OFF;
+            String ttsFormat = "";
+            if (list.size() > 18) {
+                ttsState = State.getTypeFromId(((Number)list.get(17)).intValue());
+                ttsFormat = (String) list.get(18);
+            }
             
             Builder b = new Builder(type);
             b.setDesktopEnabled(desktopState);
@@ -457,6 +491,8 @@ public class Notification {
             b.setMessageTarget(messageTarget);
             b.setMessageUseColor(messageUseColor);
             b.setMessageOverrideDefault(messageOverrideDefault);
+            b.setTTSEnabled(ttsState);
+            b.setTTSFormat(ttsFormat);
             return new Notification(b);
         } catch (Exception ex) {
             LOGGER.warning("Error parsing NotificationSettings: "+ex);

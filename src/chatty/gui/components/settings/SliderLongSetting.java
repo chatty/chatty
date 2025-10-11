@@ -28,7 +28,7 @@ public class SliderLongSetting extends JPanel implements LongSetting {
     
     public SliderLongSetting(int orientation, int min, int max, int presetValue) {
         slider = new JSlider(orientation, min, max, presetValue);
-        this.value = value;
+        this.value = presetValue;
         valueLabel = new JLabel(LABEL_PREFIX);
         valueLabel.setMinimumSize(valueLabel.getPreferredSize());
         
@@ -86,6 +86,10 @@ public class SliderLongSetting extends JPanel implements LongSetting {
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         slider.setEnabled(enabled);
+    }
+    
+    public void addChangeListener(ChangeListener l) {
+        slider.addChangeListener(l);
     }
 
 }

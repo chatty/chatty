@@ -123,6 +123,7 @@ import chatty.util.gif.FocusUpdates;
 import chatty.util.gif.GifUtil;
 import chatty.util.history.HistoryUtil;
 import chatty.util.seventv.WebPUtil;
+import chatty.util.tts.TextToSpeech;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import org.json.simple.JSONValue;
@@ -955,6 +956,62 @@ public class MainGui extends JFrame implements Runnable {
             @Override
             public void actionPerformed(ActionEvent e) {
                 notificationWindowManager.clearAllShown();
+            }
+        });
+        
+        hotkeyManager.registerAction("tts.pause", "Text to speech: Pause speaking (queue active)", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TextToSpeech.get(client.settings).pause();
+            }
+        });
+        
+        hotkeyManager.registerAction("tts.resume", "Text to speech: Resume speaking", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TextToSpeech.get(client.settings).start();
+            }
+        });
+        
+        hotkeyManager.registerAction("tts.skipForwards", "Text to speech: Skip forwards in queue (interrupt current message)", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TextToSpeech.get(client.settings).skipForwards();
+            }
+        });
+        
+        hotkeyManager.registerAction("tts.skipBackwards", "Text to speech: Skip backwards in queue (repeat previous message)", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TextToSpeech.get(client.settings).skipBackwards();
+            }
+        });
+        
+        hotkeyManager.registerAction("tts.clearQueue", "Text to speech: Clear current queue", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TextToSpeech.get(client.settings).clearQueue();
+            }
+        });
+        
+        hotkeyManager.registerAction("tts.on", "Text to speech: Enable TTS (queue active, speaking)", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TextToSpeech.get(client.settings).enable();
+            }
+        });
+        
+        hotkeyManager.registerAction("tts.off", "Text to speech: Disable TTS (queue inactive, no speaking)", new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TextToSpeech.get(client.settings).disable();
             }
         });
         
@@ -3653,12 +3710,14 @@ public class MainGui extends JFrame implements Runnable {
                             highlighter.getLastMatchNoNotification(),
                             highlighter.getLastMatchNoSound(),
                             isOwnMessage, whisper, bitsAmount > 0);
+                    TextToSpeech.get(client.settings).message(user, text, tags, isOwnMessage);
                 } else if (!ignored) {
                     if (whisper) {
                         notificationManager.whisper(user, localUser, text, isOwnMessage);
                     } else {
                         notificationManager.message(user, localUser, text, tags, isOwnMessage,
                                 bitsAmount > 0);
+                        TextToSpeech.get(client.settings).message(user, text, tags, isOwnMessage);
                     }
                     if (!isOwnMessage) {
                         channels.setChannelNewMessage(chan);

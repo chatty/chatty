@@ -5,6 +5,7 @@ import chatty.Chatty;
 import chatty.gui.GuiUtil;
 import static chatty.gui.components.settings.CommandSettings.showCommandInfoPopup;
 import chatty.lang.Language;
+import chatty.util.StringUtil;
 import chatty.util.commands.CommandSyntaxHighlighter;
 import chatty.util.commands.CustomCommand;
 import chatty.util.hotkeys.Hotkey;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -49,19 +51,19 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             new HashSet<>(Arrays.asList(new String[]{"dialog.toggleTransparency"}));
 
     private MyItemEditor itemEditor;
-    private final MyTableModel data = new MyTableModel();
+    public final MyTableModel data = new MyTableModel();
     private final Set<KeyStroke> conflictWarning = new HashSet<>();
     
     private Map<String, String> actions;
     private Map<String, String> descriptions;
     private boolean globalHotkeysAvailable;
     
-    public HotkeyEditor(JDialog owner, Consumer<Hotkey> globalHotkeyCheck) {
+    public HotkeyEditor(JDialog owner, Consumer<Hotkey> globalHotkeyCheck, TableEditorListener<Hotkey> tableListener) {
         super(SORTING_MODE_SORTED, false);
         setModel(data);
         setItemEditor(() -> {
             if (itemEditor == null) {
-                itemEditor = new MyItemEditor(owner, data);
+                itemEditor = new MyItemEditor(owner, k -> getExistingHotkey(k));
                 itemEditor.setActions(actions);
                 itemEditor.setDescriptions(descriptions);
                 itemEditor.setGlobalHotkeysAvailable(globalHotkeysAvailable);
@@ -76,27 +78,32 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             public void itemAdded(Hotkey item) {
                 updateConflicts();
                 globalHotkeyCheck.accept(item);
+                tableListener.itemAdded(item);
             }
 
             @Override
             public void itemRemoved(Hotkey item) {
                 updateConflicts();
+                tableListener.itemRemoved(item);
             }
 
             @Override
             public void itemEdited(Hotkey oldItem, Hotkey newItem) {
                 updateConflicts();
                 globalHotkeyCheck.accept(newItem);
+                tableListener.itemEdited(oldItem, newItem);
             }
 
             @Override
             public void allItemsChanged(List<Hotkey> newItems) {
                 updateConflicts();
+                tableListener.allItemsChanged(newItems);
             }
 
             @Override
             public void itemsSet() {
                 updateConflicts();
+                tableListener.itemsSet();
             }
 
             @Override
@@ -104,6 +111,16 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
                 
             }
         });
+    }
+    
+    public Hotkey getExistingHotkey(KeyStroke keyStroke) {
+        for (int i = 0; i < data.getRowCount(); i++) {
+            Hotkey hotkey = data.get(i);
+            if (hotkey.keyStroke.equals(keyStroke)) {
+                return hotkey;
+            }
+        }
+        return null;
     }
     
     /**
@@ -239,7 +256,7 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
         private KeyStroke currentHotkey;
         private boolean globalHotkeysAvailable;
         private boolean globalHotkeysAvailableWarningShown;
-        private final MyTableModel data;
+        private final Function<KeyStroke, Hotkey> getExistingHotkey;
         private Map<String, String> actionNames;
         private Map<String, String> descriptions;
         private Hotkey preset;
@@ -252,8 +269,8 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
         private final JButton ok = new JButton("Done");
         private final JButton cancel = new JButton("Cancel");
         
-        public MyItemEditor(JDialog owner, MyTableModel data) {
-            this.data = data;
+        public MyItemEditor(JDialog owner, Function<KeyStroke, Hotkey> getExistingHotkey) {
+            this.getExistingHotkey = getExistingHotkey;
             delay = new LongTextField(4, true);
             
             hotkeyChooser = new HotkeyTextField(12, new HotkeyTextField.HotkeyEditListener() {
@@ -388,7 +405,9 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             dialog.add(description, gbc);
             
             gbc = GuiUtil.makeGbc(0, 3, 1, 1);
-            dialog.add(new JLabel("Hotkey:"), gbc);
+            JLabel hotkeyLabel = new JLabel("Hotkey:");
+            hotkeyLabel.setLabelFor(hotkeyChooser);
+            dialog.add(hotkeyLabel, gbc);
             
             gbc = GuiUtil.makeGbc(1, 3, 3, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -421,10 +440,6 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             gbc.anchor = GridBagConstraints.WEST;
             dialog.add(delay, gbc);
             
-            gbc = GuiUtil.makeGbc(2, 7, 2, 1);
-            gbc.anchor = GridBagConstraints.WEST;
-            dialog.add(new JLabel("(1/10th seconds)"), gbc);
-            
             gbc = GuiUtil.makeGbc(1, 8, 2, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 0.5;
@@ -445,9 +460,9 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             
             // Set title
             if (edit) {
-                dialog.setTitle("Edit item");
+                dialog.setTitle("Edit hotkey");
             } else {
-                dialog.setTitle("Add item");
+                dialog.setTitle("Add hotkey");
             }
             dialog.setLocationRelativeTo(c);
             
@@ -464,6 +479,11 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
                 setCustom("");
                 delay.setText("0");
                 setHotkeyType(null);
+            }
+            
+            // Fixed action mode
+            if (!actionId.isEnabled()) {
+                dialog.setTitle(dialog.getTitle()+": "+actionId.getSelectedItem());
             }
             
             // Update other stuff
@@ -571,7 +591,7 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
                 return;
             }
             String text = descriptions.get(actionId.getSettingValue());
-            description.setVisible(text != null);
+            description.setVisible(!StringUtil.isNullOrEmpty(text));
             if (text != null) {
                 description.setText(SettingConstants.HTML_PREFIX+text);
             }
@@ -590,9 +610,15 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
             }
         }
         
+        public void setFixedAction() {
+            actionId.setEnabled(false);
+        }
+        
         public void setActions(Map<String, String> actions) {
             actionId.clear();
-            actionId.add((String)null, "--Select Action--");
+            if (actions.size() > 1) {
+                actionId.add((String)null, "--Select Action--");
+            }
             actionId.addData(actions);
             this.actionNames = actions;
             dialog.pack();
@@ -608,13 +634,7 @@ public class HotkeyEditor extends TableEditor<Hotkey> {
         }
         
         private Hotkey getHotkeyForKeyStroke(KeyStroke keyStroke) {
-            for (int i=0;i<data.getRowCount();i++) {
-                Hotkey hotkey = data.get(i);
-                if (hotkey.keyStroke.equals(keyStroke)) {
-                    return hotkey;
-                }
-            }
-            return null;
+            return getExistingHotkey.apply(keyStroke);
         }
         
     }

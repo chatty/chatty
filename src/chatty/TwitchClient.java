@@ -103,6 +103,8 @@ import chatty.util.settings.SettingsListener;
 import chatty.util.seventv.SevenTV;
 import chatty.util.seventv.WebPUtil;
 import chatty.util.srl.SpeedrunsLive;
+import chatty.util.tts.TextToSpeech;
+import chatty.util.tts.TextToSpeechCommands;
 import java.awt.Color;
 import java.io.File;
 import java.lang.management.ManagementFactory;
@@ -1733,6 +1735,10 @@ public class TwitchClient {
                 g.printSystem("Usage: /foreach [list] > [command]");
             }
         });
+        commands.add("tts", "Text to Speech", p -> {
+            TextToSpeechCommands.settings = settings;
+            g.printSystem(TextToSpeechCommands.command(p));
+        });
         commands.add("runin", p -> {
             String[] split;
             if (!p.hasArgs() || (split = p.getArgs().split(" ", 2)).length != 2) {
@@ -3351,6 +3357,7 @@ public class TwitchClient {
     public void exit() {
         shuttingDown = true;
         saveSettings(true, false);
+        TextToSpeech.shutdownIfNecessary();
         logAllViewerstats();
         Pronouns.instance().saveCache();
         c.disconnect();

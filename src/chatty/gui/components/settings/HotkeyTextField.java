@@ -62,7 +62,7 @@ public class HotkeyTextField extends JPanel implements StringSetting {
         GuiUtil.matchHeight(setButton, textField);
         setButton.setToolTipText(Language.getString("settings.hotkeys.key.button.set"));
         
-        JButton resetButton = new JButton("x");
+        JButton resetButton = new JButton("Remove");
         resetButton.addActionListener(e -> {
             setHotkey(null);
         });

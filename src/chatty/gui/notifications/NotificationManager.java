@@ -24,9 +24,13 @@ import chatty.util.StringUtil;
 import chatty.util.api.Follower;
 import chatty.util.api.FollowerInfo;
 import chatty.util.api.StreamInfo;
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.CustomCommands;
+import chatty.util.commands.Parameters;
 import chatty.util.history.HistoryUtil;
 import chatty.util.irc.MsgTags;
 import chatty.util.settings.Settings;
+import chatty.util.tts.TextToSpeech;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -328,6 +332,7 @@ public class NotificationManager {
         boolean shown = false;
         boolean played = false;
         boolean msgShown = false;
+        boolean spoken = false;
         Notification shownNotifiction = null;
         NotificationData shownData = null;
         for (Notification n : properties) {
@@ -365,6 +370,22 @@ public class NotificationManager {
                             && !StringUtil.isNullOrEmpty(n.messageTarget)) {
                         msgShown = true;
                         addInfoMsg(n, d, channel, n.messageTarget);
+                    }
+                    if (!spoken
+                            && checkRequirements(n.ttsState, channel)
+                            && n.ttsFormat != null
+                            && !n.ttsFormat.hasError()) {
+                        spoken = true;
+                        Parameters params = Parameters.create(message);
+                        params.putObject("user", user);
+                        params.putObject("localUser", localUser);
+                        params.putObject("settings", settings);
+                        params.put("chan", Helper.toStream(channel));
+                        params.put("stream", Helper.toStream(channel));
+                        params.put("title", d.title);
+                        params.put("message", d.message);
+
+                        TextToSpeech.get(settings).speak(n.ttsFormat.replace(params));
                     }
                     n.setMatched();
                 }
