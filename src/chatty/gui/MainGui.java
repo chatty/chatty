@@ -3657,7 +3657,7 @@ public class MainGui extends JFrame implements Runnable {
                     tags = MsgTags.addTag(tags, "id", String.valueOf(User.MSG_ID++));
                 }
                 
-                boolean isOwnMessage = isOwnUsername(user.getName()) || (whisper && action);
+                boolean isOwnMessage = client.isOwnUsername(user.getName()) || (whisper && action);
                 boolean ignoredUser = (userIgnored(user, whisper) && !isOwnMessage);
                 // May be necessary to check even if ignoredUser, to get ignore matchings later on
                 boolean ignored = checkMsg(ignoreList, "ignore", text, -2, -2, user, localUser, tags, isOwnMessage, false) || ignoredUser;
@@ -4000,11 +4000,6 @@ public class MainGui extends JFrame implements Runnable {
     private boolean showIgnoredInfo() {
         return !client.settings.getBoolean("ignoreShowNotDialog") ||
                 !ignoredMessages.isVisible();
-    }
-    
-    private boolean isOwnUsername(String name) {
-        String ownUsername = client.getUsername();
-        return ownUsername != null && ownUsername.equalsIgnoreCase(name);
     }
     
     public void userBanned(final User user, final long duration, final String reason, final String id) {

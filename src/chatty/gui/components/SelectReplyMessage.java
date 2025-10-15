@@ -54,7 +54,6 @@ public class SelectReplyMessage {
     private static class Dialog extends JDialog {
         
         private final JList<User.TextMessage> list;
-        private final JCheckBox continueThread = new JCheckBox("Continue thread");
         
         private SelectReplyMessageResult result = DONT_SEND_RESULT;
         
@@ -97,14 +96,6 @@ public class SelectReplyMessage {
             });
             list.setFixedCellWidth(400);
             list.setVisibleRowCount(14);
-            list.addListSelectionListener(e -> {
-                TextMessage m = list.getSelectedValue();
-                if (m != null) {
-                    boolean hasParentId = ReplyManager.getParentMsgId(m.id) != null;
-                    continueThread.setSelected(hasParentId);
-                    continueThread.setEnabled(hasParentId);
-                }
-            });
             list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             JListActionHelper.install(list, (JListActionHelper.Action action, Point location, List<User.TextMessage> selected) -> {
                 if (action == Action.ENTER || action == Action.DOUBLE_CLICK) {
@@ -142,7 +133,6 @@ public class SelectReplyMessage {
             });
 
             add(new JScrollPane(list), GuiUtil.makeGbc(0, 0, 3, 1));
-            add(continueThread, GuiUtil.makeGbc(0, 1, 3, 1, GridBagConstraints.WEST));
             add(new JLabel("<html><body style='width:380'>Tip: Press <kbd>Enter</kbd> to send reply, <kbd>Ctrl+Enter</kbd> to send normally, <kbd>ESC</kbd> to cancel"), GuiUtil.makeGbc(0, 3, 3, 1, GridBagConstraints.WEST));
             GridBagConstraints gbc = GuiUtil.makeGbc(0, 4, 1, 1);
             gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -164,15 +154,6 @@ public class SelectReplyMessage {
             User.TextMessage selected = list.getSelectedValue();
             if (selected != null) {
                 result = new SelectReplyMessageResult(selected.id, selected.text);
-                if (continueThread.isSelected()) {
-                    String parentMsgId = ReplyManager.getParentMsgId(selected.id);
-                    if (parentMsgId != null) {
-                        // Overwrite result with parent msg-id if available
-                        // Msg should be null for this, since the selected.text
-                        // isn't the parent text
-                        result = new SelectReplyMessageResult(parentMsgId, null);
-                    }
-                }
             }
             setVisible(false);
         }

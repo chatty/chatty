@@ -29,19 +29,25 @@ public class ReplyManager {
         timer.start();
     }
 
-    public synchronized static void addReply(String parentMsgId, String msgId, String userMsg, String parentUserMsg) {
-        if (!data.containsKey(parentMsgId)) {
-            data.put(parentMsgId, new ArrayList<>());
-            // Should only be null if reply is already added anyway (e.g. locally switching to parent to reply)
+    public synchronized static void addReply(String parentMsgId, String threadId, String msgId, String userMsg, String parentUserMsg) {
+        if (threadId == null) {
+            // If message that is replied to was already received as a reply recently, this should yield the thread id
+            threadId = getThreadParentMsgId(parentMsgId);
+        }
+        if (threadId == null) {
+            threadId = parentMsgId;
+        }
+        if (!data.containsKey(threadId)) {
+            data.put(threadId, new ArrayList<>());
             if (parentUserMsg != null) {
-                data.get(parentMsgId).add(new Reply(parentMsgId, parentUserMsg));
+                data.get(threadId).add(new Reply(parentMsgId, parentUserMsg));
             }
         }
-        data.get(parentMsgId).add(new Reply(msgId, userMsg));
-        lastAdded.put(parentMsgId, System.currentTimeMillis());
+        data.get(threadId).add(new Reply(msgId, userMsg));
+        lastAdded.put(threadId, System.currentTimeMillis());
     }
     
-    public synchronized static String getParentMsgId(String msgId) {
+    public synchronized static String getThreadParentMsgId(String msgId) {
         if (msgId == null) {
             return null;
         }
@@ -55,12 +61,18 @@ public class ReplyManager {
         return null;
     }
     
-    public synchronized static List<Reply> getReplies(String parentMsgId) {
-        List<Reply> list = data.get(parentMsgId);
-        if (list != null) {
-            return new ArrayList<>(list);
+    public synchronized static List<Reply> getReplies(String threadId) {
+        List<Reply> list = data.get(threadId);
+        if (list == null) {
+            threadId = getThreadParentMsgId(threadId);
+            if (threadId != null) {
+                list = data.get(threadId);
+            }
         }
-        return null;
+        if (list == null) {
+            return null;
+        }
+        return new ArrayList<>(list);
     }
     
     public synchronized static String getFirstUserMsg(String parentMsgId) {

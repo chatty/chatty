@@ -557,6 +557,16 @@ public class TwitchApi {
         }, stream);
     }
     
+    public void sendChatMessage(String stream, String message, String replyToMsgId, Consumer<SendMessageResult> listener) {
+        userIDs.getUserIDsAsap(r -> {
+            if (r.hasError()) {
+                listener.accept(new SendMessageResult(false, null, "Failed to resolve channel id"));
+            } else {
+                requests.sendChatMessage(r.getId(stream), message, replyToMsgId, listener);
+            }
+        }, stream);
+    }
+    
     public void subscribe(ResultManager.Type type, Object listener) {
         resultManager.subscribe(type, listener);
     }

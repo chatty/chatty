@@ -2,6 +2,7 @@
 package chatty.util;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -68,6 +69,23 @@ public class SpecialMap<K, V> implements Map<K, V> {
             return optional;
         }
         return get(key);
+    }
+    
+    /**
+     * Remove entries where the value is a {@code Map} or {@code Collection} and
+     * their {@code isEmpty()} method returns {@code true}.
+     */
+    public void removeEmptyValues() {
+        Iterator<Map.Entry<K,V>> it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Object value = it.next().getValue();
+            if (value instanceof Map && ((Map) value).isEmpty()) {
+                it.remove();
+            }
+            else if (value instanceof Collection && ((Collection) value).isEmpty()) {
+                it.remove();
+            }
+        }
     }
     
     /**
@@ -176,6 +194,11 @@ public class SpecialMap<K, V> implements Map<K, V> {
     @Override
     public Set<Entry<K, V>> entrySet() {
         return map.entrySet();
+    }
+    
+    @Override
+    public String toString() {
+        return map.toString();
     }
 
 }

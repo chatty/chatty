@@ -22,6 +22,7 @@ public class TokenInfo {
                 Scope.CHAT_READ,
                 Scope.CHAT_EDIT,
                 Scope.USER_READ_CHAT,
+                Scope.USER_WRITE_CHAT,
                 Scope.WHISPER_READ,
                 Scope.WHISPER_EDIT,
                 Scope.WHISPER_MANAGE,
@@ -118,7 +119,8 @@ public class TokenInfo {
         READ_VIPS("moderator:read:vips", "readVips"),
         READ_SUSPICIOUS_USERS("moderator:read:suspicious_users", "readSuspiciousUsers"),
         CLIPS_EDIT("clips:edit", "editClips"),
-        USER_READ_CHAT("user:read:chat", "userReadChat");
+        USER_READ_CHAT("user:read:chat", "userReadChat"),
+        USER_WRITE_CHAT("user:write:chat", "userWriteChat");
         
         public String scope;
         public String label;

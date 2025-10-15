@@ -195,6 +195,8 @@ public class TwitchClient {
 
     public final HistoryManager historyManager;
     
+    private final SendMessageManager sendMessageManager;
+    
     /**
      * Holds the UserManager instance, which manages all the user objects.
      */
@@ -392,6 +394,7 @@ public class TwitchClient {
         g.showGui();
         
         autoModCommandHelper = new AutoModCommandHelper(g, api);
+        sendMessageManager = new SendMessageManager(api, g);
         
         timerCommand = new TimerCommand(settings, new TimerCommand.TimerAction() {
             @Override
@@ -1006,14 +1009,38 @@ public class TwitchClient {
         if (sendAsReply(channel, text)) {
             return;
         }
-        if (c.sendSpamProtectedMessage(channel, text, false)) {
+        // Don't use for now, only for replies for testing
+        if (false) {
+            String tempMsgId = sendMessageManager.sendApiMessage(channel, text, null, false);
             User user = c.localUserJoined(channel);
-            g.printMessage(user, text, false);
+            g.printMessage(user, text, false, MsgTags.create("chatty-temp-msg-id", tempMsgId));
             if (allowCommandMessageLocally) {
                 modCommandAddStreamHighlight(user, text, MsgTags.EMPTY);
             }
-        } else {
-            g.printLine("# Message not sent to prevent ban: " + text);
+//            api.sendChatMessage(Helper.toStream(channel), text, null, result -> {
+//                if (result.wasSent) {
+//                    User user = c.localUserJoined(channel);
+//                    g.printMessage(user, text, false);
+//                    if (allowCommandMessageLocally) {
+//                        modCommandAddStreamHighlight(user, text, MsgTags.EMPTY);
+//                    }
+//                }
+//                else {
+//                    g.printLine("# Message not sent: " + result.dropReasonMessage);
+//                }
+//            });
+        }
+        else {
+            if (c.sendSpamProtectedMessage(channel, text, false)) {
+                User user = c.localUserJoined(channel);
+                g.printMessage(user, text, false);
+                if (allowCommandMessageLocally) {
+                    modCommandAddStreamHighlight(user, text, MsgTags.EMPTY);
+                }
+            }
+            else {
+                g.printLine("# Message not sent to prevent ban: " + text);
+            }
         }
     }
     
@@ -1041,7 +1068,6 @@ public class TwitchClient {
                     if (result.action != SelectReplyMessageResult.Action.SEND_NORMALLY) {
                         // Should not send normally, so return true
                         if (result.action == SelectReplyMessageResult.Action.REPLY) {
-                            // If changed to parent msg-id, atMsg will be null
                             sendReply(channel, actualMsg, username, result.atMsgId, result.atMsg);
                         }
                         else {
@@ -1066,22 +1092,23 @@ public class TwitchClient {
      * parent id of a thread, not as a first response)
      */
     private void sendReply(String channel, String text, String atUsername, String atMsgId, String atMsg) {
-        MsgTags tags = MsgTags.create("reply-parent-msg-id", atMsgId);
-        if (c.sendSpamProtectedMessage(channel, text, false, tags)) {
-            User user = c.localUserJoined(channel);
-            String localOutputText = text;
-            if (!text.startsWith("@")) {
-                localOutputText = String.format("@%s %s",
-                        atUsername, text);
-            }
-            ReplyManager.addReply(atMsgId, null,
-                    String.format("<%s> %s", user.getName(), localOutputText),
-                    atMsg != null ? String.format("<%s> %s", atUsername, atMsg) : null);
-            g.printMessage(user, localOutputText, false, tags);
+        String tempMsgId = sendMessageManager.sendApiMessage(channel, text, atMsgId, false);
+        MsgTags tags = MsgTags.create(
+                "reply-parent-msg-id", atMsgId,
+                // Could be used later on to attach actual msg id to message in chat
+                "chatty-temp-msg-id", tempMsgId);
+        User user = c.localUserJoined(channel);
+        String localOutputText = text;
+        if (!text.startsWith("@")) {
+            localOutputText = String.format("@%s %s",
+                                            atUsername, text);
         }
-        else {
-            g.printLine("# Message not sent to prevent ban: " + text);
-        }
+        g.printMessage(user, localOutputText, false, tags);
+    }
+    
+    public boolean isOwnUsername(String name) {
+        String ownUsername = getUsername();
+        return ownUsername != null && ownUsername.equalsIgnoreCase(name);
     }
     
     private boolean checkRejectTimedMessage(Room room, Parameters parameters) {
@@ -1264,16 +1291,6 @@ public class TwitchClient {
                     String atMsgId = p.getParameters().get("msg-id");
                     String atMsg = p.getParameters().get("msg");
                     String msg = p.getArgs();
-                    if (p.getEnteredCommandName().equalsIgnoreCase("msgreplythread")) {
-                        String parentMsgId = ReplyManager.getParentMsgId(atMsgId);
-                        if (parentMsgId != null) {
-                            // Overwrite result with parent msg-id if available
-                            // Msg should be null for this, since the selected.text
-                            // isn't the parent text
-                            atMsgId = parentMsgId;
-                            atMsg = null;
-                        }
-                    }
                     sendReply(p.getChannel(), msg, atUsername, atMsgId, atMsg);
             }
             else {
@@ -3554,10 +3571,19 @@ public class TwitchClient {
             }
             else {
                 if (!historyManager.addQueueMessage(user, text, tags, action)) {
-                    g.printMessage(user, text, action, tags);
+                    if (!isOwnUsername(user.getName())
+                            || !sendMessageManager.shouldIgnoreMessage(user, text, tags, action)) {
+                        g.printMessage(user, text, action, tags);
+                    }
                 }
                 if (tags.isReply() && tags.hasReplyUserMsg() && tags.hasId()) {
-                    ReplyManager.addReply(tags.getReplyParentMsgId(), tags.getId(), String.format("<%s> %s", user.getName(), text), tags.getReplyUserMsg());
+                    /**
+                     * When using the API to send messages a message will be
+                     * received back, so add the reply here instead of when
+                     * sending the message (it's fine if there is some delay for
+                     * this).
+                     */
+                    ReplyManager.addReply(tags.getReplyParentMsgId(), tags.getReplyThreadParentMsgId(), tags.getId(), String.format("<%s> %s", user.getName(), text), tags.getReplyUserMsg());
                 }
                 if (!action) {
                     addressbookCommands(user.getChannel(), user, text);

@@ -823,6 +823,27 @@ public class Requests {
     // Chat / Emoticons
     //=================
     
+    protected void sendChatMessage(String channelId, String message, String replyToMsgId, Consumer<SendMessageResult> listener) {
+        String url = "https://api.twitch.tv/helix/chat/messages";
+        Map<String, String> data = new HashMap<>();
+        data.put("broadcaster_id", channelId);
+        data.put("sender_id", api.localUserId);
+        data.put("message", message);
+        if (replyToMsgId != null) {
+            data.put("reply_parent_message_id", replyToMsgId);
+        }
+        newApi.add(url, "POST", data, api.defaultToken, r -> {
+            if (r.responseCode == 200) {
+                listener.accept(SendMessageResult.parse(r.text));
+            }
+            else {
+                listener.accept(new SendMessageResult(false, null, String.format("Error %s (%s)",
+                                                                                                        r.responseCode,
+                                                                                                        r.errorText)));
+            }
+        });
+    }
+    
     protected void requestGlobalBadges() {
         String url = "https://api.twitch.tv/helix/chat/badges/global";
         newApi.add(url, "GET", api.defaultToken, r -> {

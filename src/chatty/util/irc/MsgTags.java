@@ -94,6 +94,10 @@ public class MsgTags extends IrcMsgTags {
         return get("reply-parent-msg-id");
     }
     
+    public String getReplyThreadParentMsgId() {
+        return get("reply-thread-parent-msg-id");
+    }
+    
     public String getHypeChatAmountText() {
         int amount = getInteger("pinned-chat-paid-amount", -1);
         String currency = get("pinned-chat-paid-currency");
