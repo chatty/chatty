@@ -737,7 +737,7 @@ class NotificationEditor extends TableEditor<Notification> {
                 
                 // TTS
                 ttsState.setSettingValue(preset.ttsState);
-                ttsFormat.setSettingValue(preset.ttsFormat.getRaw());
+                ttsFormat.setSettingValue(preset.ttsFormat != null ? preset.ttsFormat.getRaw() : "");
                 
                 updateSubTypes();
             } else {
@@ -765,7 +765,7 @@ class NotificationEditor extends TableEditor<Notification> {
                 
                 // TTS
                 ttsState.setSettingValue(Notification.State.OFF);
-                ttsFormat.setSettingValue("$(title) $(message)");
+                ttsFormat.setSettingValue(Notification.TTS_FORMAT_DEFAULT);
                 
                 updateSubTypes();
                 create();

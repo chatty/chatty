@@ -55,9 +55,12 @@ public class SendMessageManager {
         if (action) {
             text = (char)1+"ACTION "+text+(char)1;
         }
-        String tempMsgId = String.valueOf(sentMessageId);
-        sentMessageId++;
-        sentMessagePending.getPut(channel).add(tempMsgId);
+        String tempMsgId;
+        synchronized (LOCK) {
+            tempMsgId = String.valueOf(sentMessageId);
+            sentMessageId++;
+            sentMessagePending.getPut(channel).add(tempMsgId);
+        }
         api.sendChatMessage(Helper.toStream(channel), text, replyToMsgId, result -> {
 //            try {
 //                Thread.sleep(1000);
@@ -97,18 +100,20 @@ public class SendMessageManager {
                 return;
             }
         }
-        List<QueuedMessage> messages;
+        List<QueuedMessage> messages = new ArrayList<>();
         synchronized (LOCK) {
-            messages = new ArrayList<>(queuedMessages.getOptional(channel));
+            for (QueuedMessage message : queuedMessages.getOptional(channel)) {
+                if (ignoreByMsgId.contains(message.tags.getId())) {
+                    ignoreByMsgId.remove(message.tags.getId());
+                }
+                else {
+                    messages.add(message);
+                }
+            }
             queuedMessages.remove(channel);
         }
         for (QueuedMessage message : messages) {
-            if (ignoreByMsgId.contains(message.tags.getId())) {
-                ignoreByMsgId.remove(message.tags.getId());
-            }
-            else {
-                g.printMessage(message.user, message.text, message.action, message.tags);
-            }
+            g.printMessage(message.user, message.text, message.action, message.tags);
         }
     }
     

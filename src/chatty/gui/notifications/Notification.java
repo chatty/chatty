@@ -440,6 +440,8 @@ public class Notification {
         return result;
     }
     
+    public static final String TTS_FORMAT_DEFAULT = "$(title) $(message)";
+    
     public static Notification fromList(List<Object> list) {
         try {
             Type type = Type.valueOf((String)list.get(0));
@@ -468,7 +470,7 @@ public class Notification {
                 messageOverrideDefault = (Boolean) list.get(16);
             }
             State ttsState = State.OFF;
-            String ttsFormat = "";
+            String ttsFormat = TTS_FORMAT_DEFAULT;
             if (list.size() > 18) {
                 ttsState = State.getTypeFromId(((Number)list.get(17)).intValue());
                 ttsFormat = (String) list.get(18);
