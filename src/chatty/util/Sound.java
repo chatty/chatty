@@ -2,6 +2,7 @@
 package chatty.util;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,8 +56,12 @@ public class Sound {
      * @param delay
      * @throws Exception 
      */
-    public static void play(Path file, float volume, String id, int delay) throws Exception {
+    public static void play(URL file, float volume, String id, int delay) throws Exception {
         get().playInternal(file, volume, id, delay);
+    }
+    
+    public static void play(Path file, float volume, String id, int delay) throws Exception {
+        get().playInternal(file.toUri().toURL(), volume, id, delay);
     }
     
     /**
@@ -85,7 +90,7 @@ public class Sound {
         timer.start();
     }
     
-    public void playInternal(Path file, float volume, String id, int delay) throws Exception {
+    public void playInternal(URL file, float volume, String id, int delay) throws Exception {
         if (lastPlayed.containsKey(id)) {
             long timePassed = (System.currentTimeMillis() - lastPlayed.get(id)) / 1000;
             if (timePassed < delay) {
@@ -110,9 +115,9 @@ public class Sound {
         }
     }
     
-    private Clip createClip(Path file, String id) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
+    private Clip createClip(URL file, String id) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
         // getAudioInputStream() also accepts a File or InputStream
-        AudioInputStream ais = AudioSystem.getAudioInputStream(file.toFile());
+        AudioInputStream ais = AudioSystem.getAudioInputStream(file);
         ais = addConversion(ais, mixer != null ? mixer : AudioSystem.getMixer(null));
         DataLine.Info info = new DataLine.Info(Clip.class, ais.getFormat());
         final Clip clip;
