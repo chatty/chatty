@@ -211,18 +211,18 @@ class NotificationEditor extends TableEditor<Notification> {
                     text = String.format("%s\n%s %s",
                                              n.getSoundState(),
                                              cooldown,
-                                             n.soundFile == null ? "No sound file" : n.soundFile);
+                                             n.soundFile == null || n.soundState == State.OFF ? "" : n.soundFile);
                     break;
                 case 3:
                     text = String.format("%s%s\n%s",
                                          n.messageOverrideDefault ? "[!] " : "",
                                          n.getMessageState(),
-                                         n.messageTarget);
+                                         n.messageState == State.OFF ? "" : n.messageTarget);
                     break;
                 case 4:
                     text = String.format("%s\n%s",
                                          n.ttsState.label,
-                                         n.ttsFormat != null ? n.ttsFormat.getRaw() : "");
+                                         n.ttsFormat == null || n.ttsState == State.OFF ? "" : n.ttsFormat.getRaw());
                     break;
             }
             

@@ -119,7 +119,12 @@ public class Debugging {
     
     public synchronized static void println(String type, String line, Object... args) {
         if (isEnabled(type)) {
-            println(String.format(line, args));
+            if (args.length > 0) {
+                println(String.format(line, args));
+            }
+            else {
+                println(line);
+            }
         }
     }
     
