@@ -8,6 +8,7 @@ import chatty.util.irc.MsgTags;
 import chatty.util.settings.Setting;
 import chatty.util.settings.Settings;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.List;
@@ -553,7 +554,7 @@ public class TextToSpeech {
             return;
         }
         try {
-            Path file = Path.of(TextToSpeech.class.getResource(filename).toURI());
+            Path file = Paths.get(TextToSpeech.class.getResource(filename).toURI());
             Sound.play(file, settings.getLong("ttsHotkeysVolume"), "TTS"+filename, 0);
         } catch (Exception ex) {
             

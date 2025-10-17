@@ -142,8 +142,8 @@ public class TextToSpeechSettings extends SettingsPanel {
                 String providerId = TextToSpeech.get(d.settings).getProviderId();
                 List<VoiceInfo> voiceInfo = TextToSpeech.get(d.settings).getAvailableVoices();
                 listData.clear();
-                listData.addAll(voiceInfo);
-
+                voiceInfo.forEach(v -> listData.addElement(v));
+                
                 String selectedVoiceName = (String) data.get(providerId);
                 list.setSelectedValue(new VoiceInfo(selectedVoiceName, null, null), true);
             }
