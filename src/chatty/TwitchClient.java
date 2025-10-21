@@ -52,6 +52,7 @@ import chatty.util.ProcessManager;
 import chatty.util.Pronouns;
 import chatty.util.RawMessageTest;
 import chatty.util.ReplyManager;
+import chatty.util.Sound;
 import chatty.util.Speedruncom;
 import chatty.util.StreamHighlightHelper;
 import chatty.util.StreamStatusWriter;
@@ -1465,6 +1466,7 @@ public class TwitchClient {
                     result,
                     chan != null ? chan : "all channels"));
         });
+        commands.add("logAudioInfo", p -> Sound.logAudioSystemInfo());
         
         //-----------------------
         // Settings/Customization

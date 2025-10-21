@@ -553,6 +553,8 @@ public class SettingsManager {
         settings.addBoolean("sounds", true);
         settings.addString("soundsPath", "");
         settings.addString("soundDevice", "");
+        settings.addBoolean("soundCommandEnabled", false);
+        settings.addString("soundCommand", "");
         settings.addString("highlightSound", "off");
         settings.addString("highlightSoundFile", "ding.wav");
         settings.addLong("highlightSoundDelay", 15);

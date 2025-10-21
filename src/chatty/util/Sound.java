@@ -1,6 +1,8 @@
 
 package chatty.util;
 
+import chatty.util.commands.CustomCommand;
+import chatty.util.commands.Parameters;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -35,6 +37,8 @@ public class Sound {
     
     private static final Logger LOGGER = Logger.getLogger(Sound.class.getName());
     
+    public static final Object SOUND_COMMAND_UNIQUE = new Object();
+    
     //==========================
     // Instance
     //==========================
@@ -48,20 +52,25 @@ public class Sound {
     }
     
     /**
-     * Should only be called from the EDT.
+     * Should only be called from the EDT. Play a sound from an external file.
      * 
-     * @param file
-     * @param volume
-     * @param id
-     * @param delay
-     * @throws Exception 
+     * @param file The file
+     * @param volume The volume 0-100
+     * @param id An id, mainly used for the delay
+     * @param delay Delay in seconds
+     * @throws java.lang.Exception If an error occurs an exception may be thrown
+     * in addition to logging
      */
-    public static void play(URL file, float volume, String id, int delay) throws Exception {
+    public static void play(Path file, float volume, String id, int delay) throws Exception {
         get().playInternal(file, volume, id, delay);
     }
     
-    public static void play(Path file, float volume, String id, int delay) throws Exception {
-        get().playInternal(file.toUri().toURL(), volume, id, delay);
+    /**
+     * Should only be called from the EDT. This variant with URL is for sounds
+     * inside the JAR and won't work with a sound command.
+     */
+    public static void play(URL file, float volume, String id, int delay) throws Exception {
+        get().playInternal(file, volume, id, delay);
     }
     
     /**
@@ -71,6 +80,10 @@ public class Sound {
      */
     public static void setDeviceName(String name) {
         get().setDeviceNameInternal(name);
+    }
+    
+    public static void setCommand(boolean enabled, String command) {
+        get().setCommandInternal(enabled, command);
     }
     
     //==========================
@@ -90,18 +103,38 @@ public class Sound {
         timer.start();
     }
     
-    public void playInternal(URL file, float volume, String id, int delay) throws Exception {
+    private boolean checkDelay(String id, int delay) {
         if (lastPlayed.containsKey(id)) {
             long timePassed = (System.currentTimeMillis() - lastPlayed.get(id)) / 1000;
             if (timePassed < delay) {
                 //LOGGER.info("Not playing sound "+id+" ("+timePassed+"/"+delay+")");
-                return;
+                return false;
             }
         }
         if (delay >= 0) {
             lastPlayed.put(id, System.currentTimeMillis());
         }
-        
+        return true;
+    }
+    
+    private void playInternal(Path file, float volume, String id, int delay) throws Exception {
+        if (checkDelay(id, delay)) {
+            if (command != null) {
+                runCommand(command, file, volume);
+            }
+            else {
+                playInternal2(file.toUri().toURL(), volume, id);
+            }
+        }
+    }
+    
+    private void playInternal(URL file, float volume, String id, int delay) throws Exception {
+        if (checkDelay(id, delay)) {
+            playInternal2(file, volume, id);
+        }
+    }
+    
+    private void playInternal2(URL file, float volume, String id) throws Exception {
         try {
             Clip clip = createClip(file, id);
             clips.add(new Pair<>(clip, new ElapsedTime(true)));
@@ -278,10 +311,10 @@ public class Sound {
     public static List<String> getDeviceNames() {
         List<String> result = new ArrayList<>();
         try {
-            for (Mixer.Info info : AudioSystem.getMixerInfo()) {
-                for (Line.Info info2 : AudioSystem.getMixer(info).getSourceLineInfo()) {
-                    if (info2.getLineClass() == Clip.class) {
-                        result.add(info.getName());
+            for (Mixer.Info mixerInfo : AudioSystem.getMixerInfo()) {
+                for (Line.Info lineInfo : AudioSystem.getMixer(mixerInfo).getSourceLineInfo()) {
+                    if (lineInfo.getLineClass() == Clip.class) {
+                        result.add(mixerInfo.getName());
                     }
                 }
             }
@@ -341,6 +374,88 @@ public class Sound {
         if (clipsClosed > 0) {
             LOGGER.warning(String.format(Locale.ROOT, "%d clips closed which should already have been closed", clipsClosed));
         }
+    }
+    
+    private CustomCommand command;
+    
+    private void setCommandInternal(boolean enabled, String commandRaw) {
+        if (enabled) {
+            command = CustomCommand.parse(commandRaw);
+        }
+        else {
+            command = null;
+        }
+    }
+    
+    public String runCommand(CustomCommand command, Path file, float volume) {
+        Parameters param = Parameters.create("");
+        param.put("file", file.toAbsolutePath().toString().replace("\"", "\\\""));
+        param.put("volume", String.valueOf(volume));
+        
+        if (command.hasError()) {
+            LOGGER.warning("Sound command error: "+command.getSingleLineError());
+            return "Error: "+command.getSingleLineError();
+        }
+        else {
+            String resultCommand = command.replace(param);
+            ProcessManager.execute(resultCommand, "SoundCommand", null);
+            return "Running: "+resultCommand;
+        }
+    }
+    
+    /**
+     * Output info on all mixers for debugging.
+     */
+    public static void logAudioSystemInfo() {
+        StringBuilder b = new StringBuilder();
+        b.append("\n=== Audio System Debug Information ===\n");
+        
+        try {
+            Mixer.Info[] mixerInfos = AudioSystem.getMixerInfo();
+            b.append("Total mixers: ").append(mixerInfos.length).append("\n");
+            
+            Mixer.Info defaultMixerInfo = AudioSystem.getMixer(null).getMixerInfo();
+            
+            for (int i = 0; i < mixerInfos.length; i++) {
+                Mixer.Info info = mixerInfos[i];
+                b.append("Mixer ").append(i+1);
+                if (defaultMixerInfo.getName().equals(info.getName())) {
+                    b.append(" (default)");
+                }
+                b.append(":").append("\n");
+                b.append("  Name: ").append(info.getName()).append("\n");
+                b.append("  Description: ").append(info.getDescription()).append("\n");
+                b.append("  Vendor: ").append(info.getVendor()).append("\n");
+                b.append("  Version: ").append(info.getVersion()).append("\n");
+                
+                try {
+                    Mixer mixer = AudioSystem.getMixer(info);
+                    Line.Info[] sourceLines = mixer.getSourceLineInfo();
+                    Line.Info[] targetLines = mixer.getTargetLineInfo();
+                    
+                    b.append("  Source lines: ").append(sourceLines.length).append("\n");
+                    for (Line.Info lineInfo : sourceLines) {
+                        b.append("    - ").append(lineInfo.getLineClass().getSimpleName());
+                        b.append(" (").append(lineInfo.toString()).append(")").append("\n");
+                    }
+                    
+                    b.append("  Target lines: ").append(targetLines.length).append("\n");
+                    for (Line.Info lineInfo : targetLines) {
+                        b.append("    - ").append(lineInfo.getLineClass().getSimpleName());
+                        b.append(" (").append(lineInfo.toString()).append(")").append("\n");
+                    }
+                }
+                catch (Exception ex) {
+                    b.append("  Error accessing mixer: ").append(ex).append("\n");
+                }
+            }
+        }
+        catch (Exception ex) {
+            b.append("Error getting audio system info: ").append(ex).append("\n");
+        }
+        b.append("=== End Audio System Debug Information ===").append("\n");
+        
+        LOGGER.info(b.toString());
     }
     
 }

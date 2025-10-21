@@ -10,6 +10,7 @@ import chatty.lang.Language;
 import chatty.util.Debugging;
 import chatty.util.Sound;
 import chatty.util.StringUtil;
+import chatty.util.commands.CustomCommand;
 import chatty.util.settings.Settings;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -296,6 +297,63 @@ public class NotificationSettings extends SettingsPanel {
         gbc.insets = new Insets(20, 20, 5, 20);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         soundSettings.add(soundTestPanel, gbc);
+        
+        //--------------------------
+        // Sound Command
+        //--------------------------
+        JPanel soundCommandPanel = new JPanel(new GridBagLayout());
+        soundCommandPanel.setBorder(BorderFactory.createTitledBorder("Sound OS Command (replaces \"Output Device\")"));
+        
+        JCheckBox soundCommandEnabled = d.addSimpleBooleanSetting("soundCommandEnabled");
+        soundCommandPanel.add(soundCommandEnabled, SettingsDialog.makeGbc(0, 0, 1, 1));
+        
+        EditorStringSetting soundCommand = d.addEditorStringSetting("soundCommand", 20, true, "Edit system command (recommended for advanced users only, read help)", false, ""
+                + "<html><body style='width: 400px;'>"
+                + "<p>Enter a command/program with parameters, which will be "
+                + "executed as a new process on your system.</p>"
+                + "<p>You can use the following replacements: "
+                + "<code>$(file)</code> (absolute path), <code>$(volume)</code> (0-100)</p>"
+                + "<p><em>Tip:</em> Add quotes around replacements, as they "
+                + "may contain spaces. Use <code>\\\"</code> to escape quotes, "
+                + "to include them as their actual character. "
+                + "Quotes in the replacements are escaped automatically.</p>"
+                + "<p><em>Tip:</em> Make sure the program you run actually exits after the sound has finished playing.</p>"
+                + "<p>For example using VLC Player: "
+                + "<code>\"C:\\\\Program Files\\\\VideoLAN\\\\VLC\\\\vlc.exe\" -Idummy --play-and-exit --gain=$calc($(volume)/100) \"$(file)\"</code></p>"
+                + "<p>To view the output of executed commands (for example to "
+                + "debug if it doesn't work as expected) you can open &lt;Extra"
+                + " - Debug window&gt;.</p>"
+                + "<p>The \"Test\" button will run the current command with the "
+                + "sound file and volume selected in the \"Test sounds\" section.</p>", new Editor.Tester() {
+
+            @Override
+            public String test(Window parent, Component component, int x, int y, String value) {
+                String result = "No sound played, no file found";
+                
+                String file = soundFiles.getSettingValue();
+                if (file != null && !file.isEmpty()) {
+                    CustomCommand command = CustomCommand.parse(value);
+                    long volume = volumeSlider.getSettingValue();
+                    result = Sound.get().runCommand(command, soundsPath.getCurrentPath().resolve(file), volume);
+                }
+                JOptionPane.showMessageDialog(component, result);
+                return null;
+            }
+        });
+        soundCommandPanel.add(soundCommand, SettingsDialog.makeGbcSub(0, 1, 1, 1, GridBagConstraints.WEST));
+        
+        Runnable updateSoundCommand = () -> {
+            Sound.setCommand(soundCommandEnabled.isSelected(), soundCommand.getSettingValue());
+        };
+        soundCommandEnabled.addItemListener(e -> updateSoundCommand.run());
+        soundCommand.setChangeListener(e -> updateSoundCommand.run());
+        
+        SettingsUtil.addSubsettings(soundCommandEnabled, soundCommand);
+        
+        gbc = d.makeGbc(0, 11, 3, 1);
+        gbc.insets = new Insets(20, 20, 5, 20);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        soundSettings.add(soundCommandPanel, gbc);
         
         //--------------------------
         // Info

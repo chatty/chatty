@@ -1160,6 +1160,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
     
     private void cancel() {
         Sound.setDeviceName(settings.getString("soundDevice"));
+        Sound.setCommand(settings.getBoolean("soundCommandEnabled"), settings.getString("soundCommand"));
         if (lafPreviewed) {
             LaF.setLookAndFeel(LaFSettings.fromSettings(settings));
             LaF.updateLookAndFeel();

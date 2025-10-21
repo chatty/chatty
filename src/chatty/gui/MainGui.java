@@ -1235,6 +1235,7 @@ public class MainGui extends JFrame implements Runnable {
         adminDialog.setStatusHistorySorting(client.settings.getString("statusHistorySorting"));
         
         Sound.setDeviceName(client.settings.getString("soundDevice"));
+        Sound.setCommand(client.settings.getBoolean("soundCommandEnabled"), client.settings.getString("soundCommand"));
         
         dockedDialogs.loadSettings();
         
@@ -5648,6 +5649,10 @@ public class MainGui extends JFrame implements Runnable {
                     emoticons.setCheerBackground(HtmlColors.decode((String)value));
                 } else if (setting.equals("soundDevice")) {
                     Sound.setDeviceName((String)value);
+                } else if (setting.startsWith("soundCommand")) {
+                    BatchAction.queue(Sound.SOUND_COMMAND_UNIQUE,
+                                      () -> Sound.setCommand(client.settings.getBoolean("soundCommandEnabled"), client.settings.getString("soundCommand"))
+                    );
                 } else if (setting.equals("userDialogTimestamp")) {
                     userInfoDialog.setTimestampFormat(styleManager.makeTimestampFormat("userDialogTimestamp"));
                 }
