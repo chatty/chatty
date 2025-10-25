@@ -381,9 +381,16 @@ public class Notification {
         return channels.contains(Helper.toChannel(channel));
     }
     
-    public boolean matches(String text, String channel, Addressbook ab, User user, User localUser, MsgTags tags) {
+    public boolean matches(String text, String channel, Addressbook ab, User user, User localUser, MsgTags tags, Highlighter.HighlightItem matchedItem) {
         if (matcherItem == null || text == null) {
             return true;
+        }
+        if (matcherItem.getNotificationCategories() != null) {
+            if (matchedItem == null
+                    || matchedItem.getNotificationCategories() == null
+                    || Collections.disjoint(matcherItem.getNotificationCategories(),matchedItem.getNotificationCategories())) {
+                return false;
+            }
         }
         return matcherItem.matches(Highlighter.HighlightItem.Type.ANY, text, -1, -1, null, channel, ab, user, localUser, tags);
     }

@@ -163,7 +163,7 @@ public class NotificationSettings extends SettingsPanel {
                 + "to include them as their actual character. "
                 + "Quotes in the replacements are escaped automatically.</p>"
                 + "<p>For example to run 'notify-send' to show a native notification on Linux: "
-                + "<code>notify-send&nbsp;\"$(title)\"&nbsp;\"$(message)\"</code></p>"
+                + "<code>notify-send \"$(title)\" \"$(message)\"</code></p>"
                 + "<p>To view the output of executed commands (for example to "
                 + "debug if it doesn't work as expected) you can open &lt;Extra"
                 + " - Debug window&gt;.</p>"

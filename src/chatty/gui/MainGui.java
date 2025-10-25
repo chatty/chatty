@@ -3519,9 +3519,9 @@ public class MainGui extends JFrame implements Runnable {
         });
     }
     
-    public void triggerCommandNotification(String channel, String title, String text, boolean noNotify, boolean noSound) {
+    public void triggerCommandNotification(String channel, String title, String text, HighlightItem fakeItem) {
         GuiUtil.edt(() -> {
-            notificationManager.commandNotification(channel, title, text, noNotify, noSound);
+            notificationManager.commandNotification(channel, title, text, fakeItem);
         });
     }
     
@@ -3707,10 +3707,7 @@ public class MainGui extends JFrame implements Runnable {
                     } else {
                         channels.setChannelNewMessage(chan);
                     }
-                    notificationManager.highlight(user, localUser, text, tags,
-                            highlighter.getLastMatchNoNotification(),
-                            highlighter.getLastMatchNoSound(),
-                            isOwnMessage, whisper, bitsAmount > 0);
+                    notificationManager.highlight(user, localUser, text, tags, isOwnMessage, whisper, bitsAmount > 0, highlighter.getLastMatchItem());
                     TextToSpeech.get(client.settings).message(user, text, tags, isOwnMessage);
                 } else if (!ignored) {
                     if (whisper) {
@@ -4221,8 +4218,7 @@ public class MainGui extends JFrame implements Runnable {
                         channels.setChannelNewMessage(channel);
                     }
                     notificationManager.infoHighlight(channel.getRoom(), message.text,
-                            highlighter.getLastMatchNoNotification(),
-                            highlighter.getLastMatchNoSound(), localUser);
+                            highlighter.getLastMatchItem(), localUser);
                 } else {
                     notificationManager.info(channel.getRoom(), message.text, localUser);
                 }

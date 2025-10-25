@@ -630,6 +630,7 @@ public class Highlighter {
         private int substitutesEnabled = 1;
         
         private List<String> routingTargets;
+        private List<String> nCats;
         
         private int msgsReq = 1;
         private int msgsLimit = 0;
@@ -1292,6 +1293,9 @@ public class Highlighter {
                 }
                 else if (item.startsWith("n:")) {
                     parsePrefix(item, "n:");
+                }
+                else if (StringUtil.toLowerCase(item).startsWith("ncat:")) {
+                    nCats = parseStringListPrefix(item, "ncat:", c -> c);
                 }
                 //--------------------------
                 // No prefix
@@ -2286,6 +2290,13 @@ public class Highlighter {
         
         public List<String> getRoutingTargets() {
             return routingTargets;
+        }
+        
+        public List<String> getNotificationCategories() {
+            if (nCats != null && nCats.isEmpty()) {
+                return null;
+            }
+            return nCats;
         }
         
         public String getFailedReason() {

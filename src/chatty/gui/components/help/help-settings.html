@@ -1240,6 +1240,15 @@
             copy messages beginning with "!" to the Custom Tab named "Commands".
             This is available for the settings Msg. Colours, Highlight, Ignore
             and Custom Tabs Routing.</li>
+        <li><code>ncat:</code> to provide one or several comma-separated
+            Notification Categories. A Notification entry that has this prefix
+            in it's "Match" field will only trigger on Highlight entries that
+            have at least one Notification Category in common. Example:
+            A Notification entry of type "Highlights" with <code>ncat:vip,mod</code>
+            in it's "Match" field can trigger only on Highlights caused by
+            Highlight list entries containing e.g. <code>ncat:vip</code>,
+            <code>ncat:mod</code> or <code>ncat:mod,abc</code> (but not
+            <code>ncat:abc</code>).</li>
     </ul>
     
     <p><em>Note:</em> If you're using the <code>color:</code> or <code>bgcolor:</code>
@@ -1876,6 +1885,9 @@
         <dd>Match the given text or message, in the same format as for
             <a href="#Highlight">Highlighting</a> (although some prefixes won't
             work unless it's a chat message).</dd>
+        <dd>Use the <code>ncat:</code> <a href="#Highlight_Meta_Behaviour">prefix</a>
+            to match only on Highlights that are caused by Highlight entries
+            containing the same prefix.</dd>
         
         <dt>Desktop Notification (Tab)</dt>
         <dd>A Desktop Notification, with customizable colors.</dd>

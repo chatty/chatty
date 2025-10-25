@@ -21,6 +21,7 @@ import chatty.util.api.ChannelInfo;
 import chatty.util.api.TwitchApi;
 import chatty.WhisperManager.WhisperListener;
 import chatty.gui.GuiUtil;
+import chatty.gui.Highlighter;
 import chatty.gui.laf.LaF;
 import chatty.gui.laf.LaF.LaFSettings;
 import chatty.gui.MainGui;
@@ -1674,8 +1675,14 @@ public class TwitchClient {
                         text = split.get(1);
                     }
                 }
-                g.triggerCommandNotification(p.getChannel(), title, text,
-                        args.hasOption("h"), args.hasOption("m"));
+                String item = "";
+                if (args.hasOption("h")) {
+                    item += " config:!notify";
+                }
+                if (args.hasOption("m")) {
+                    item += " config:silent";
+                }
+                g.triggerCommandNotification(p.getChannel(), title, text, new Highlighter.HighlightItem(item));
             }
             else {
                 g.printSystem("Usage: /triggerNotification [-hmt] <text>");

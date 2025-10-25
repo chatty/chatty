@@ -7,6 +7,7 @@ import chatty.Chatty;
 import chatty.Helper;
 import chatty.Room;
 import chatty.User;
+import chatty.gui.Highlighter.HighlightItem;
 import chatty.gui.MainGui;
 import chatty.gui.components.textpane.InfoMessage;
 import chatty.gui.notifications.Notification.State;
@@ -116,7 +117,7 @@ public class NotificationManager {
                 MsgTags tags = MsgTags.create(
                         "title", title,
                         "game", info.getGame());
-                if (n.matches(info.getFullStatus(), channel, ab, null, null, tags)) {
+                if (n.matches(info.getFullStatus(), channel, ab, null, null, tags, null)) {
                     return new NotificationData(title, info.getFullStatus());
                 }
             }
@@ -124,10 +125,10 @@ public class NotificationManager {
         });
     }
     
-    public void highlight(User user, User localUser, String message, MsgTags tags, boolean noNotify,
-            boolean noSound, boolean isOwnMessage, boolean isWhisper,
-            boolean hasBits) {
-        check(null, user.getChannel(), user, localUser, message, tags, noNotify, noSound, n -> {
+    public void highlight(User user, User localUser, String message, MsgTags tags,
+                          boolean isOwnMessage, boolean isWhisper, boolean hasBits,
+                          HighlightItem matchedItem) {
+        check(null, user.getChannel(), user, localUser, message, tags, matchedItem, n -> {
             if (isOwnMessage && !n.hasOption(TypeOption.OWN_MSG)) {
                 return null;
             }
@@ -156,13 +157,12 @@ public class NotificationManager {
      * 
      * @param room May be null or empty (although not currently used with null)
      * @param message
-     * @param noNotify
-     * @param noSound 
+     * @param matchedItem The Highlight list item that caused this highlight
+     * @param localUser
      */
-    public void infoHighlight(Room room, String message, boolean noNotify,
-            boolean noSound, User localUser) {
+    public void infoHighlight(Room room, String message, HighlightItem matchedItem, User localUser) {
         String channel = room != null ? room.getChannel() : null;
-        check(null, channel, null, localUser, message, MsgTags.EMPTY, noNotify, noSound,  n -> {
+        check(null, channel, null, localUser, message, MsgTags.EMPTY, matchedItem,  n -> {
             boolean hasChannel = channel != null && !channel.isEmpty();
             if (n.type == Type.HIGHLIGHT) {
                 String title;
@@ -192,6 +192,7 @@ public class NotificationManager {
      * 
      * @param room May be null or empty
      * @param text 
+     * @param localUser 
      */
     public void info(Room room, String text, User localUser) {
         String channel = room != null ? room.getChannel() : null;
@@ -288,8 +289,8 @@ public class NotificationManager {
         });
     }
     
-    public void commandNotification(String channel, String title, String text, boolean noNotify, boolean noSound) {
-        check(Type.COMMAND, channel, null, null, text, null, noNotify, noSound, (n) -> {
+    public void commandNotification(String channel, String title, String text, HighlightItem matchedItem) {
+        check(Type.COMMAND, channel, null, null, text, null, matchedItem, (n) -> {
             if (title != null) {
                 return new NotificationData(String.format(title, channel), text);
             }
@@ -313,21 +314,32 @@ public class NotificationManager {
     }
     
     private void check(Type type, String channel, NotificationChecker c) {
-        check(type, channel, null, null, null, MsgTags.EMPTY, false, false, c);
+        check(type, channel, null, null, null, MsgTags.EMPTY, null, c);
     }
     
     private void check(Type type, String channel, User user, User localUser, String message,
             NotificationChecker c) {
-        check(type, channel, user, localUser, message, MsgTags.EMPTY, false, false, c);
+        check(type, channel, user, localUser, message, MsgTags.EMPTY, null, c);
     }
     
     private void check(Type type, String channel, User user, User localUser, String message,
             MsgTags tags, NotificationChecker c) {
-        check(type, channel, user, localUser, message, tags, false, false, c);
+        check(type, channel, user, localUser, message, tags, null, c);
     }
     
+    /**
+     * 
+     * @param type
+     * @param channel
+     * @param user
+     * @param localUser
+     * @param message
+     * @param tags
+     * @param matchedItem The item that e.g. caused the highlight (may be {@code null})
+     * @param c 
+     */
     private void check(Type type, String channel, User user, User localUser,
-            String message, MsgTags tags, boolean noNotify, boolean noSound,
+            String message, MsgTags tags, HighlightItem matchedItem,
             NotificationChecker c) {
         boolean shown = false;
         boolean played = false;
@@ -339,7 +351,7 @@ public class NotificationManager {
             if (n.hasEnabled()
                     && (type == n.type || type == null)
                     && n.matchesChannel(channel)
-                    && n.matches(message, channel, ab, user, localUser, tags)
+                    && n.matches(message, channel, ab, user, localUser, tags, matchedItem)
                     && checkHistoricAllowMatch(tags, n)
                     && (!n.hasOption(TypeOption.FAV_CHAN) || channelFavorites.isFavorite(channel))
                     && !hideOnStart(n)) {
@@ -347,7 +359,7 @@ public class NotificationManager {
                 NotificationData d = c.check(n);
                 if (d != null) {
                     if (!shown
-                            && !noNotify
+                            && !(matchedItem != null && matchedItem.noNotification())
                             && checkRequirements(n.desktopState, channel)) {
                         shown = true;
                         shownNotifiction = n;
@@ -355,7 +367,7 @@ public class NotificationManager {
                         showNotification(n, d.title, d.message, channel, channel);
                     }
                     if (!played
-                            && !noSound
+                            && !(matchedItem != null && matchedItem.noSound())
                             && checkRequirements(n.soundState, channel)
                             && n.hasSound()) {
                         // Don't remember why it's not using the playSound()
