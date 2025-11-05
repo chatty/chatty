@@ -67,6 +67,9 @@ public class ChatSettings extends SettingsPanel {
         gbc = SettingsDialog.makeGbc(0, 8, 3, 1, GridBagConstraints.WEST);
         main.add(d.addSimpleBooleanSetting("mentionReplyRestricted"), gbc);
         
+        gbc = SettingsDialog.makeGbc(0, 9, 3, 1, GridBagConstraints.WEST);
+        main.add(d.addSimpleBooleanSetting("chatInsertTop"), gbc);
+        
         JPanel pauseChat = addTitledPanel("Pause Chat", 1);
         
         gbc = d.makeGbc(0, 0, 3, 1);

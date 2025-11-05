@@ -76,7 +76,7 @@ public final class Channel extends JPanel {
     private final JButton modPanelButton;
 
     public Channel(final Room room, Type type, MainGui main, StyleManager styleManager,
-            ContextMenuListener contextMenuListener) {
+            ContextMenuListener contextMenuListener, boolean insertTop) {
         this.setLayout(new BorderLayout());
         this.styleManager = styleManager;
         this.main = main;
@@ -85,7 +85,7 @@ public final class Channel extends JPanel {
         setName(room.getDisplayName());
         
         // Text Pane
-        text = new ChannelTextPane(main, styleManager);
+        text = new ChannelTextPane(main, styleManager, ChannelTextPane.Type.REGULAR, true, insertTop);
         text.setContextMenuListener(contextMenuListener);
         
         setTextPreferredSizeTemporarily();

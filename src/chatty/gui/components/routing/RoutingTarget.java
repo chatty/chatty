@@ -237,7 +237,7 @@ public class RoutingTarget {
     }
     
     private TextPane createTextPane(String channel) {
-        TextPane textPane = new TextPane(main, modifiedStyles, true);
+        TextPane textPane = new TextPane(main, modifiedStyles);
         JScrollPane scroll = new JScrollPane(textPane);
         textPane.setScrollPane(scroll);
         textPane.setContextMenuListener(new ContextMenuAdapter(contextMenuListener) {
@@ -389,8 +389,8 @@ public class RoutingTarget {
         
         private JScrollPane scrollPane;
         
-        public TextPane(MainGui main, StyleServer styleServer, boolean startAtBottom) {
-            super(main, styleServer, ChannelTextPane.Type.REGULAR, startAtBottom);
+        public TextPane(MainGui main, StyleServer styleServer) {
+            super(main, styleServer, ChannelTextPane.Type.REGULAR, true, main.getSettings().getBoolean("chatInsertTop"));
             
             // Overriding constructor is required to set the custom context menu
             linkController.setContextMenuCreator(() -> new RoutingTargetContextMenu(

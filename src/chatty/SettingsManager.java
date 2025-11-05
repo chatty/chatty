@@ -533,6 +533,7 @@ public class SettingsManager {
         settings.addBoolean("inputEnabled", true);
         settings.addLong("bufferSize", 500);
         settings.addMap("bufferSizes", new HashMap<>(), Setting.LONG);
+        settings.addBoolean("chatInsertTop", false);
 
         settings.addString("liveStreamsSorting", "recent");
         settings.addBoolean("liveStreamsSortingFav", true);

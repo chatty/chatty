@@ -206,6 +206,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     
     private final MyEditorKit kit;
     
+    private final boolean insertTop;
+    
     private final javax.swing.Timer updateTimer;
     
     public enum Type {
@@ -216,15 +218,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     
     private final Map<User, SuspiciousMessagePayload> pendingLowTrustInfoCache = new HashMap<>();
 
-    public ChannelTextPane(MainGui main, StyleServer styleServer) {
-        this(main, styleServer, Type.REGULAR, true);
-    }
-    
-    public ChannelTextPane(MainGui main, StyleServer styleServer, Type type) {
-        this(main, styleServer, type, true);
-    }
-
-    public ChannelTextPane(MainGui main, StyleServer styleServer, Type type, boolean startAtBottom) {
+    public ChannelTextPane(MainGui main, StyleServer styleServer, Type type, boolean startAtBottom, boolean insertTop) {
         getAccessibleContext().setAccessibleName("Chat Output");
         getAccessibleContext().setAccessibleDescription("");
         lineSelection = new LineSelection(main.getUserListener());
@@ -242,7 +236,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         scrollManager = new ScrollManager();
         this.addMouseListener(scrollManager);
         this.addMouseMotionListener(scrollManager);
-        kit = new MyEditorKit(startAtBottom);
+        kit = new MyEditorKit(startAtBottom && !insertTop);
+        this.insertTop = insertTop;
         setEditorKit(kit);
         this.setDocument(new MyDocument());
         doc = (DefaultStyledDocument)getStyledDocument();
@@ -674,12 +669,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                 message.replaceMatches, message.replacement, message.tags);
         
         if (message.highlighted) {
-            setLineHighlighted(doc.getLength(), message.highlightSource);
+            setLineHighlighted(getCurrentParagraphOffset(), message.highlightSource);
         }
-        setParagraphAttribute(doc.getLength(), Attribute.IGNORE_SOURCE, message.ignoreSource);
-        setParagraphAttribute(doc.getLength(), Attribute.ROUTING_SOURCE, message.routingSource);
+        setParagraphAttribute(getCurrentParagraphOffset(), Attribute.IGNORE_SOURCE, message.ignoreSource);
+        setParagraphAttribute(getCurrentParagraphOffset(), Attribute.ROUTING_SOURCE, message.routingSource);
         if (message.backgroundColor != null || message.color != null) {
-            setCustomColor(doc.getLength(), message.backgroundColor, message.colorSource);
+            setCustomColor(getCurrentParagraphOffset(), message.backgroundColor, message.colorSource);
         }
         finishLine();
         
@@ -741,7 +736,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             printUsernotice((UserNotice) message, style);
             // For Points messages
             if (message.objectId != null) {
-                setObjectId(doc.getLength(), message.objectId);
+                setObjectId(getCurrentParagraphOffset(), message.objectId);
             }
         } else if (message instanceof AutoModMessage) {
             printAutoModMessage((AutoModMessage)message, style);
@@ -753,10 +748,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             
             String command = message.makeCommand();
             if (command != null) {
-                setLineCommand(doc.getLength(), command);
+                setLineCommand(getCurrentParagraphOffset(), command);
             }
             if (message.objectId != null) {
-                setObjectId(doc.getLength(), message.objectId);
+                setObjectId(getCurrentParagraphOffset(), message.objectId);
             }
             
             replayModLogInfo();
@@ -766,12 +761,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         //-----------------
         if (!message.isHidden()) {
             if (message.highlighted) {
-                setLineHighlighted(doc.getLength(), message.highlightSource);
+                setLineHighlighted(getCurrentParagraphOffset(), message.highlightSource);
             }
-            setParagraphAttribute(doc.getLength(), Attribute.IGNORE_SOURCE, message.ignoreSource);
-            setParagraphAttribute(doc.getLength(), Attribute.ROUTING_SOURCE, message.routingSource);
+            setParagraphAttribute(getCurrentParagraphOffset(), Attribute.IGNORE_SOURCE, message.ignoreSource);
+            setParagraphAttribute(getCurrentParagraphOffset(), Attribute.ROUTING_SOURCE, message.routingSource);
             if (message.bgColor != null || message.color != null) {
-                setCustomColor(doc.getLength(), message.bgColor, message.colorSource);
+                setCustomColor(getCurrentParagraphOffset(), message.bgColor, message.colorSource);
             }
         }
     }
@@ -866,11 +861,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     }
     
     private boolean printModLogInfo(ModLogInfo info) {
-        Element root = doc.getDefaultRootElement();
         String command = info.makeCommand().trim();
         Debugging.println("modlog", "ModLog Command: %s", command);
-        for (int i=root.getElementCount()-1;i>=0;i--) {
-            Element line = root.getElement(i);
+        for (Element line : iterateLines()) {
             if (info.isBanCommand()) {
                 /**
                  * Bans (and related) can be newly applied to otherwise old
@@ -1176,9 +1169,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
      * @return 
      */
     private Element findPreviousBanMessage(User user, String newMessage) {
-        Element root = doc.getDefaultRootElement();
-        for (int i=root.getElementCount()-1;i>=0;i--) {
-            Element line = root.getElement(i);
+        for (Element line : iterateLines()) {
             if (isLineFromUserAndId(line, user, null, true)) {
                 // Stop immediately a message from that user is found first
                 return null;
@@ -1321,12 +1312,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     
     private java.util.List<Userline> getUserLines(User searchUser) {
         java.util.List<Userline> result = new ArrayList<>();
-        Element root = doc.getDefaultRootElement();
-        for (int i = root.getElementCount() - 1; i >= 0; i--) {
-            Element line = root.getElement(i);
+        for (Element line : iterateLines()) {
             Element userElement = getUserElementFromLine(line, false);
             if (userElement != null) {
-                User foundUser = (User)userElement.getAttributes().getAttribute(Attribute.USER);
+                User foundUser = (User) userElement.getAttributes().getAttribute(Attribute.USER);
                 if (searchUser == null || foundUser == searchUser) {
                     result.add(new Userline(searchUser, userElement, line));
                 }
@@ -1354,9 +1343,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     }
     
     private Element findLineBy(Function<Element, Boolean> test) {
-        Element root = doc.getDefaultRootElement();
-        for (int i=root.getElementCount()-1;i>=0;i--) {
-            Element line = root.getElement(i);
+        for (Element line : iterateLines()) {
             if (test.apply(line)) {
                 return line;
             }
@@ -1365,10 +1352,34 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     }
     
     private void applyToLines(Consumer<Element> worker) {
-        Element root = doc.getDefaultRootElement();
-        for (int i=root.getElementCount()-1;i>=0;i--) {
-            worker.accept(root.getElement(i));
+        for (Element line : iterateLines()) {
+            worker.accept(line);
         }
+    }
+    
+    /**
+     * Iterate over all lines, newest first.
+     * 
+     * @return A read-only Iterable
+     */
+    private Iterable<Element> iterateLines() {
+        Element root = doc.getDefaultRootElement();
+        return new AbstractList<Element>() {
+            
+            @Override
+            public Element get(int index) {
+                if (insertTop) {
+                    return root.getElement(index);
+                }
+                return root.getElement(size() - 1 - index);
+            }
+
+            @Override
+            public int size() {
+                return root.getElementCount();
+            }
+
+        };
     }
     
     private boolean isMessageLine(Element line) {
@@ -1561,6 +1572,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             attr.addAttribute(attribute, source);
             doc.setParagraphAttributes(offset, 1, attr, false);
         }
+    }
+    
+    private int getCurrentParagraphOffset() {
+        return insertTop ? 0 : doc.getLength();
     }
     
     private void setCustomColor(int offset, Color backgroundColor, Object source) {
@@ -2000,7 +2015,6 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             return false;
         }
         clearSearchResult();
-        int count = doc.getDefaultRootElement().getElementCount();
         if (lastSearchPos != null && !doesLineExist(lastSearchPos)) {
             //System.out.println(lastSearchPos+"doesnt exist");
             lastSearchPos = null;
@@ -2009,16 +2023,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         boolean startSearch = lastSearchPos == null;
         searchText = StringUtil.toLowerCase(searchText);
         // Loop through all lines
-        for (int i=count-1;i>=0;i--) {
-            //System.out.println(i+"/"+count);
-            Element element = doc.getDefaultRootElement().getElement(i);
+        for (Element element : iterateLines()) {
             if (element == lastSearchPos) {
                 // If this lines contained the last result, start searching
                 // on next line
                 startSearch = true;
-                if (i == 0) {
-                    lastSearchPos = null;
-                }
+                lastSearchPos = null;
                 continue;
             }
             if (!startSearch) {
@@ -2427,28 +2437,31 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         if (doc.getDefaultRootElement().getElementCount() == 0) {
             return;
         }
-        Element firstToRemove = doc.getDefaultRootElement().getElement(0);
-        Element lastToRemove = doc.getDefaultRootElement().getElement(amount - 1);
-        // TODO: change to fix for amount, maybe change to removing elements
-        clearImages(firstToRemove);
-        clearImages(lastToRemove);
-        //System.out.println(firstToRemove+" "+lastToRemove);
-        int startOffset = firstToRemove.getStartOffset();
+        int firstElementIndex = insertTop ? doc.getDefaultRootElement().getElementCount() - amount : 0;
+        int lastElementIndex = insertTop ? doc.getDefaultRootElement().getElementCount() - 1 : amount - 1;
+        Element firstToRemove = doc.getDefaultRootElement().getElement(firstElementIndex);
+        Element lastToRemove = doc.getDefaultRootElement().getElement(lastElementIndex);
+        for (int i=firstElementIndex; i<=lastElementIndex; i++) {
+            clearImages(doc.getDefaultRootElement().getElement(i));
+        }
+        int startOffset = firstToRemove.getStartOffset() - 1;
+        if (startOffset < 0) {
+            startOffset = 0;
+        }
         int endOffset = lastToRemove.getEndOffset();
         if (endOffset > doc.getLength()) {
             endOffset = doc.getLength();
         }
-        //System.out.println(startOffset+" "+endOffset+" "+doc.getLength());
         try {
-            doc.remove(startOffset,endOffset);
+            doc.remove(startOffset,endOffset - startOffset);
         } catch (BadLocationException ex) {
-            //Logger.getLogger(ChannelTextPane.class.getName()).log(Level.SEVERE, ex.toString(), ex);
+//            Logger.getLogger(ChannelTextPane.class.getName()).log(Level.SEVERE, ex.toString(), ex);
         }
    }
     
     public void removeOldLines() {
         if (messageTimeout > 0) {
-            Element paragraph = doc.getDefaultRootElement().getElement(0);
+            Element paragraph = doc.getDefaultRootElement().getElement(insertTop ? doc.getDefaultRootElement().getElementCount() - 1 : 0);
             if (doc.getLength() > 1 && getTimeAgo(paragraph) > messageTimeout * 1000) {
 //                removeFirstLines(1);
                 
@@ -2457,7 +2470,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                 // (visible if alternating backgrounds are showing)
                 if (doc.getDefaultRootElement().getElementCount() > 1) {
                     // Can't use this if it's the last element
-                    doc.removeElement(doc.getDefaultRootElement().getElement(0));
+                    doc.removeElement(paragraph);
                 } else {
                     clearAll();
                 }
@@ -2571,7 +2584,14 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         newlineRequired = true;
         lineSelection.onLineAdded(getLastLine(doc));
         even = !even;
-        setVariableLineAttributes(doc.getLength() - 1, even, true);
+        setVariableLineAttributes(insertTop ? 0 : doc.getLength() - 1, even, true);
+        
+        if (Debugging.isEnabled("insertTop")) {
+            Debugging.println("====");
+            for (Element line : iterateLines()) {
+                Debugging.println(Util.debugContents(line));
+            }
+        }
     }
     
     boolean even = false;
@@ -3255,8 +3275,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         return true;
     }
     
-    public static Element getLastLine(Document doc) {
-        return doc.getDefaultRootElement().getElement(doc.getDefaultRootElement().getElementCount() - 1);
+    private Element getLastLine(Document doc) {
+        return doc.getDefaultRootElement().getElement(insertTop ? 0 : doc.getDefaultRootElement().getElementCount() - 1);
     }
     
     /**
@@ -3283,11 +3303,16 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     private void print(final String text, final AttributeSet style) {
         try {
             String newline = "";
+            int insertOffset;
             if (newlineRequired) {
                 lengthSinceNewline = 0;
                 newline = "\n";
                 newlineRequired = false;
                 clearSomeChat();
+                insertOffset = insertTop ? 0 : doc.getLength();
+            }
+            else {
+                insertOffset = insertTop ? doc.getParagraphElement(0).getEndOffset() - 1 : doc.getLength();
             }
             /**
              * Split up long sections by a newline. See MAX_TEXT_LENGTH.
@@ -3303,18 +3328,19 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                 }
                 String part = text.substring(0, breakTarget);
                 String remaining = text.substring(breakTarget);
-                doc.insertString(doc.getLength(), newline+part, style);
-                doc.setParagraphAttributes(doc.getLength(), 1, styles.paragraph(), true);
+                doc.insertString(insertOffset,
+                                 insertTop ? part+newline : newline+part, style);
+                doc.setParagraphAttributes(getCurrentParagraphOffset(), 1, styles.paragraph(), true);
                 newlineRequired = true;
                 print(remaining, style);
             }
             else {
                 //System.out.println("1:"+doc.getLength());
-                doc.insertString(doc.getLength(), newline+text, style);
+                doc.insertString(insertOffset, insertTop ? text+newline : newline+text, style);
                 //System.out.println("2:"+doc.getLength());
                 //this.getHighlighter().addHighlight(doc.getLength(), 10, null);
                 // TODO: check how this works
-                doc.setParagraphAttributes(doc.getLength(), 1, styles.paragraph(), true);
+                doc.setParagraphAttributes(getCurrentParagraphOffset(), 1, styles.paragraph(), true);
                 scrollDownIfNecessary();
             }
         } catch (BadLocationException e) {
@@ -3581,6 +3607,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
          */
         private boolean isScrollPositionNearEnd() {
             JScrollBar vbar = scrollpane.getVerticalScrollBar();
+            if (insertTop) {
+                return vbar.getMinimum() + 20 >= vbar.getValue();
+            }
             return vbar.getMaximum() - 20 <= vbar.getValue() + vbar.getVisibleAmount();
         }
 
@@ -3654,7 +3683,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         }
         
         private void scrollDown1() {
-            scrollpane.getVerticalScrollBar().setValue(scrollpane.getVerticalScrollBar().getMaximum());
+            scrollpane.getVerticalScrollBar().setValue(insertTop ? scrollpane.getVerticalScrollBar().getMinimum() : scrollpane.getVerticalScrollBar().getMaximum());
         }
         
         private void scrollDown2() {
@@ -3935,7 +3964,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             }
             if (bottomMargin != prevBottomMargin) {
                 Chatty.println("Bottom Margin: "+bottomMargin);
-                setMargin(new Insets(3, 3, bottomMargin, 3));
+                if (insertTop) {
+                    setMargin(new Insets(bottomMargin, 3, 3, 3));
+                }
+                else {
+                    setMargin(new Insets(3, 3, bottomMargin, 3));
+                }
                 repaint();
             }
             

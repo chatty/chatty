@@ -1191,6 +1191,7 @@ public class MainGui extends JFrame implements Runnable {
         // will delete the attributes correctly depending on the setting
         channels.setPopoutAttributes(client.settings.getList("popoutAttributes"));
         updatePopoutSettings();
+        channels.setInsertTop(client.settings.getBoolean("chatInsertTop"));
         
         loadCommercialDelaySettings();
         UrlOpener.setSettings(client.settings);

@@ -359,7 +359,7 @@ public class HighlightedMessages extends JDialog {
     static class TextPane extends ChannelTextPane {
         
         public TextPane(MainGui main, StyleServer styleServer, ChannelTextPane.Type type, Supplier<ContextMenu> contextMenuCreator) {
-            super(main, styleServer, type);
+            super(main, styleServer, type, true, main.getSettings().getBoolean("chatInsertTop"));
             linkController.setContextMenuCreator(contextMenuCreator);
         }
         

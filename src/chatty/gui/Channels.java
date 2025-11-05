@@ -113,6 +113,8 @@ public class Channels {
     private boolean savePopoutAttributes;
     private boolean closeLastChannelPopout;
     
+    private boolean insertTop;
+    
     /**
      * The DockManager tracks the last active content, however that might not be
      * a Channel, so the last active Channel is tracked here.
@@ -938,7 +940,7 @@ public class Channels {
      * @return
      */
     private Channel createChannel(Room room, Channel.Type type) {
-        Channel channel = new Channel(room,type,gui,styleManager, contextMenuListener);
+        Channel channel = new Channel(room,type,gui,styleManager, contextMenuListener, insertTop);
         channel.setDockContent(new DockChannelContainer(channel, dock, this, contextMenuListener));
         channel.init();
         channel.setUserlistWidth(defaultUserlistWidth, minUserlistWidth);
@@ -1513,6 +1515,10 @@ public class Channels {
         for (Channel channel : getChannels()) {
             channel.setCompletionEnabled(enabled);
         }
+    }
+    
+    public void setInsertTop(boolean insertTop) {
+        this.insertTop = insertTop;
     }
     
     public void setDefaultUserlistWidth(int width, int minWidth) {
