@@ -14,9 +14,11 @@ import chatty.gui.components.textpane.UserMessage;
 import chatty.gui.StyleServer;
 import chatty.gui.components.menus.ContextMenu;
 import chatty.gui.components.menus.ContextMenuAdapter;
+import chatty.gui.components.menus.ContextMenuHelper;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.HighlightsContextMenu;
+import chatty.gui.components.routing.RoutingTargetSettings;
 import chatty.gui.components.textpane.InfoMessage;
 import chatty.gui.components.textpane.MyStyleConstants;
 import chatty.util.Debugging;
@@ -41,6 +43,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
@@ -58,6 +61,7 @@ import javax.swing.text.SimpleAttributeSet;
 public class HighlightedMessages extends JDialog {
     
     private final TextPane messages;
+    private final ChannelTextPane.Type type;
     private final DockedDialogHelper helper;
     private final MainGui main;
     private String currentChannel;
@@ -128,6 +132,8 @@ public class HighlightedMessages extends JDialog {
                     MutableAttributeSet attr = new SimpleAttributeSet(styleServer.getStyle(type));
                     // For crossing out messages for timeouts, but never show separate message
                     attr.addAttribute(ChannelTextPane.Setting.SHOW_BANMESSAGES, false);
+                    attr.addAttribute(ChannelTextPane.Setting.CHANNEL_LOGO_SIZE, channelLogo());
+                    attr.addAttribute(ChannelTextPane.Setting.SHOW_CHANNEL_NAME, showChannelName());
                     return attr;
                 }
                 return styleServer.getStyle(type);
@@ -147,12 +153,14 @@ public class HighlightedMessages extends JDialog {
             public ColorCorrector getColorCorrector() {
                 return styleServer.getColorCorrector();
             }
+
         };
         ChannelTextPane.Type textPaneType = settingName.equals("highlightDock")
                                     ? ChannelTextPane.Type.HIGHLIGHTS
                                     : ChannelTextPane.Type.IGNORED;
+        type = textPaneType;
         messages = new TextPane(owner, modifiedStyleServer, textPaneType,
-                () -> new HighlightsContextMenu(isDocked(), autoOpenActivity()));
+                () -> new HighlightsContextMenu(isDocked(), autoOpenActivity(), showLegacy(), channelLogo(), showChannelName()));
         messages.setContextMenuListener(new ContextMenuAdapter(contextMenuListener) {
             
             @Override
@@ -164,6 +172,12 @@ public class HighlightedMessages extends JDialog {
                     default:
                         break;
                 }
+                ContextMenuHelper.handleNumericOption(e.getActionCommand(), "logoSize", size -> {
+                    updateSettings(showLegacy(), size, showChannelName());
+                });
+                ContextMenuHelper.handleNumericOption(e.getActionCommand(), "showChannelName", length -> {
+                    updateSettings(showLegacy(), channelLogo(), length);
+                });
                 helper.menuAction(e);
                 super.menuItemClicked(e);
             }
@@ -292,8 +306,8 @@ public class HighlightedMessages extends JDialog {
     }
     
     private void messageAdded(String channel) {
-        if (currentChannel == null || !currentChannel.equals(channel)
-                || currentChannelMessageCount > 12) {
+        if ((currentChannel == null || !currentChannel.equals(channel)
+                || currentChannelMessageCount > 12) && showLegacy() > 0) {
             messages.printLine(MessageFormat.format(label, channel));
             currentChannel = channel;
             currentChannelMessageCount = 0;
@@ -380,6 +394,41 @@ public class HighlightedMessages extends JDialog {
             newCount = 0;
         }
         
+    }
+    
+    // Settings
+    
+    private static final int SHOW_LEGACY_INDEX = 0;
+    private static final int CHANNEL_LOGO_INDEX = 1;
+    private static final int CHANNEL_NAME_INDEX = 2;
+    
+    private String settingName() {
+        switch (type) {
+            case HIGHLIGHTS: return "highlightDialog";
+            case IGNORED: return "ignoreDialog";
+        }
+        return null;
+    }
+    
+    private long showLegacy() {
+        return main.getSettings().listGetLong(settingName(), SHOW_LEGACY_INDEX, 0);
+    }
+    
+    private long channelLogo() {
+        return main.getSettings().listGetLong(settingName(), CHANNEL_LOGO_INDEX, RoutingTargetSettings.CHANNEL_LOGO_DEFAULT);
+    }
+    
+    private long showChannelName() {
+        return main.getSettings().listGetLong(settingName(), CHANNEL_NAME_INDEX, RoutingTargetSettings.SHOW_CHANNEL_NAME_DEFAULT);
+    }
+    
+    private void updateSettings(long legacy, long logoSize, long channelName) {
+        List<Long> settingsValue = new ArrayList<>();
+        settingsValue.add(legacy);
+        settingsValue.add(logoSize);
+        settingsValue.add(channelName);
+        main.getSettings().putList(settingName(), settingsValue);
+        refreshStyles();
     }
     
 }

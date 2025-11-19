@@ -184,6 +184,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         EMOTICON_MAX_HEIGHT, EMOTICON_SCALE_FACTOR, USERICON_SCALE_FACTOR,
         EMOTICON_SCALE_FACTOR_GIGANTIFIED,
         CUSTOM_USERICON_SCALE_MODE, BOT_BADGE_ENABLED, CHANNEL_LOGO_SIZE,
+        SHOW_CHANNEL_NAME,
         FILTER_COMBINING_CHARACTERS, PAUSE_ON_MOUSEMOVE,
         PAUSE_ON_MOUSEMOVE_CTRL_REQUIRED,
         EMOTICONS_ANIMATED,
@@ -2251,6 +2252,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             printSharedInfo(user, localUser, tags);
         }
         else {
+            // CHANNEL_LOGO_SIZE is only enabled on Custom Tabs and Stream Chat
             printUsericonsDefault(user, localUser, tags, styles.getInt(Setting.CHANNEL_LOGO_SIZE));
         }
     }
@@ -2260,11 +2262,28 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             return;
         }
         boolean botBadgeEnabled = styles.isEnabled(Setting.BOT_BADGE_ENABLED);
+        
         java.util.List<Usericon> badges = user.getBadges(botBadgeEnabled, tags, localUser, channelLogoSize);
+        
+        /**
+         * If present, channel logo should always be first badge. Shared chat
+         * channel logo is output in printSharedInfo(), so it shouldn't
+         * interfere here.
+         */
+        if (badges == null
+                || channelLogoSize < 1
+                || badges.isEmpty()
+                || badges.iterator().next().type != Usericon.Type.CHANNEL_LOGO) {
+            printChannelName(user);
+        }
+        
         if (badges != null) {
             for (Usericon badge : badges) {
                 if (!badge.removeBadge) {
                     print(badge.getSymbol(), styles.makeIconStyle(badge, user, null, false));
+                    if (badge.type == Usericon.Type.CHANNEL_LOGO && channelLogoSize > 0) {
+                        printChannelName(user);
+                    }
                 }
             }
         }
@@ -2279,6 +2298,20 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             if (icon != null) {
                 print(icon.getSymbol(), styles.makeIconStyle(icon, user, null, false));
             }
+            printChannelName(user);
+        }
+    }
+    
+    /**
+     * Output the channel name of the given User as a source for Custom Tabs.
+     * The SHOW_CHANNEL_NAME setting is only enabled on Custom Tabs.
+     * 
+     * @param user 
+     */
+    private void printChannelName(User user) {
+        int settingValue = styles.getInt(Setting.SHOW_CHANNEL_NAME);
+        if (user != null && settingValue > 0) {
+            print(String.format("[%s] ", StringUtil.shortenTo(user.getChannel(), settingValue)), styles.standard());
         }
     }
     
@@ -4057,6 +4090,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             addNumericSetting(Setting.BOTTOM_MARGIN, -1, -1, 100);
             addNumericSetting(Setting.HIGHLIGHT_HOVERED_USER, 0, 0, 4);
             addNumericSetting(Setting.CHANNEL_LOGO_SIZE, -1, -1, 100);
+            addNumericSetting(Setting.SHOW_CHANNEL_NAME, -1, -1, 100);
             addNumericSetting(Setting.SHARED_BADGES, 0, 0, 100);
             addNumericSetting(Setting.SHARED_LOGO_SIZE, 22, 0, 60);
             addSetting(Setting.SHARED_LOGO_ALWAYS, true);

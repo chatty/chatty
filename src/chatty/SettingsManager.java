@@ -683,6 +683,9 @@ public class SettingsManager {
         settings.addBoolean("ignoredUsersHideInGUI", true);
         settings.addList("ignoreBlacklist", new ArrayList(), Setting.STRING);
         
+        settings.addList("highlightDialog", new ArrayList<>(), Setting.LONG);
+        settings.addList("ignoreDialog", new ArrayList<>(), Setting.LONG);
+        
         // Filter
         settings.addList("filter", new ArrayList(), Setting.STRING);
         settings.addBoolean("filterEnabled", true);

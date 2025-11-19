@@ -7,7 +7,9 @@ import chatty.util.commands.Parameters;
 import chatty.util.settings.Settings;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.ImageIcon;
@@ -194,6 +196,23 @@ public class ContextMenuHelper {
             } else {
                 m.addItem("ignore"+item, "Ignore "+label, submenu);
             }
+        }
+    }
+    
+    public static void addNumericOptions(ContextMenu menu, String submenu, String actionPrefix, long currentValue, Map<Long, String> options) {
+        for (Map.Entry<Long, String> entry : options.entrySet()) {
+            String action = actionPrefix+entry.getKey();
+            menu.addRadioItem(action, entry.getValue(), submenu, submenu);
+            if (entry.getKey() == currentValue) {
+                menu.getItem(action).setSelected(true);
+            }
+        }
+    }
+    
+    public static void handleNumericOption(String receivedAction, String actionPrefix, Consumer<Long> handler) {
+        if (receivedAction.startsWith(actionPrefix)) {
+            long value = Long.parseLong(receivedAction.substring(actionPrefix.length()));
+            handler.accept(value);
         }
     }
     

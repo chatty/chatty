@@ -296,7 +296,7 @@ public class RoutingManager {
         RoutingTargetSettings entry = entries.get(targetId);
         if (entry == null) {
             entry = new RoutingTargetSettings(targetName, 1, true, false, "", 0, false, false,
-                    RoutingTargetSettings.CHANNEL_LOGO_DEFAULT);
+                    RoutingTargetSettings.CHANNEL_LOGO_DEFAULT, RoutingTargetSettings.SHOW_CHANNEL_NAME_DEFAULT);
             entries.put(targetId, entry);
         }
         return entry;

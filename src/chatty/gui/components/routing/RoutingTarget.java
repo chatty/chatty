@@ -9,6 +9,7 @@ import chatty.gui.StyleManager;
 import chatty.gui.StyleServer;
 import chatty.gui.components.Channel;
 import chatty.gui.components.menus.ContextMenuAdapter;
+import chatty.gui.components.menus.ContextMenuHelper;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.RoutingTargetContextMenu;
 import chatty.gui.components.menus.TabContextMenu;
@@ -112,6 +113,7 @@ public class RoutingTarget {
                     // For crossing out messages for timeouts, but never show separate message
                     attr.addAttribute(ChannelTextPane.Setting.SHOW_BANMESSAGES, false);
                     attr.addAttribute(ChannelTextPane.Setting.CHANNEL_LOGO_SIZE, channelLogo());
+                    attr.addAttribute(ChannelTextPane.Setting.SHOW_CHANNEL_NAME, showChannelName());
                     return attr;
                 }
                 return styles.getStyle(type);
@@ -177,6 +179,10 @@ public class RoutingTarget {
     
     private int channelLogo() {
         return routingManager.getSettings(targetId).channelLogo;
+    }
+    
+    private int showChannelName() {
+        return routingManager.getSettings(targetId).showChannelName;
     }
     
     //==========
@@ -275,6 +281,11 @@ public class RoutingTarget {
                     routingManager.updateSettings(targetId,
                             settings.setChannelLogo(size));
                 }
+                ContextMenuHelper.handleNumericOption(e.getActionCommand(), "showChannelName", value -> {
+                    RoutingTargetSettings settings = routingManager.getSettings(targetId);
+                    routingManager.updateSettings(targetId,
+                            settings.setShowChannelName(value.intValue()));
+                });
                 super.menuItemClicked(e);
             }
             
@@ -399,7 +410,8 @@ public class RoutingTarget {
                     multiChannel() == 2,
                     routingManager.getSettings(targetId).showAll,
                     currentChannel,
-                    channelLogo()));
+                    channelLogo(),
+                    showChannelName()));
         }
         
         @Override

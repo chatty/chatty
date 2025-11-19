@@ -50,6 +50,7 @@ public class RoutingTargetSettings {
     }
     
     public static final int CHANNEL_LOGO_DEFAULT = 22;
+    public static final int SHOW_CHANNEL_NAME_DEFAULT = 0;
     
     private final String targetName;
     public final int openOnMessage;
@@ -61,11 +62,12 @@ public class RoutingTargetSettings {
     public final boolean channelFixed;
     public final boolean showAll;
     public final int channelLogo;
+    public final int showChannelName;
     
     public RoutingTargetSettings(String targetName, int openOnMessage,
             boolean exlusive, boolean logEnabled, String logFilename,
             int multiChannel, boolean channelFixed, boolean showAll,
-            int channelLogo) {
+            int channelLogo, int showChannelName) {
         this.targetName = targetName;
         this.openOnMessage = openOnMessage;
         this.exclusive = exlusive;
@@ -76,6 +78,7 @@ public class RoutingTargetSettings {
         this.channelFixed = channelFixed;
         this.showAll = showAll;
         this.channelLogo = channelLogo;
+        this.showChannelName = showChannelName;
     }
     
     public String getName() {
@@ -141,21 +144,28 @@ public class RoutingTargetSettings {
         if (channelFixed == newValue) {
             return this;
         }
-        return new RoutingTargetSettings(targetName, openOnMessage, exclusive, logEnabled, logFilename, multiChannel, newValue, showAll, channelLogo);
+        return new RoutingTargetSettings(targetName, openOnMessage, exclusive, logEnabled, logFilename, multiChannel, newValue, showAll, channelLogo, showChannelName);
     }
     
     public RoutingTargetSettings setShowAll(boolean newValue) {
         if (showAll == newValue) {
             return this;
         }
-        return new RoutingTargetSettings(targetName, openOnMessage, exclusive, logEnabled, logFilename, multiChannel, channelFixed, newValue, channelLogo);
+        return new RoutingTargetSettings(targetName, openOnMessage, exclusive, logEnabled, logFilename, multiChannel, channelFixed, newValue, channelLogo, showChannelName);
     }
     
     public RoutingTargetSettings setChannelLogo(int newValue) {
         if (channelLogo == newValue) {
             return this;
         }
-        return new RoutingTargetSettings(targetName, openOnMessage, exclusive, logEnabled, logFilename, multiChannel, channelFixed, showAll, newValue);
+        return new RoutingTargetSettings(targetName, openOnMessage, exclusive, logEnabled, logFilename, multiChannel, channelFixed, showAll, newValue, showChannelName);
+    }
+    
+    public RoutingTargetSettings setShowChannelName(int newValue) {
+        if (showChannelName == newValue) {
+            return this;
+        }
+        return new RoutingTargetSettings(targetName, openOnMessage, exclusive, logEnabled, logFilename, multiChannel, channelFixed, showAll, channelLogo, newValue);
     }
     
     public List toList() {
@@ -169,6 +179,7 @@ public class RoutingTargetSettings {
         result.add(channelFixed ? 1 : 0);
         result.add(showAll ? 1 : 0);
         result.add(channelLogo);
+        result.add(showChannelName);
         return result;
     }
     
@@ -183,6 +194,7 @@ public class RoutingTargetSettings {
             boolean channelFixed = false;
             boolean showAll = false;
             int channelLogo = CHANNEL_LOGO_DEFAULT;
+            int showChannelName = SHOW_CHANNEL_NAME_DEFAULT;
             if (list.size() > 3) {
                 logEnabled = MiscUtil.isNumTrue(list.get(3));
                 logFile = (String) list.get(4);
@@ -193,7 +205,10 @@ public class RoutingTargetSettings {
             if (list.size() > 8) {
                 channelLogo = ((Number) list.get(8)).intValue();
             }
-            return new RoutingTargetSettings(name, openOnMessage, exclusive, logEnabled, logFile, multiChannel, channelFixed, showAll, channelLogo);
+            if (list.size() > 9) {
+                showChannelName = ((Number) list.get(9)).intValue();
+            }
+            return new RoutingTargetSettings(name, openOnMessage, exclusive, logEnabled, logFile, multiChannel, channelFixed, showAll, channelLogo, showChannelName);
         }
         catch (Exception ex) {
             LOGGER.warning("Error parsing routing entry: "+ex);

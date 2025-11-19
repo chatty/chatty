@@ -535,6 +535,17 @@ public class Settings {
         }
     }
     
+    public long listGetLong(String settingName, int index, long defautValue) {
+        synchronized (LOCK) {
+            try {
+                return (long)(((List) getListInternal(settingName)).get(index));
+            }
+            catch (IndexOutOfBoundsException ex) {
+                return defautValue;
+            }
+        }
+    }
+    
     /**
      * Adds the given <tt>Object</tt> to this <tt>List</tt> setting, if it
      * wasn't already in there.
