@@ -200,6 +200,12 @@ public class ContextMenuHelper {
     }
     
     public static void addNumericOptions(ContextMenu menu, String submenu, String actionPrefix, long currentValue, Map<Long, String> options) {
+        if (!options.containsKey(currentValue)) {
+            // Show current value raw if it's not a valid option, like a setting using a combo box would
+            String action = actionPrefix+currentValue;
+            menu.addRadioItem(action, String.valueOf(currentValue), submenu, submenu);
+            menu.getItem(action).setSelected(true);
+        }
         for (Map.Entry<Long, String> entry : options.entrySet()) {
             String action = actionPrefix+entry.getKey();
             menu.addRadioItem(action, entry.getValue(), submenu, submenu);

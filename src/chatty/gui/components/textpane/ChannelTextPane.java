@@ -2274,7 +2274,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                 || channelLogoSize < 1
                 || badges.isEmpty()
                 || badges.iterator().next().type != Usericon.Type.CHANNEL_LOGO) {
-            printChannelName(user);
+            boolean channelIconFailed = channelLogoSize > 0;
+            printChannelName(user, channelIconFailed);
         }
         
         if (badges != null) {
@@ -2282,7 +2283,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                 if (!badge.removeBadge) {
                     print(badge.getSymbol(), styles.makeIconStyle(badge, user, null, false));
                     if (badge.type == Usericon.Type.CHANNEL_LOGO && channelLogoSize > 0) {
-                        printChannelName(user);
+                        printChannelName(user, false);
                     }
                 }
             }
@@ -2298,7 +2299,8 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             if (icon != null) {
                 print(icon.getSymbol(), styles.makeIconStyle(icon, user, null, false));
             }
-            printChannelName(user);
+            boolean channelIconFailed = styles.getInt(Setting.CHANNEL_LOGO_SIZE) > 0 && icon == null;
+            printChannelName(user, channelIconFailed);
         }
     }
     
@@ -2308,9 +2310,12 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
      * 
      * @param user 
      */
-    private void printChannelName(User user) {
+    private void printChannelName(User user, boolean forced) {
         int settingValue = styles.getInt(Setting.SHOW_CHANNEL_NAME);
-        if (user != null && settingValue > 0) {
+        if (user != null && (settingValue > 0 || forced)) {
+            if (forced && settingValue == 0) {
+                settingValue = 30;
+            }
             print(String.format("[%s] ", StringUtil.shortenTo(user.getChannel(), settingValue)), styles.standard());
         }
     }
