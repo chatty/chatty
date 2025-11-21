@@ -178,6 +178,9 @@ public class HighlightedMessages extends JDialog {
                 ContextMenuHelper.handleNumericOption(e.getActionCommand(), "showChannelName", length -> {
                     updateSettings(showLegacy(), channelLogo(), length);
                 });
+                ContextMenuHelper.handleNumericOption(e.getActionCommand(), "legacyChannelName", on -> {
+                    updateSettings(on, channelLogo(), showChannelName());
+                });
                 helper.menuAction(e);
                 super.menuItemClicked(e);
             }
@@ -283,7 +286,7 @@ public class HighlightedMessages extends JDialog {
         messages.printInfoMessage(message);
     }
     
-    public void addInfoMessage(String channel, String text, List<Match> highlightMatches, Object highlightSource) {
+    public void addInfoMessage(String channel, String text, List<Match> highlightMatches, Object highlightSource, User localUser) {
         messageAdded(channel);
         InfoMessage message = InfoMessage.createInfo(text);
         message.highlightMatches = highlightMatches;
@@ -293,6 +296,7 @@ public class HighlightedMessages extends JDialog {
         else if (messages.type == ChannelTextPane.Type.IGNORED) {
             message.ignoreSource = highlightSource;
         }
+        message.localUser = localUser;
         messages.printInfoMessage(message);
     }
     

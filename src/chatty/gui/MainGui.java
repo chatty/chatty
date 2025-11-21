@@ -4211,6 +4211,7 @@ public class MainGui extends JFrame implements Runnable {
                     message.bgColor = highlighter.getLastMatchBackgroundColor();
                     message.colorSource = highlighter.getColorSource();
                     message.highlightSource = highlighter.getLastMatchItems();
+                    message.localUser = localUser;
                     routingTargets.add(highlighter.getLastMatchItem());
 
                     if (!highlighter.getLastMatchNoNotification()) {
@@ -4251,7 +4252,7 @@ public class MainGui extends JFrame implements Runnable {
             routingTargets.add(ignoreList.getLastMatchItem());
             if (!ignoreList.getLastMatchItem().hide()) {
                 ignoredMessages.addInfoMessage(channel.getChannel(), message.text,
-                        ignoreList.getLastTextMatches(), ignoreList.getLastMatchItems());
+                        ignoreList.getLastTextMatches(), ignoreList.getLastMatchItems(), localUser);
             }
             if (!ignoreList.getLastMatchItem().noLog()) {
                 client.chatLog.info("ignored", message.text, channel.getChannel());

@@ -199,6 +199,18 @@ public class ContextMenuHelper {
         }
     }
     
+    /**
+     * Adds a submenu containing the provided options as radio menu items, which
+     * the current value selected. If the current value is not one of the
+     * options and additional option will be added.
+     *
+     * @param menu The ContextMenu to add to
+     * @param submenu The name of the submenu
+     * @param actionPrefix The menu action prefix, the numeric value will be
+     * appended to this
+     * @param currentValue The current value which will be selected
+     * @param options Numeric value/menu item label pairs
+     */
     public static void addNumericOptions(ContextMenu menu, String submenu, String actionPrefix, long currentValue, Map<Long, String> options) {
         if (!options.containsKey(currentValue)) {
             // Show current value raw if it's not a valid option, like a setting using a combo box would
@@ -215,6 +227,16 @@ public class ContextMenuHelper {
         }
     }
     
+    /**
+     * Gets the numeric value from an action received from a menu item created
+     * with {@link addNumericOptions(ContextMenu, String, String, long, Map)}.
+     * It is safe to apply this function to every received action, not just ones
+     * with the correct {@code actionPrefix}.
+     * 
+     * @param receivedAction The action received from the menu item
+     * @param actionPrefix The same action prefix used when creating the menu
+     * @param handler Function that receives the numeric value
+     */
     public static void handleNumericOption(String receivedAction, String actionPrefix, Consumer<Long> handler) {
         if (receivedAction.startsWith(actionPrefix)) {
             long value = Long.parseLong(receivedAction.substring(actionPrefix.length()));

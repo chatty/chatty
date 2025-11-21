@@ -2252,7 +2252,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             printSharedInfo(user, localUser, tags);
         }
         else {
-            // CHANNEL_LOGO_SIZE is only enabled on Custom Tabs and Stream Chat
+            // CHANNEL_LOGO_SIZE is used on Custom Tabs, Stream Chat and Highlights/Ignore Dialogs
             printUsericonsDefault(user, localUser, tags, styles.getInt(Setting.CHANNEL_LOGO_SIZE));
         }
     }
@@ -2306,7 +2306,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
     
     /**
      * Output the channel name of the given User as a source for Custom Tabs.
-     * The SHOW_CHANNEL_NAME setting is only enabled on Custom Tabs.
+     * The SHOW_CHANNEL_NAME setting is only enabled on Custom Tabs and similar.
      * 
      * @param user 
      */
