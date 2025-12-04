@@ -469,6 +469,7 @@ public class StreamInfoManager {
         long timeStarted = -1;
         String userId = null;
         String thumbnailUrl = null;
+        String broadcastId;
         try {
             // Get stream data
             viewersTemp = (Number) stream.get("viewer_count");
@@ -480,6 +481,7 @@ public class StreamInfoManager {
             display_name = JSONUtil.getString(stream, "user_name");
             userId = JSONUtil.getString(stream, "user_id");
             thumbnailUrl = JSONUtil.getString(stream, "thumbnail_url");
+            broadcastId = JSONUtil.getString(stream, "id");
         } catch (ClassCastException ex) {
             LOGGER.warning("Error parsing StreamInfo: unpexected type");
             return null;
@@ -515,6 +517,7 @@ public class StreamInfoManager {
         // Get and update stream info
         StreamInfo streamInfo = getStreamInfo(name);
         streamInfo.setDisplayName(display_name);
+        streamInfo.setBroadcastId(broadcastId);
         if (streamInfo.setUserId(userId)) {
             // If not already done, send userId to UserIDs manager
             api.setUserId(name, userId);

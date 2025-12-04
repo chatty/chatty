@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Allows adding values for use in Custom Commands replacements.
@@ -274,11 +275,13 @@ public class Parameters {
             case "streamdisplayname2": return streamInfo.hasRegularDisplayName()
                     ? streamInfo.getDisplayName()
                     : String.format("%s (%s)", streamInfo.getDisplayName(), streamInfo.getCapitalizedName());
+            case "streamid": return streamInfo.getBroadcastId();
         }
         if (streamInfo.getOnline()) {
             switch (name) {
                 case "streamuptime": return chatty.util.DateTime.agoUptimeCompact2(streamInfo.getTimeStartedWithPicnic());
                 case "streamuptime2": return chatty.util.DateTime.agoUptimeCompact2(streamInfo.getTimeStarted());
+                case "streamseconds": return String.valueOf(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - streamInfo.getTimeStarted()));
                 case "streamtitle": return streamInfo.getTitle();
                 case "streamgame": return streamInfo.getGame();
                 case "streamviewers": return String.valueOf(streamInfo.getViewers());

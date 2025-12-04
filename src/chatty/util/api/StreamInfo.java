@@ -39,6 +39,8 @@ public class StreamInfo {
      */
     private String display_name;
     
+    private String broadcastId;
+    
     private String thumbnailUrl;
     
     private String userId;
@@ -466,6 +468,14 @@ public class StreamInfo {
         if (name != null && StringUtil.toLowerCase(name).equals(stream)) {
             capitalizedName = name;
         }
+    }
+    
+    public void setBroadcastId(String broadcastId) {
+        this.broadcastId = broadcastId;
+    }
+    
+    public String getBroadcastId() {
+        return broadcastId;
     }
     
     /**
