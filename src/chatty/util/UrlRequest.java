@@ -11,7 +11,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
@@ -37,6 +39,8 @@ public class UrlRequest {
     
     private int connectTimeout = 10000;
     private int readTimeout = 10000;
+    
+    private Map<String, String> properties;
     
     /**
      * Construct without URL. The URL should be set via {@link setUrl(String)}.
@@ -71,6 +75,13 @@ public class UrlRequest {
     public final void setTimeouts(int connectTimeout, int readTimeout) {
         this.connectTimeout = connectTimeout;
         this.readTimeout = readTimeout;
+    }
+    
+    public final void setRequestProperty(String key, String value) {
+        if (properties == null) {
+            properties = new HashMap<>();
+        }
+        properties.put(key, value);
     }
 
     public void async(ResultListener listener) {
@@ -111,10 +122,16 @@ public class UrlRequest {
      * @return
      */
     private void performRequest(Result result) {
-        LOGGER.info("<"+label+" "+url);
+        // Only output custom header keys in case an API token or something is used
+        LOGGER.info("<"+label+" "+url+(properties != null ? " "+properties.keySet() : ""));
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) new URL(url).openConnection();
+            if (properties != null) {
+                for (Map.Entry<String, String> header : properties.entrySet()) {
+                    connection.setRequestProperty(header.getKey(), header.getValue());
+                }
+            }
             connection.setRequestProperty("User-Agent", VERSION);
             connection.setRequestProperty("Accept-Encoding", "gzip");
             

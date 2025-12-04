@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Perform a UrlRequest.
@@ -55,6 +57,14 @@ public class Request implements Item {
         
         try {
             UrlRequest request = new UrlRequest(urlString);
+            
+            for (String option : optionsString) {
+                Matcher m = Pattern.compile("h\\[(?<key>[^:]+): (?<value>.+)\\]").matcher(option);
+                if (m.matches()) {
+                    request.setRequestProperty(m.group("key"), m.group("value"));
+                }
+            }
+            
             request.setLabel("Custom Command");
             FullResult result = request.sync();
             String resultText = result.getResult();
