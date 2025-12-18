@@ -999,18 +999,19 @@
         <li><code>status:</code> to specify that the user has to have one of the
             given status codes (case-sensitive):
             <ul>
-                <li><code>m</code> Moderator</li>
-                <li><code>s</code> Subscriber</li>
-                <li><code>a</code> Admin</li>
-                <li><code>f</code> Staff</li>
                 <li><code>b</code> Broadcaster</li>
-                <li><code>t</code> Turbo User</li>
-                <li><code>g</code> Global Moderator</li>
+                <li><code>L</code> Lead Moderator</li>
+                <li><code>m</code> Moderator (includes Lead Moderator)</li>
+                <li><code>M</code> User with any kind of moderator/special powers
+                    (Broadcaster, Lead Mod, Mod, Admin, Staff combined)</li>
+                <li><code>s</code> Subscriber</li>
+                <li><code>v</code> VIP</li>
                 <li><code>r</code> Bot as in <em>R</em>obot (depending on what the FFZ/BTTV APIs provides (if
                     enabled) and values in the <a href="help-setting_commands.html#bots">botNames</a> setting)</li>
-                <li><code>M</code> User with any kind of moderator/special powers
-                    (so Broadcaster/Moderator/Global Moderator/Admin/Staff combined)</li>
-                <li><code>v</code> VIP</li>
+                <li><code>a</code> Admin</li>
+                <li><code>f</code> Staff</li>
+                <li><code>t</code> Turbo User</li>
+                <li><code>g</code> <del>Global Moderator</del> (deprecated, Global Moderator program has been discontinued on Twitch)</li>
             </ul>
             For example: <code>status:sv</code> matches users that are either a
             subscriber or a VIP (or both). <code>status:s&nbsp;status:v</code>

@@ -662,7 +662,7 @@ public class Highlighter {
         private boolean blockedByBlacklist;
         
         private enum Status {
-            MOD("m"), SUBSCRIBER("s"), BROADCASTER("b"), ADMIN("a"), STAFF("f"),
+            MOD("m"), LEAD_MOD("L"), SUBSCRIBER("s"), BROADCASTER("b"), ADMIN("a"), STAFF("f"),
             TURBO("t"), ANY_MOD("M"), GLOBAL_MOD("g"), BOT("r"), VIP("v");
             
             private final String id;
@@ -2218,6 +2218,9 @@ public class Highlighter {
              */
             boolean or = positive;
             if (req.contains(Status.MOD) && user.isModerator()) {
+                return or;
+            }
+            if (req.contains(Status.LEAD_MOD) && user.hasTwitchBadge("lead_moderator")) {
                 return or;
             }
             if (req.contains(Status.SUBSCRIBER) && user.isSubscriber()) {

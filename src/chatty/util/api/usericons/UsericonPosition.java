@@ -15,6 +15,7 @@ public class UsericonPosition {
 
     private static final Ref[] modStuff = new Ref[]{
         Ref.create("moderator"),
+        Ref.create("lead_moderator"),
         Ref.create("staff"),
         Ref.create("admin"),
         Ref.create("global_mod"),

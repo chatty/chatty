@@ -51,7 +51,7 @@ public class UserTagsUtil {
         if (user.setVip(badges.hasId("vip"))) {
             changed = true;
         }
-        if (user.setModerator(badges.hasId("moderator"))) {
+        if (user.setModerator(badges.hasId("moderator") || badges.hasId("lead_moderator"))) {
             changed = true;
         }
         if (user.setAdmin(badges.hasId("admin"))) {

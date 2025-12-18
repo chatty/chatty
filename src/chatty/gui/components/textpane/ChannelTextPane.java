@@ -2376,7 +2376,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                 if (badges != null) {
                     for (Usericon badge : badges) {
                         boolean selectBadges = settingValue == 1 || settingValue >= 10
-                                ? Arrays.asList(new String[]{"moderator", "broadcaster", "staff", "subscriber", "vip"}).contains(badge.badgeType.id)
+                                ? Arrays.asList(new String[]{"moderator", "lead_moderator", "broadcaster", "staff", "subscriber", "vip"}).contains(badge.badgeType.id)
                                 : true;
                         if (!badge.removeBadge && selectBadges) {
                             if (styles.getInt(Setting.SHARED_BADGES) >= 10) {
@@ -2416,7 +2416,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
                 // Add shared-only badges to output
                 Set<Usericon> isSharedOnly = new HashSet<>();
                 for (Usericon sharedBadge : sharedBadges) {
-                    if (Arrays.asList(new String[]{"moderator", "broadcaster", "staff", "vip"}).contains(sharedBadge.badgeType.id)
+                    if (Arrays.asList(new String[]{"moderator", "lead_moderator", "broadcaster", "staff", "vip"}).contains(sharedBadge.badgeType.id)
                             || badges.isEmpty()) {
                         badges.add(0, sharedBadge);
                     }
