@@ -5,6 +5,7 @@ import chatty.Helper;
 import chatty.User;
 import chatty.gui.Highlighter;
 import chatty.gui.LinkListener;
+import chatty.gui.MainGui;
 import chatty.gui.MouseClickedListener;
 import chatty.gui.UserListener;
 import chatty.gui.colors.ColorItem;
@@ -127,6 +128,8 @@ public class LinkController extends MouseAdapter {
     
     private ChannelTextPane.Type type;
     
+    private MainGui main;
+    
     public void setType(ChannelTextPane.Type type) {
         this.type = type;
     }
@@ -184,6 +187,10 @@ public class LinkController extends MouseAdapter {
     
     public void setChannel(Channel channel) {
         this.channel = channel;
+    }
+    
+    public void setMainGui(MainGui main) {
+        this.main = main;
     }
    
     /**
@@ -390,7 +397,7 @@ public class LinkController extends MouseAdapter {
     }
     
     private String getMsgId(Element e) {
-        return (String) e.getAttributes().getAttribute(ChannelTextPane.Attribute.ID);
+        return (String) e.getAttributes().getAttribute(ChannelTextPane.Attribute.MSG_ID);
     }
     
     private String getAutoModMsgId(Element e) {
@@ -1139,6 +1146,25 @@ public class LinkController extends MouseAdapter {
             
             m.addSeparator();
             m.add(menu);
+            
+            Long lineId = (Long) getSource(Attribute.LINE_ID, element);
+            User user = (User) getSource(Attribute.LOCAL_USER, element);
+            if (user == null && element.getParentElement() != null) {
+                user = ChannelTextPane.getUserFromLine(element.getParentElement());
+            }
+            String sourceChannel = user != null ? user.getChannel() : null;
+            if (lineId != null
+                    && sourceChannel != null
+                    && (channel == null || !channel.getChannel().equals(sourceChannel))
+                    && main != null) {
+                JMenuItem item = new JMenuItem("Go to source message");
+                item.setEnabled(main.hasLineId(sourceChannel, lineId));
+                item.setToolTipText("Message from "+sourceChannel);
+                item.addActionListener(e -> {
+                    main.scrollToLineId(sourceChannel, lineId, "Source Message");
+                });
+                m.add(item);
+            }
         }
     }
     

@@ -10,15 +10,22 @@ import java.util.List;
  */
 public class Message {
     
-    public final String id;
+    private static long LINE_COUNTER;
+    
+    public static long getLineId() {
+        return LINE_COUNTER++;
+    }
+    
+    public long lineId = getLineId();
+    public final String msgId;
     public final String text;
     public final List<Match> highlightMatches;
     public final List<Match> replaceMatches;
     public final String replacement;
     
-    public Message(String id, String text, List<Match> highlightMatches,
+    public Message(String msgId, String text, List<Match> highlightMatches,
             List<Match> replaceMatches, String replacement) {
-        this.id = id;
+        this.msgId = msgId;
         this.text = text;
         this.highlightMatches = highlightMatches;
         this.replaceMatches = replaceMatches;

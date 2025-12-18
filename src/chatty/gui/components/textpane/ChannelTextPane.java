@@ -16,6 +16,7 @@ import chatty.gui.MainGui;
 import chatty.User;
 import chatty.gui.Highlighter.Match;
 import chatty.gui.components.Channel;
+import chatty.gui.components.SimplePopup;
 import chatty.util.api.usericons.Usericon;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.userinfo.UserNotes;
@@ -151,9 +152,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         
         IS_BAN_MESSAGE, BAN_MESSAGE_COUNT, TIMESTAMP, USER, IS_USER_MESSAGE,
         URL_DELETED, DELETED_LINE, EMOTICON, IS_APPENDED_INFO, INFO_TEXT, BANS,
-        BAN_MESSAGE, ID, ID_AUTOMOD, AUTOMOD_ACTION, USERICON, IMAGE_ID, ANIMATED,
+        BAN_MESSAGE, MSG_ID, ID_AUTOMOD, AUTOMOD_ACTION, USERICON, IMAGE_ID, ANIMATED,
         APPENDED_INFO_UPDATED, MENTION, USERICON_INFO, USERICON_SHARED_INFO, GENERAL_LINK,
         REPEAT_MESSAGE_COUNT, LOW_TRUST_INFO, IS_RESTRICTED, POWER_UP_INFO,
+        
+        LINE_ID, LOCAL_USER,
         
         HIGHLIGHT_WORD, HIGHLIGHT_LINE, HIGHLIGHT_SOURCE, EVEN, PARAGRAPH_SPACING,
         CUSTOM_BACKGROUND, CUSTOM_BACKGROUND_ORIG, CUSTOM_FOREGROUND,
@@ -234,6 +237,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         linkController.addUserListener(lineSelection);
         linkController.setUserHoverListener(user -> setHoveredUser(user));
         linkController.setLinkListener(this);
+        linkController.setMainGui(main);
         scrollManager = new ScrollManager();
         this.addMouseListener(scrollManager);
         this.addMouseMotionListener(scrollManager);
@@ -658,7 +662,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             print(" "+hypeChatText+" ", styles.hypeChat(style, message.tags));
             print(" ", style);
         }
-        printUser(user, message.localUser, action, message.whisper, message.id, background, message.tags);
+        printUser(user, message.localUser, action, message.whisper, message.msgId, background, message.tags);
         
         // Change style for text if /me and no highlight (if enabled)
         if (!highlighted && color == null && action && styles.isEnabled(Setting.ACTION_COLORED)) {
@@ -677,6 +681,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         if (message.backgroundColor != null || message.color != null) {
             setCustomColor(getCurrentParagraphOffset(), message.backgroundColor, message.colorSource);
         }
+        setParagraphAttribute(getCurrentParagraphOffset(), Attribute.LINE_ID, message.lineId);
         finishLine();
         
         String powerUpInfo = message.tags.getPowerUpInfo();
@@ -768,6 +773,10 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             setParagraphAttribute(getCurrentParagraphOffset(), Attribute.ROUTING_SOURCE, message.routingSource);
             if (message.bgColor != null || message.color != null) {
                 setCustomColor(getCurrentParagraphOffset(), message.bgColor, message.colorSource);
+            }
+            setParagraphAttribute(getCurrentParagraphOffset(), Attribute.LINE_ID, message.lineId);
+            if (message.localUser != null) {
+                setParagraphAttribute(getCurrentParagraphOffset(), Attribute.LOCAL_USER, message.localUser);
             }
         }
     }
@@ -1387,11 +1396,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         return getUserFromLine(line) != null;
     }
     
-    private User getUserFromLine(Element line) {
+    public static User getUserFromLine(Element line) {
         return getUserFromElement(getUserElementFromLine(line, true), true);
     }
     
-    private Element getUserElementFromLine(Element line, boolean onlyUserMessage) {
+    public static Element getUserElementFromLine(Element line, boolean onlyUserMessage) {
         for (int i = 0; i < line.getElementCount(); i++) {
             Element element = line.getElement(i);
             User elementUser = getUserFromElement(element, onlyUserMessage);
@@ -1430,7 +1439,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
      * @param element
      * @return The User object or null if none was found
      */
-    private User getUserFromElement(Element element, boolean onlyUserMessage) {
+    private static User getUserFromElement(Element element, boolean onlyUserMessage) {
         if (element != null) {
             User elementUser = (User)element.getAttributes().getAttribute(Attribute.USER);
             Boolean isMessage = (Boolean)element.getAttributes().getAttribute(Attribute.IS_USER_MESSAGE);
@@ -1449,7 +1458,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
      */
     public static String getIdFromElement(Element element) {
         if (element != null) {
-            return (String)element.getAttributes().getAttribute(Attribute.ID);
+            return (String)element.getAttributes().getAttribute(Attribute.MSG_ID);
         }
         return null;
     }
@@ -2199,7 +2208,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         userStyle.addAttribute(Attribute.IS_USER_MESSAGE, true);
         userStyle.addAttribute(Attribute.USER, user);
         if (id != null) {
-            userStyle.addAttribute(Attribute.ID, id);
+            userStyle.addAttribute(Attribute.MSG_ID, id);
         }
 
         int length = userName.length();
@@ -3415,6 +3424,9 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         scrollManager.setScrollPane(scroll);
         scroll.getVerticalScrollBar().addAdjustmentListener(e -> {
             linkController.updatePopup();
+            if (linePopup != null) {
+                linePopup.update();
+            }
         });
     }
     
@@ -4416,7 +4428,7 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
             }
                     
             if (msgId != null) {
-                userStyle.addAttribute(Attribute.ID, msgId);
+                userStyle.addAttribute(Attribute.MSG_ID, msgId);
             }
             return userStyle;
         }
@@ -4674,9 +4686,33 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
         }
     }
     
+    public boolean hasLineId(long lineId) {
+        return getLineForId(lineId) != null;
+    }
+    
+    private Element getLineForId(long lineId) {
+        return findLineBy(line -> line.getAttributes().containsAttribute(Attribute.LINE_ID, lineId));
+    }
+    
+    private SimplePopup linePopup;
+    
+    public void scrollToLine(long lineId, String label) {
+        Element line = getLineForId(lineId);
+        if (line != null) {
+            try {
+                Rectangle rect = modelToView(line.getStartOffset());
+                if (rect != null) {
+                    rect.translate(0, -50);
+                    scrollRectToVisible(rect);
+                }
+                if (linePopup == null) {
+                    linePopup = new SimplePopup(this, () -> {});
+                }
+                linePopup.showPopup(label, line.getStartOffset(), 4000, SimplePopup.BorderStyle.REGULAR);
+            } catch (BadLocationException ex) {
+                LOGGER.warning("Bad Location");
+            }
+        }
+    }
+    
 }
-
-
-
-
-

@@ -33,9 +33,9 @@ public class UserMessage extends Message {
     public long historicTimeStamp;
     
     public UserMessage(User user, String text, Emoticons.TagEmotes emotes,
-            String id, int bits, List<Match> highlightMatches,
+            String msgId, int bits, List<Match> highlightMatches,
             List<Match> replaceMatches, String replacement, MsgTags tags) {
-        super(id, text, highlightMatches, replaceMatches, replacement);
+        super(msgId, text, highlightMatches, replaceMatches, replacement);
         this.user = user;
         this.emotes = emotes;
         this.bits = bits;
@@ -44,7 +44,7 @@ public class UserMessage extends Message {
     }
     
     public UserMessage copy() {
-        UserMessage result = new UserMessage(user, text, emotes, id, bits, highlightMatches, replaceMatches, replacement, tags);
+        UserMessage result = new UserMessage(user, text, emotes, msgId, bits, highlightMatches, replaceMatches, replacement, tags);
         result.color = color;
         result.backgroundColor = backgroundColor;
         result.whisper = whisper;
@@ -57,6 +57,7 @@ public class UserMessage extends Message {
         result.routingSource = routingSource;
         result.localUser = localUser;
         result.historicTimeStamp = historicTimeStamp;
+        result.lineId = lineId;
         return result;
     }
     

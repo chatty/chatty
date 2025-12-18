@@ -1463,6 +1463,22 @@ public class Channels {
         }
     }
     
+    public boolean hasLineId(String channel, long lineId) {
+        Channel chan = getExistingChannel(channel);
+        if (chan != null) {
+            return getExistingChannel(channel).hasLineId(lineId);
+        }
+        return false;
+    }
+    
+    public void scrollToLineId(String channel, long lineId, String label) {
+        switchToChannel(channel);
+        Channel chan = getExistingChannel(channel);
+        if (chan != null) {
+            chan.scrollToLine(lineId, label);
+        }
+    }
+    
     //==========================
     // Focus
     //==========================

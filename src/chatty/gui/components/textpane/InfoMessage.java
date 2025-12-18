@@ -50,6 +50,8 @@ public class InfoMessage {
     public final String text;
     public final MsgTags tags;
     
+    public final long lineId;
+    
     public boolean highlighted;
     private boolean hidden;
     public Color color;
@@ -70,6 +72,7 @@ public class InfoMessage {
         this.msgType = msgType;
         this.text = text;
         this.tags = tags;
+        lineId = Message.getLineId();
     }
     
     public InfoMessage(InfoMessage other) {
@@ -87,6 +90,7 @@ public class InfoMessage {
         routingSource = other.routingSource;
         objectId = other.objectId;
         localUser = other.localUser;
+        lineId = other.lineId;
     }
     
     public InfoMessage copy() {
