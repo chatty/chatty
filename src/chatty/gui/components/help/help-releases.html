@@ -78,10 +78,44 @@
     full list of changes.</p>
     
     <h2>
-        <a name="0.28">Version 0.28</a> <a name="latest">(This one!)</a> (2025-??-??)
+        <a name="0.28">Version 0.28</a> <a name="latest">(This one!)</a> (2025-12-19)
         <a href="#top" class="top">[back to top]</a>
     </h2>
-    <p>BETA, tbd.</p>
+    
+    <ul>
+        <li>Recognize lead moderator badge as moderator, added <code>status:L</code> prefix to match on lead moderators specifically</li>
+        <li>Added support for Points Redemptions in EventSub (only available for the broadcaster, see <a href="https://twitch.uservoice.com/forums/310213-developers/suggestions/43371027-allow-getting-realtime-updates-on-polls-prediction" rel="nofollow">UserVoice</a>)</li>
+        <li>Removed "Continue thread" from replies, changed how threads are detected. <strong>Note: Sending replies is now done with a new API so it requires a new access scope, so you need to re-auth.</strong></li>
+        <li>Shared Chat:
+            <ul>
+                <li>Added additional badge display options</li>
+                <li>Now showing mod actions from shared channels properly</li>
+            </ul>
+        </li>
+        <li>Custom Tabs:
+            <ul>
+                <li>Added option to display channel name in addition to channel logo (also shows channel name as fallback for not yet loaded channel logos)</li>
+                <li>Added context menu entry to go to source message</li>
+                <li>Changed Highlight/Ignore Dialogs to work the same as Custom Tabs in this regard</li>
+            </ul>
+        </li>
+        <li>Custom Commands:
+            <ul>
+                <li>Added various <code>$(stream...)</code> identifiers for live channels (capitalized names, stream id, uptime in seconds)</li>
+                <li>Added custom headers support to <code>$request()</code> function</li>
+            </ul>
+        </li>
+        <li>Notifications:
+            <ul>
+                <li>Added <code>ncat:</code> prefix (Notification Category), which can be used in Notifications to react only to specific Highlights that have the same <code>ncat:</code> category as a prefix</li>
+                <li>Added Sound Notifications setting to play sounds via system command as a workaround for playback issues</li>
+            </ul>
+        </li>
+        <li>Added setting to insert messages at the top</li>
+        <li>Added initial Text to Speech support (Windows only for now) for reading chat messages or triggered by Notifications</li>
+        <li>Updated help</li>
+    </ul>
+
     
     <h2>
         <a name="0.27">Version 0.27</a> (2025-04-13)
