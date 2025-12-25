@@ -53,13 +53,20 @@ def extractVersion = { ->
 
 version = extractVersion()
 
+def junit5Version = '5.7.2'
 dependencies {
     implementation fileTree(dir: 'assets/lib', include: ['*.jar'])
     implementation 'net.java.dev.jna:jna:5.12.1'
     implementation 'net.java.dev.jna:jna-platform:5.12.1'
     implementation 'com.formdev:flatlaf:3.2.5'
 
+    // Junit 4
     testImplementation 'junit:junit:4.12'
+    testImplementation "org.junit.vintage:junit-vintage-engine:${junit5Version}"
+    // JUnit 5
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junit5Version}"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:${junit5Version}"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:${junit5Version}"
 }
 
 // The wrapper is a small batch/bash script that can be used to run Gradle on machines where it hasn't been directly
@@ -115,6 +122,33 @@ task releaseZips(group: 'build') {
 // Builds the full project, runs the unit tests and packages the release zips.
 task release(group: 'build') {
     dependsOn releaseZips, build
+}
+
+test {
+    useJUnitPlatform() // enable JUnit 5
+
+    testLogging { // add stdout logging for running `./gradlew test`
+        lifecycle {
+            events 'failed'
+            exceptionFormat 'full'
+
+            afterSuite { description, result ->
+                if (!description.parent) { // will match the outermost suite
+                    def stats = "${result.testCount} tests run, ${result.successfulTestCount} successes, " +
+                        "${result.failedTestCount} failures, ${result.skippedTestCount} ignored"
+                    println('-' * stats.length())
+                    println("Testing result for ${project.name}: ${result.resultType}")
+                    println(stats)
+                    println('-' * stats.length())
+                }
+            }
+        }
+    }
+
+    reports {
+        junitXml.enabled = true
+        html.enabled = true // see ./build/reports/tests/test/index.html
+    }
 }
 
 //--------
