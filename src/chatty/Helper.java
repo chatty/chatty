@@ -64,6 +64,15 @@ public class Helper {
         public Collection<String> getNamesByCategory(String category);
         public boolean isStreamLive(String stream);
     }
+
+    private static boolean isValidChannel(String channel, ParseChannelHelper parseChannelHelper) {
+        boolean startsWithBracket = channel.startsWith("[");
+        boolean endsWithBracket = channel.endsWith("]");
+        boolean isLengthGreaterThanTwo = channel.length() > 2;
+        boolean hasNonNullParseChannelHelper = parseChannelHelper != null;
+
+        return startsWithBracket && endsWithBracket && isLengthGreaterThanTwo && hasNonNullParseChannelHelper;
+    }
     
     /**
      * Parses comma-separated channels from a String.
@@ -72,6 +81,7 @@ public class Helper {
      * @param prepend Whether to prepend # if necessary
      * @return Set of channels sorted as in the String
      */
+
     public static Set<String> parseChannelsFromString(String channels, boolean prepend) {
         String[] parts = channels.split(",");
         Set<String> result = new LinkedHashSet<>();
@@ -81,7 +91,7 @@ public class Helper {
             if (isValidChannel(channel)) {
                 addValidChannel(channel, prepend, result);
             }
-            else if (channel.startsWith("[") && channel.endsWith("]") && channel.length() > 2 && parseChannelHelper != null) {
+            else if (isValidChannel(channel, parseChannelHelper)) {
                 String[] catSplit = channel.substring(1, channel.length() - 1).split(" ");
                 String cat = catSplit[0];
                 boolean noChans = false;

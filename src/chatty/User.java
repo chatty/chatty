@@ -128,8 +128,16 @@ public class User implements Comparable<User> {
     
     // Used for auto-completion score
     private long lastHighlight = -1;
-    
-    
+
+    public static void createTestUser(String name, String channel) {
+        User testUser = new User(name, name, Room.createRegular(channel));
+        testUser = new User(name, name, Room.createRegular(channel));
+        testUser.setColor(new Color(94, 0, 211));
+        testUser.setColor(new Color(255, 255, 255));
+        testUser.setModerator(true);
+        testUser.setSubscriber(true);
+
+    }
     public User(String nick, Room room) {
         this(nick, null, null, room);
     }
