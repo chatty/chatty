@@ -50,7 +50,7 @@ public class SimpleCache {
     public void save(String data) {
         LOGGER.info(debugPrefix+" Cache: Trying to save..");
         try (BufferedWriter writer = Files.newBufferedWriter(file,CHARSET)) {
-            writer.write(new Long(System.currentTimeMillis() / 1000).toString()+"\n");
+            writer.write(Long.valueOf(System.currentTimeMillis() / 1000).toString()+"\n");
             writer.write(data);
             LOGGER.info(debugPrefix+" Cache: Saved");
         }
