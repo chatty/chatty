@@ -70,6 +70,16 @@
             on a specific user of the current channel (if available)</li>
     </ul>
     
+    <h3>Pinned Message</h3>
+    <p>You can view and edit the currently pinned message in the Channel Moderation
+        panel next to the input box.</p>
+    <ul>
+        <li><code>/pin &lt;text&gt;</code> - Sends a message and pins it to chat until the end of stream (replacing existing pinned message)</li>
+        <li><code>/pin -t &lt;duration&gt; &lt;text&gt;</code> - Same as <code>/pin</code>, but specify a duration, e.g. <code>15m</code> the pin stays active for</li>
+        <li><code>/pin -u [duration]</code> - Updates the pin duration for the currently pinned message (if no duration is given, until end of stream)</li>
+        <li><code>/pin -id &lt;msgid&gt; [duration]</code> - Pin a chat message by id (e.g. <code>Pin=/pin -id $(msg-id)</code> in User Context Menu)</li>
+        <li><code>/unpin</code> - Unpins the currently pinned message</li>
+    </ul>
     
     <h3><a name="commands-twitch">Other Twitch Commands</a></h3>
     <ul>

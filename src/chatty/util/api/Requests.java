@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import chatty.util.api.ResultManager.CategoryResult;
 import chatty.util.api.ResultManager.CreateClipResult;
+import chatty.util.api.ResultManager.PinnedMessageResult;
 import chatty.util.api.ResultManager.ShieldModeResult;
 import chatty.util.api.TokenInfo.Scope;
 import chatty.util.api.TwitchApi.SimpleRequestResult;
@@ -763,6 +764,60 @@ public class Requests {
                 default:
                     api.setError(requestId);
                     break;
+            }
+        });
+    }
+    
+    public void getPinnedMessage(String stream, String streamId, Consumer<PinnedMessage> optionalListener) {
+        String url = makeUrl("https://api.twitch.tv/helix/chat/pins",
+                             "broadcaster_id", streamId,
+                             "moderator_id", api.localUserId);
+        newApi.add(url, "GET", api.defaultToken, r -> {
+            switch (r.responseCode) {
+                case 200:
+                    PinnedMessage result = PinnedMessage.parse(stream, r.text);
+                    api.resultManager.inform(ResultManager.Type.PINNED_MESSAGE, (PinnedMessageResult m) -> m.result(stream, result));
+                    if (optionalListener != null) {
+                        optionalListener.accept(result);
+                    }
+                    break;
+                default:
+                    if (optionalListener != null) {
+                        optionalListener.accept(null);
+                    }
+            }
+        });
+    }
+    
+    public void updatePinnedMessage(String stream, String streamId, String msgId, long seconds, boolean update, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/chat/pins",
+                "broadcaster_id", streamId,
+                "moderator_id", api.localUserId,
+                "message_id", msgId,
+                "duration_seconds", String.valueOf(seconds));
+        if (seconds <= 0) {
+            url = makeUrl("https://api.twitch.tv/helix/chat/pins",
+                    "broadcaster_id", streamId,
+                    "moderator_id", api.localUserId,
+                    "message_id", msgId);
+        }
+        newApi.add(url, update ? "PATCH" : "PUT", api.defaultToken, r -> {
+            handleResult(r, listener);
+            if (r.responseCode == 204) {
+                getPinnedMessage(stream, streamId, null);
+            }
+        });
+    }
+    
+    public void deletePinnedMessage(String stream, String streamId, String msgId, SimpleRequestResultListener listener) {
+        String url = makeUrl("https://api.twitch.tv/helix/chat/pins",
+                "broadcaster_id", streamId,
+                "moderator_id", api.localUserId,
+                "message_id", msgId);
+        newApi.add(url, "DELETE", api.defaultToken, r -> {
+            handleResult(r, listener);
+            if (r.responseCode == 204) {
+                getPinnedMessage(stream, streamId, null);
             }
         });
     }

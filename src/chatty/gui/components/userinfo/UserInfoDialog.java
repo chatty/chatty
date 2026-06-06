@@ -5,6 +5,7 @@ import chatty.Helper;
 import chatty.User;
 import chatty.gui.GuiUtil;
 import chatty.gui.MainGui;
+import chatty.gui.components.ModerationPanel;
 import chatty.gui.components.menus.ContextMenuAdapter;
 import chatty.gui.components.menus.ContextMenuListener;
 import chatty.gui.components.menus.UserContextMenu;
@@ -50,6 +51,7 @@ public class UserInfoDialog extends JDialog {
 
     private final JButton closeButton = new JButton(Language.getString("dialog.button.close"));
     private final JCheckBox pinnedDialog = new JCheckBox(Language.getString("userDialog.setting.pin"));
+    private final JButton pinMessageButton = new JButton("Pin message");
     private final JButton notesButton = new JButton("Notes");
     private final JCheckBox singleMessage = new JCheckBox(SINGLE_MESSAGE_CHECK);
     private final BanReasons banReasons;
@@ -91,10 +93,7 @@ public class UserInfoDialog extends JDialog {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (settings.getBoolean("closeUserDialogOnAction")
-                        && !isPinned()) {
-                    dispose();
-                }
+                closeOnAction();
                 CustomCommand command = getCommand(e.getSource());
                 if (command == null) {
                     return;
@@ -140,9 +139,20 @@ public class UserInfoDialog extends JDialog {
         gbc.anchor = GridBagConstraints.WEST;
         topPanel.add(banReasons, gbc);
 
-        gbc = makeGbc(2, 1, 1, 1);
+        gbc = makeGbc(1, 1, 1, 1);
         gbc.weightx = 1;
         gbc.anchor = GridBagConstraints.EAST;
+        GuiUtil.smallButtonInsets(pinMessageButton);
+        pinMessageButton.addActionListener(e -> {
+            long pinDuration = ModerationPanel.showPinMessageDialog(this, settings, currentUser.getMessage(currentMsgId).text);
+            if (pinDuration != ModerationPanel.PIN_DIALOG_CANCEL && listener != null) {
+                listener.anonCustomCommand(currentUser.getRoom(), CustomCommand.parse(String.format("/pin -id $1 $2")), Parameters.create(currentMsgId+" "+pinDuration));
+                closeOnAction();
+            }
+        });
+        topPanel.add(pinMessageButton, gbc);
+        
+        gbc = makeGbc(2, 1, 1, 1);
         GuiUtil.smallButtonInsets(notesButton);
         notesButton.addActionListener(e -> {
             UserNotes.instance().showDialog(currentUser, this, user -> {
@@ -380,6 +390,13 @@ public class UserInfoDialog extends JDialog {
         setMinimumSize(getPreferredSize());
     }
     
+    private void closeOnAction() {
+        if (settings.getBoolean("closeUserDialogOnAction")
+                && !isPinned()) {
+            dispose();
+        }
+    }
+    
     private void setUser(User user, String msgId, String autoModMsgId, String localUsername, boolean opened) {
         if (currentUser != user) {
             currentUser = user;
@@ -397,6 +414,7 @@ public class UserInfoDialog extends JDialog {
         updateMessages();
         infoPanel.update(user);
         singleMessage.setEnabled(currentMsgId != null);
+        pinMessageButton.setEnabled(currentMsgId != null);
         if (opened) {
             /**
              * Prevent the buttons from being added/removed at bad times (for

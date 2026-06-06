@@ -26,7 +26,8 @@ public class ResultManager {
     public enum Type {
         CATEGORY_RESULT(CategoryResult.class),
         SHIELD_MODE_RESULT(ShieldModeResult.class),
-        CREATE_CLIP(CreateClipResult.class);
+        CREATE_CLIP(CreateClipResult.class),
+        PINNED_MESSAGE(PinnedMessageResult.class);
         
         private final Class c;
         
@@ -86,6 +87,10 @@ public class ResultManager {
     
     public interface CreateClipResult {
         public void result(String editUrl, String viewUrl, String error);
+    }
+    
+    public interface PinnedMessageResult {
+        public void result(String stream, PinnedMessage msg);
     }
     
     public static void main(String[] args) {

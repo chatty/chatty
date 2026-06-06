@@ -4,6 +4,7 @@ package chatty;
 import chatty.Commands.Command;
 import chatty.gui.MainGui;
 import chatty.gui.UrlOpener;
+import chatty.gui.components.ModerationPanel;
 import chatty.lang.Language;
 import chatty.util.DateTime;
 import chatty.util.RecentlyAffectedUsers;
@@ -299,6 +300,103 @@ public class TwitchCommands {
             channelCommand(client, p, p.parsedArgs(1, 0), listener -> {
                 api.setShieldMode(p.getRoom(), false, listener);
             });
+        });
+        commands.add("pin", p -> {
+            Commands.CommandParsedArgs options = p.parsedArgs(0, 0);
+            // Pin by id
+            if (options.hasOption("id")) {
+                Commands.CommandParsedArgs args = p.parsedArgs(2, 1);
+                if (args != null) {
+                    long durationSeconds = DateTime.parseDurationSeconds(args.get(1, null));
+                    channelCommand(client, p, args, listener -> {
+                               api.pinMessage(p.getRoom(), args.get(0), durationSeconds, listener);
+                           }, () -> "Pinning chat message "+(durationSeconds > 0 ? "for" : "until")+" " + ModerationPanel.formatPinnedDuration(durationSeconds));
+                }
+            }
+            // Update existing pin (directly with id)
+            else if (options.hasOption("ud")) {
+                Commands.CommandParsedArgs args = p.parsedArgs(2, 1);
+                if (args != null) {
+                    long durationSeconds = DateTime.parseDurationSeconds(args.get(1, null));
+                    channelCommand(client, p, args, listener -> {
+                               api.updatePinnedMessage(p.getRoom(), args.get(0), durationSeconds, listener);
+                           }, () -> "Updating pin duration to " + ModerationPanel.formatPinnedDuration(durationSeconds));
+                }
+            }
+            // Updating existing pin (request current pin first)
+            else if (options.hasOption("u")) {
+                Commands.CommandParsedArgs args = p.parsedArgs(0, 0);
+                long durationSeconds = DateTime.parseDurationSeconds(p.getArgs());
+                api.requestPinnedMessage(p.getRoom().getStream(), msg -> {
+                    if (msg != null) {
+                        channelCommand(client, p, args, listener -> {
+                           api.updatePinnedMessage(p.getRoom(), msg.msgId, durationSeconds, listener);
+                       }, () -> "Updating pin duration to " + ModerationPanel.formatPinnedDuration(durationSeconds));
+                    }
+                    else {
+                        client.g.printLine(p.getRoom(), "No pinned message found.");
+                    }
+                });
+            }
+            // Send new message to be pinned
+            else {
+                Commands.CommandParsedArgs args;
+                String msgText;
+                long msgDuration;
+                
+                if (options.hasOption("t")) {
+                    args = p.parsedArgs(2, 2);
+                    if (args != null) {
+                        msgText = args.get(1);
+                        msgDuration = DateTime.parseDurationSeconds(args.get(0));
+                    }
+                    else {
+                        client.g.printLine(p.getRoom(), "Invalid parameters");
+                        return;
+                    }
+                }
+                else {
+                    args = p.parsedArgs(1, 1);
+                    if (args != null) {
+                        msgText = args.get(0);
+                        msgDuration = 0;
+                    }
+                    else {
+                        client.g.printLine(p.getRoom(), "Invalid parameters");
+                        return;
+                    }
+                }
+                api.sendChatMessage(p.getRoom().getStream(), msgText, null, r -> {
+                                if (r.wasSent && r.msgId != null) {
+                                    channelCommand(client, p, args, listener -> {
+                                               api.pinMessage(p.getRoom(), r.msgId, msgDuration, listener);
+                                           }, () -> "Pinning new message "+(msgDuration > 0 ? "for" : "until")+" " + ModerationPanel.formatPinnedDuration(msgDuration));
+                                }
+                                else {
+                                    client.g.printLine(p.getRoom(), "Failed sending message: " + r.dropReasonMessage);
+                                }
+                            });
+            }
+        });
+        commands.add("unpin", p -> {
+            Commands.CommandParsedArgs args = p.parsedArgs(1, 0);
+            if (args != null && !args.get(0).isEmpty()) {
+                channelCommand(client, p, args, listener -> {
+                           api.deletePinnedMessage(p.getRoom(), args.get(0), listener);
+                       });
+            }
+            else {
+                api.requestPinnedMessage(p.getRoom().getStream(), msg -> {
+                    if (msg != null) {
+                        channelCommand(client, p, args, listener -> {
+                           api.deletePinnedMessage(p.getRoom(), msg.msgId, listener);
+                       });
+                    }
+                    else {
+                        client.g.printLine(p.getRoom(), "No pinned message found.");
+                    }
+                });
+            }
         });
         //--------------------------
         // User Settings

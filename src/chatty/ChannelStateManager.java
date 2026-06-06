@@ -1,6 +1,7 @@
 
 package chatty;
 
+import chatty.util.api.PinnedMessage;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -113,6 +114,12 @@ public class ChannelStateManager {
     
     public void setEmoteOnly(String channel, boolean enabled) {
         if (getState(channel).setEmoteOnly(enabled)) {
+            updated(channel);
+        }
+    }
+    
+    public void setPinnedMessage(String channel, PinnedMessage msg) {
+        if (getState(channel).setPinnedMessage(msg)) {
             updated(channel);
         }
     }

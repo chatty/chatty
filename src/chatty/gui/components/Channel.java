@@ -15,13 +15,16 @@ import chatty.gui.components.menus.TextSelectionMenu;
 import chatty.gui.components.textpane.ChannelTextPane;
 import chatty.gui.components.textpane.InfoMessage;
 import chatty.gui.components.textpane.Message;
+import chatty.util.ElapsedTime;
 import chatty.util.StringUtil;
 import chatty.util.api.AccessChecker;
 import chatty.util.api.TokenInfo;
 import chatty.util.api.eventsub.payloads.SuspiciousMessagePayload;
+import chatty.util.colors.ColorCorrectionNew;
 import chatty.util.commands.CustomCommand;
 import chatty.util.commands.Parameters;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -29,13 +32,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.Popup;
-import javax.swing.PopupFactory;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.text.JTextComponent;
 
@@ -72,7 +76,7 @@ public final class Channel extends JPanel {
     private Room room;
     
     private ModerationPanel modPanel;
-    private Popup modPanelPopup;
+    private JDialog modPanelPopup;
     private final JButton modPanelButton;
 
     public Channel(final Room room, Type type, MainGui main, StyleManager styleManager,
@@ -120,8 +124,8 @@ public final class Channel extends JPanel {
         inputPanel = new JPanel(new BorderLayout());
         inputPanel.add(input, BorderLayout.CENTER);
         
-        modPanelButton = new JButton("M");
-        modPanelButton.setToolTipText("Channel Modes");
+        modPanelButton = new JButton();
+        modPanelButton.setToolTipText("Channel Moderation Settings");
         modPanelButton.setVisible(false);
         inputPanel.add(modPanelButton, BorderLayout.EAST);
         modPanelButton.addActionListener(e -> {
@@ -137,16 +141,14 @@ public final class Channel extends JPanel {
         boolean hasAccess = AccessChecker.isModerator(room.getChannel(), TokenInfo.Scope.MANAGE_CHAT);
         modPanelButton.setVisible(hasAccess);
         
-        // Not sure if this looks good
-//        Usericon icon = main.client.usericonManager.getIcon(Usericon.Type.TWITCH, "moderator", "1", main.client.getLocalUser(room.getChannel()), MsgTags.EMPTY);
-//        if (icon != null) {
-//            int height = input.getFontMetrics(input.getFont()).getHeight();
-//            modPanelButton.setIcon(icon.getIcon(2f, 2, height, (oldImage, newImage, sizeChanged) -> {
-//                     modPanelButton.repaint();
-//                 }).getImageIcon());
-//            modPanelButton.setText(null);
-//            modPanelButton.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-//        }
+        if (hasAccess && modPanelButton.getIcon() == null) {
+            int height = input.getFontMetrics(input.getFont()).getHeight();
+            ImageIcon icon = new ImageIcon(ModerationPanel.class.getResource("sword.png"));
+            Color foreground = modPanelButton.getForeground();
+            icon = GuiUtil.substituteColor(icon, Color.WHITE, ColorCorrectionNew.offset(foreground, ColorCorrectionNew.getLightness(foreground) < 180 ? 0.75f : 0.9f));
+            icon = GuiUtil.getScaledIcon(icon, height, height);
+            modPanelButton.setIcon(icon);
+        }
     }
     
     public void updateModPanel() {
@@ -158,10 +160,13 @@ public final class Channel extends JPanel {
     
     public void closeModPanel() {
         if (modPanelPopup != null) {
-            modPanelPopup.hide();
+            modPanelPopup.dispose();
             modPanelPopup = null;
         }
     }
+    
+    private final ElapsedTime refreshedPinnedMessage = new ElapsedTime();
+    
     private void openModPanel() {
         if (modPanelPopup != null) {
             closeModPanel();
@@ -192,17 +197,23 @@ public final class Channel extends JPanel {
 
             });
         }
+        if (refreshedPinnedMessage.secondsElapsed(30)) {
+            main.anonCustomCommand(room, CustomCommand.parse("/refresh pinnedMessage"), Parameters.create(""));
+            refreshedPinnedMessage.set();
+        }
         updateModPanel();
         Point inputLocation = input.getLocationOnScreen();
-        Dimension panelSize = modPanel.getPreferredSize();
         int buttonWidth = modPanelButton.getSize().width;
-        Popup popup = PopupFactory.getSharedInstance().getPopup(
-                input,
-                modPanel,
-                inputLocation.x + input.getWidth() - panelSize.width + buttonWidth,
-                inputLocation.y - panelSize.height);
-        popup.show();
-        modPanelPopup = popup;
+        // Use this instead of Popup now so you can TAB through it and child dialogs are in front
+        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(input));
+        GuiUtil.installEscapeCloseOperation(dialog);
+        dialog.add(modPanel, BorderLayout.CENTER);
+        dialog.setUndecorated(true);
+        dialog.pack();
+        Dimension panelSize = dialog.getPreferredSize();
+        dialog.setLocation(inputLocation.x + input.getWidth() - panelSize.width + buttonWidth, inputLocation.y - panelSize.height);
+        dialog.setVisible(true);
+        modPanelPopup = dialog;
     }
     
     /**

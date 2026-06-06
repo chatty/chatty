@@ -3,6 +3,7 @@ package chatty;
 
 import chatty.util.DateTime;
 import chatty.util.StringUtil;
+import chatty.util.api.PinnedMessage;
 
 /**
  * Holds the state for a single channel, like slowmode, submode and so on.
@@ -36,6 +37,8 @@ public class ChannelState {
     private int followersOnly = -1;
     
     private boolean shieldMode;
+    
+    private PinnedMessage pinnedMessage;
     
     /**
      * Cached info text based on the current state.
@@ -73,6 +76,9 @@ public class ChannelState {
             changed = true;
         }
         if (setShieldMode(false)) {
+            changed = true;
+        }
+        if (setPinnedMessage(null)) {
             changed = true;
         }
         return changed;
@@ -167,6 +173,20 @@ public class ChannelState {
     
     public synchronized boolean shieldMode() {
         return shieldMode;
+    }
+    
+    public synchronized boolean setPinnedMessage(PinnedMessage msg) {
+        if (msg != pinnedMessage
+                && (msg == null || !msg.equals(pinnedMessage))) {
+            pinnedMessage = msg;
+            updateInfo();
+            return true;
+        }
+        return false;
+    }
+    
+    public synchronized PinnedMessage pinnedMessage() {
+        return pinnedMessage;
     }
     
     public synchronized boolean setLang(String lang) {

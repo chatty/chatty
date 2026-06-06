@@ -790,4 +790,32 @@ public class TwitchApi {
         requests.getEventSubSubs(null, listener, null);
     }
     
+    public void requestPinnedMessage(String stream, Consumer<PinnedMessage> optionalListener) {
+        userIDs.getUserIDsAsap(r -> {
+            if (r.hasError()) {
+                resultListener.errorMessage("Failed to resolve channel id");
+            } else {
+                requests.getPinnedMessage(stream, r.getId(stream), optionalListener);
+            }
+        }, stream);
+    }
+    
+    public void pinMessage(Room room, String msgId, long durationSeconds, SimpleRequestResultListener listener) {
+        runWithStreamId(room, listener, streamId -> {
+            requests.updatePinnedMessage(room.getStream(), streamId, msgId, durationSeconds, false, listener);
+        });
+    }
+    
+    public void updatePinnedMessage(Room room, String msgId, long durationSeconds, SimpleRequestResultListener listener) {
+        runWithStreamId(room, listener, streamId -> {
+            requests.updatePinnedMessage(room.getStream(), streamId, msgId, durationSeconds, true, listener);
+        });
+    }
+    
+    public void deletePinnedMessage(Room room, String msgId, SimpleRequestResultListener listener) {
+        runWithStreamId(room, listener, streamId -> {
+            requests.deletePinnedMessage(room.getStream(), streamId, msgId, listener);
+        });
+    }
+    
 }
