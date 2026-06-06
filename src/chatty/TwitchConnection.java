@@ -1170,6 +1170,11 @@ public class TwitchConnection {
                 listener.onUsernotice("Usernotice", user, text, null, tags);
             } else if (tags.isValueOf("msg-id", "announcement")) {
                 listener.onUsernotice("Announcement", user, text, message, tags);
+            } else if (tags.isValueOf("msg-id", "modiversary")) {
+                if (text.startsWith("has been a moderator")) {
+                    text = user.getDisplayNick()+" "+text;
+                }
+                listener.onUsernotice("Usernotice", user, text, message, tags);
             } else {
                 // Just output like this if unknown, since Twitch keeps adding
                 // new messages types for this

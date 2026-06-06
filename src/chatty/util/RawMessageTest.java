@@ -237,6 +237,9 @@ public class RawMessageTest {
         if (type.equals("sharedsub")) {
             return "@badges=moderator/1,subscriber/36,turbo/1;color=#0000FF;display-name=USER;emotes=;flags=;id=1234;source-id=abcd;login=user;mod=1;msg-id=sharedchatnotice;source-msg-id=resub;msg-param-cumulative-months=45;msg-param-cumulative-tenure-months=45;msg-param-months=0;msg-param-should-share-streak-tenure=false;msg-param-should-share-streak=0;msg-param-sub-plan-name=CHANNEL\\sSub;msg-param-sub-plan=Prime;room-id=123;source-room-id=12826;subscriber=1;system-msg=USER\\sSubscribed\\swith\\sTwitch\\sPrime.;turbo=1;user-id=123;user-type=mod :tmi.twitch.tv USERNOTICE "+channel+" :Abc";
         }
+        if (type.equals("modanniversary")) {
+            return "@badge-info=;badges=moderator/1,glitchcon2020/1;color=#008080;display-name=Test;emotes=;flags=;id=1234;login=test;mod=1;msg-id=modiversary;msg-param-months=24;room-id=1234;subscriber=0;system-msg=has\\sbeen\\sa\\smoderator\\sfor\\s24\\smonths!;tmi-sent-ts=1234;user-id=1234;user-type=mod;vip=0 :tmi.twitch.tv USERNOTICE "+channel+" :I'm celebrating my 2 year Mod Anniversary!";
+        }
         if (type.equals("custom")) {
             String[] parts = options.split("&");
             String badges = parts[0];
