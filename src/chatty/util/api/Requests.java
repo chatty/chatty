@@ -773,6 +773,7 @@ public class Requests {
                              "broadcaster_id", streamId,
                              "moderator_id", api.localUserId);
         newApi.add(url, "GET", api.defaultToken, r -> {
+            // Must not return null
             switch (r.responseCode) {
                 case 200:
                     PinnedMessage result = PinnedMessage.parse(stream, r.text);
@@ -782,8 +783,14 @@ public class Requests {
                     }
                     break;
                 default:
+                    String error = getErrorMessage(r.errorText);
+                    if (error == null) {
+                        error = "Request error code "+r.responseCode;
+                    }
+                    PinnedMessage errorResult = new PinnedMessage(error);
+                    api.resultManager.inform(ResultManager.Type.PINNED_MESSAGE, (PinnedMessageResult m) -> m.result(stream, errorResult));
                     if (optionalListener != null) {
-                        optionalListener.accept(null);
+                        optionalListener.accept(errorResult);
                     }
             }
         });
