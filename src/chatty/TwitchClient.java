@@ -1643,6 +1643,27 @@ public class TwitchClient {
             commandAddStreamMarker(p.getRoom(), p.getArgs());
         });
         commands.add("createClip", p -> {
+            Commands.CommandParsedArgs option = p.parsedArgs(0,0);
+            String title = null;
+            long durationSeconds = -1;
+            Commands.CommandParsedArgs args;
+            if (option.hasOption("t")) {
+                args = p.parsedArgs(2,1);
+                if (args != null) {
+                    durationSeconds = DateTime.parseDurationSeconds(args.get(0, null));
+                    title = args.get(1, null);
+                }
+                if (args == null || durationSeconds <= 0) {
+                    g.printLine(p.getRoom(), "Invalid parameters: /createClip [-t <duration>] [<title>]");
+                    return;
+                }
+            }
+            else {
+                args = p.parsedArgs(1,0);
+                if (args != null) {
+                    title = args.get(0, null);
+                }
+            }
             api.subscribe(ResultManager.Type.CREATE_CLIP, commands, (CreateClipResult) (editUrl, viewUrl, error) -> {
                 if (error != null) {
                     g.printLine(p.getRoom(), error);
@@ -1654,7 +1675,7 @@ public class TwitchClient {
                     g.printInfo(p.getRoom(), "Clip created (Edit Clip): "+viewUrl, tags);
                 }
             });
-            api.createClip(p.getRoom().getStream());
+            api.createClip(p.getRoom().getStream(), title, durationSeconds);
         });
         c.addNewCommands(commands, this);
         commands.add("addStreamHighlight", p -> {
