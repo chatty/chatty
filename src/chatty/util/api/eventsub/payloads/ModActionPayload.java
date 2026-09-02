@@ -331,7 +331,7 @@ public class ModActionPayload extends Payload {
                     return String.format("BlockedTerm: %s",
                                          StringUtil.join(result, ","));
             }
-            return JSONUtil.getString(event, "category");
+            return JSONUtil.getString(event, "reason");
         }
         
         private String getFragment(JSONObject boundary) {
@@ -369,7 +369,7 @@ public class ModActionPayload extends Payload {
         
         @Override
         public boolean isValid() {
-            return !StringUtil.isNullOrEmpty(getMsgId(), getReason(), getUsername(), action);
+            return !StringUtil.isNullOrEmpty(getMsgId(), getMessage(), getUsername(), action);
         }
         
     }
