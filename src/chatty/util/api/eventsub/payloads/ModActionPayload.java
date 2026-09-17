@@ -334,6 +334,8 @@ public class ModActionPayload extends Payload {
                     }
                     return String.format("BlockedTerm: %s",
                                          StringUtil.join(result, ","));
+                case "blocked_link":
+                    return "BlockedLink";
             }
             return reason;
         }
