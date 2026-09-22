@@ -333,7 +333,9 @@ public class ModerationPanel extends JPanel {
             setResizable(false);
             setTitle(pinSelected ? "Pin message?" : "Edit pinned message");
             
-            msg = new JTextArea(3, 30);
+            msg = new JTextArea(5, 30);
+            msg.setLineWrap(true);
+            msg.setWrapStyleWord(true);
             msg.setEditable(!pinSelected);
             duration = new PresetsComboSetting<>(parent, settings, "pinnedMsgDurations", s -> {
                                              return DateTime.parseDurationSeconds(s);
@@ -405,6 +407,7 @@ public class ModerationPanel extends JPanel {
                     duration.setSelectedValue((((pinnedMsg.endsAt - System.currentTimeMillis()) / 1000) / 60) * 60);
                 }
             }
+            pack();
             applyChanges = false;
             setVisible(true);
             // Possible OK button pressed
