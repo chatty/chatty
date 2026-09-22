@@ -42,7 +42,7 @@ public class StyleManager implements StyleServer {
             "lineSpacing", "bufferSize", "actionColored","combineBanMessages",
             "timestampTimezone", "autoScrollTimeout", "searchResultColor2",
             "inputFont","emoteScale", "emoteMaxHeight", "usericonScale",
-            "emoteScaleGigantified",
+            "emoteScaleGigantified", "chatGifsMaxHeight", "chatGifsEnabled",
             "customUsericonScaleMode", "botBadgeEnabled",
             "filterCombiningCharacters", "pauseChatOnMouseMove",
             "pauseChatOnMouseMoveCtrlRequired",
@@ -203,6 +203,8 @@ public class StyleManager implements StyleServer {
         addLongSetting(Setting.EMOTICON_SCALE_FACTOR, "emoteScale");
         addLongSetting(Setting.EMOTICON_MAX_HEIGHT, "emoteMaxHeight");
         addLongSetting(Setting.EMOTICON_SCALE_FACTOR_GIGANTIFIED, "emoteScaleGigantified");
+        addBooleanSetting(Setting.CHATGIFS_ENABLED, "chatGifsEnabled");
+        addLongSetting(Setting.CHATGIFS_MAX_HEIGHT, "chatGifsMaxHeight");
         addLongSetting(Setting.USERICON_SCALE_FACTOR, "usericonScale");
         addLongSetting(Setting.CUSTOM_USERICON_SCALE_MODE, "customUsericonScaleMode");
         addBooleanSetting(Setting.USERICONS_ENABLED, "usericonsEnabled");

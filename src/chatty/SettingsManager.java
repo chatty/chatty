@@ -275,6 +275,9 @@ public class SettingsManager {
         settings.addList("localEmotes", new ArrayList(), Setting.LIST);
         settings.addBoolean("webp", true);
         
+        settings.addBoolean("chatGifsEnabled", true);
+        settings.addLong("chatGifsMaxHeight", 140);
+        
         settings.addString("emoji", "twemoji");
         settings.addBoolean("emojiReplace", true);
         settings.addLong("emojiZWJ", 2);

@@ -211,6 +211,7 @@ public class Emoticons {
             for (Set<Emoticon> emotes : streamEmoticons.values()) {
                 removedCount += clearOldEmoticonImages(emotes, imageExpireMinutes);
             }
+            removedCount += clearOldChatGifImages(imageExpireMinutes);
             LOGGER.info(String.format("Cleared %d unused emoticon images (%dm)",
                     removedCount, imageExpireMinutes));
         });
@@ -1372,6 +1373,25 @@ public class Emoticons {
             return new CombinedIterator<>(twitch, other);
         }
         
+    }
+    
+    private final Map<String, ChatGif> chatGifs = new HashMap<>();
+    
+    public ChatGif getCachedChatGif(ChatGif gif) {
+        ChatGif result = chatGifs.get(gif.id);
+        if (result == null) {
+            chatGifs.put(gif.id, gif);
+            result = gif;
+        }
+        return result;
+    }
+    
+    private int clearOldChatGifImages(int imageExpireMinutes) {
+        int removedCount = 0;
+        for (ChatGif gif : chatGifs.values()) {
+            removedCount += gif.clearOldImages(imageExpireMinutes);
+        }
+        return removedCount;
     }
     
 }

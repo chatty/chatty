@@ -1,6 +1,7 @@
 
 package chatty.util.gif;
 
+import chatty.util.ImageCache;
 import chatty.util.ImageCache.ImageRequest;
 import chatty.util.ImageCache.ImageResult;
 import chatty.util.settings.Settings;
@@ -43,6 +44,7 @@ public class GifUtil {
     public static ImageResult getGifFromUrl(ImageRequest request) throws Exception {
         ImageResult result = null;
         URLConnection c = request.getLoadFromURL().openConnection();
+        ImageCache.setRequestImageTypes(c);
         try (InputStream input = c.getInputStream()) {
             // Use readAllBytes() because GifDecoder doesn't handle streams well
             byte[] imageData = readAllBytes(input);

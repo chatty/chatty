@@ -62,7 +62,7 @@ class MyParagraphView extends ParagraphView {
         super.insertUpdate(e, a, f);
         resetBreakSpots();
     }
-
+    
     private void resetBreakSpots() {
         for (int i = 0; i < layoutPool.getViewCount(); i++) {
             View v = layoutPool.getView(i);
@@ -106,5 +106,5 @@ class MyParagraphView extends ParagraphView {
         System.out.println("ALIGNMENT"+super.getAlignment(Y_AXIS));
         return super.getAlignment(axis);
     }
-    
+
 }
