@@ -292,7 +292,11 @@ public class ModActionPayload extends Payload {
         }
 
         public String getReason() {
-            switch (JSONUtil.getString(event, "reason")) {
+            String reason = JSONUtil.getString(event, "reason");
+            if (reason == null) {
+                return "";
+            }
+            switch (reason) {
                 case "automod":
                     JSONObject automod = JSONUtil.getOrEmpty(event, "automod");
                     String category = JSONUtil.getString(automod, "category");
@@ -330,8 +334,10 @@ public class ModActionPayload extends Payload {
                     }
                     return String.format("BlockedTerm: %s",
                                          StringUtil.join(result, ","));
+                case "blocked_link":
+                    return "BlockedLink";
             }
-            return JSONUtil.getString(event, "category");
+            return reason;
         }
         
         private String getFragment(JSONObject boundary) {
@@ -369,7 +375,7 @@ public class ModActionPayload extends Payload {
         
         @Override
         public boolean isValid() {
-            return !StringUtil.isNullOrEmpty(getMsgId(), getReason(), getUsername(), action);
+            return !StringUtil.isNullOrEmpty(getMsgId(), getMessage(), getUsername(), action);
         }
         
     }

@@ -240,6 +240,12 @@ public class RawMessageTest {
         if (type.equals("modanniversary")) {
             return "@badge-info=;badges=moderator/1,glitchcon2020/1;color=#008080;display-name=Test;emotes=;flags=;id=1234;login=test;mod=1;msg-id=modiversary;msg-param-months=24;room-id=1234;subscriber=0;system-msg=has\\sbeen\\sa\\smoderator\\sfor\\s24\\smonths!;tmi-sent-ts=1234;user-id=1234;user-type=mod;vip=0 :tmi.twitch.tv USERNOTICE "+channel+" :I'm celebrating my 2 year Mod Anniversary!";
         }
+        if (type.equals("gif")) {
+            return "@badge-info=;badges=twitchcon2018/1;color=#9146FF;display-name=Test;emotes=;first-msg=0;flags=;gifs=0-43|l1AsJYjSxCcslp3Vu|https://media4.giphy.com/media/l1AsJYjSxCcslp3Vu/giphy.gif?cid=095d7a5d2hfstidos4gdmzftw987c5bxkd27qy6ayechjslo&ep=v1_gifs_search&rid=giphy.gif&ct=g;id=1234;mod=0;returning-chatter=0;room-id=1234;subscriber=0;tmi-sent-ts=1234;turbo=0;user-id=1234;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :[Season 1 Test GIF by SpongeBob SquarePants]";
+        }
+        if (type.equals("gif2")) {
+            return "@badge-info=;badges=;color=#0000FF;display-name=Test;emotes=;first-msg=0;flags=;gifs=0-21|G31qDpgbdpFPnGInD2|https://media3.giphy.com/media/G31qDpgbdpFPnGInD2/giphy.gif?cid=095d7a5dkuedhdgawwv3skg52aonktjas1hd02yt1nur859s&ep=v1_gifs_trending&rid=giphy.gif&ct=g;id=1234;mod=0;returning-chatter=0;room-id=1234;subscriber=0;tmi-sent-ts=1234;turbo=0;user-id=1234;user-type= :test!test@test.tmi.twitch.tv PRIVMSG "+channel+" :[Sad Wait GIF by DAZN]";
+        }
         if (type.equals("custom")) {
             String[] parts = options.split("&");
             String badges = parts[0];

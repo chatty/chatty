@@ -441,6 +441,7 @@ public class ImageCache {
     private static boolean saveFile(URL url, Path file) {
         try {
             URLConnection c = url.openConnection();
+            setRequestImageTypes(c);
             try (InputStream is = c.getInputStream()) {
                 long written = Files.copy(is, file, StandardCopyOption.REPLACE_EXISTING);
                 if (written > 0) {
@@ -451,6 +452,15 @@ public class ImageCache {
             LOGGER.warning("Error saving " + url + " to " + file + ": " + ex);
         }
         return false;
+    }
+    
+    /**
+     * Giphy URLs provided by Twitch Chat would return the website without this.
+     * 
+     * @param c The connection used to load the image
+     */
+    public static void setRequestImageTypes(URLConnection c) {
+        c.addRequestProperty("Accept", "image/webp,image/png,image/gif");
     }
     
     private static ImageResult getImageFromFile(Path file, ImageRequest request) {
@@ -518,8 +528,8 @@ public class ImageCache {
      */
     public static class ImageRequest {
         
-        public static final int MAX_SCALED_WIDTH = 250;
-        public static final int MAX_SCALED_HEIGHT = 150;
+        public static final int MAX_SCALED_WIDTH = 350;
+        public static final int MAX_SCALED_HEIGHT = 350;
         
         public final int urlFactor;
         public final int maxHeight;
