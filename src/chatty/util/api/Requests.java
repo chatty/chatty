@@ -471,9 +471,20 @@ public class Requests {
         });
     }
     
-    public void createClip(String userId) {
+    public void createClip(String userId, String title, long duration) {
         String url = makeUrl("https://api.twitch.tv/helix/clips",
                              "broadcaster_id", userId);
+        if (!StringUtil.isNullOrEmpty(title)) {
+            try {
+                url += "&title="+URLEncoder.encode(title, "UTF-8");
+            }
+            catch (UnsupportedEncodingException ex) {
+                LOGGER.log(Level.SEVERE, null, ex);
+            }
+        }
+        if (duration > 0) {
+            url += "&duration="+duration;
+        }
         newApi.add(url, "POST", api.defaultToken, r -> {
             String error = null;
             if (r.responseCode == 202) {
@@ -493,9 +504,9 @@ public class Requests {
                 error = "Creating clip failed: Check access under 'Main - Account'";
             }
             else {
-                String errorMsg = getErrorMessage(r.text);
+                String errorMsg = getErrorMessage(r.errorText);
                 if (errorMsg != null) {
-                    error = errorMsg;
+                    error = "Creating clip failed: " + errorMsg;
                 }
                 else {
                     error = "Creating clip failed";

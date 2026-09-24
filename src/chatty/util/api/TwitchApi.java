@@ -533,12 +533,12 @@ public class TwitchApi {
         }, stream);
     }
     
-    public void createClip(String stream) {
+    public void createClip(String stream, String title, long duration) {
         userIDs.getUserIDsAsap(r -> {
             if (r.hasError()) {
                 resultManager.inform(ResultManager.Type.CREATE_CLIP, (CreateClipResult l) -> l.result(null, null, "Failed to resolve channel id"));
             } else {
-                requests.createClip(r.getId(stream));
+                requests.createClip(r.getId(stream), title, duration);
             }
         }, stream);
     }
