@@ -265,6 +265,9 @@ public class EmoteSettings extends SettingsPanel {
         localEmoteSettings.add(localEmotesButton,
                 d.makeGbc(0, 1, 2, 1, GridBagConstraints.WEST));
         
+        //==========================
+        // GIF Keyboard
+        //==========================
         JPanel chatGifSettings = addTitledPanel(Language.getString("settings.section.chatGifs"), 4);
         
         chatGifSettings.add(d.addSimpleBooleanSetting("chatGifsEnabled"),

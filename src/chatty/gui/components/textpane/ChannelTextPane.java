@@ -694,7 +694,11 @@ public class ChannelTextPane extends JTextPane implements LinkListener, CachedIm
          */
         if (chatGifAdded) {
             SimpleAttributeSet attr = new SimpleAttributeSet();
-            float reduceFactor = Math.min(42f / styles.getInt(Setting.CHATGIFS_MAX_HEIGHT),1);
+            int maxHeight = styles.getInt(Setting.CHATGIFS_MAX_HEIGHT);
+            if (maxHeight <= 0) {
+                maxHeight = 350; // Assumed large max height
+            }
+            float reduceFactor = Math.min(42f / maxHeight,1);
             StyleConstants.setLineSpacing(attr, Math.max(StyleConstants.getLineSpacing(styles.paragraph()) * reduceFactor, 0));
             doc.setParagraphAttributes(getCurrentParagraphOffset(), 1, attr, false);
         }

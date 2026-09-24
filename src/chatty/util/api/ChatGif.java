@@ -53,7 +53,7 @@ public class ChatGif {
                 }
             }, "chatgif");
         }
-        return images.getIcon(-1, maxHeight, null, CachedImage.ImageType.TEMP, null, user);
+        return images.getIcon(-1, maxHeight, null, CachedImage.ImageType.ANIMATED_DARK, null, user);
     }
     
     public int clearOldImages(int imageExpireMinutes) {
