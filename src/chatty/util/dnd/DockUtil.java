@@ -19,24 +19,37 @@ import javax.swing.TransferHandler;
  * @author tduva
  */
 public class DockUtil {
-    
-    public static DockSplit createSplit(DockDropInfo info, DockChild prev, DockChild added) {
-        DockSplit result = null;
-        switch (info.location) {
-            case LEFT:
-                result = new DockSplit(JSplitPane.HORIZONTAL_SPLIT, added, prev);
-                break;
-            case RIGHT:
-                result = new DockSplit(JSplitPane.HORIZONTAL_SPLIT, prev, added);
-                break;
-            case BOTTOM:
-                result = new DockSplit(JSplitPane.VERTICAL_SPLIT, prev, added);
-                break;
-            case TOP:
-                result = new DockSplit(JSplitPane.VERTICAL_SPLIT, added, prev);
-                break;
+
+    public static abstract class SplitCreator {
+        abstract DockSplit createSplit(DockDropInfo info, DockChild prev, DockChild added);
+    }
+
+    public static class TopSplitCreator extends SplitCreator {
+        @Override
+        DockSplit createSplit(DockDropInfo info, DockChild prev, DockChild added) {
+            return new DockSplit(JSplitPane.VERTICAL_SPLIT, added, prev);
         }
-        return result;
+    }
+
+    public static class LeftSplitCreator extends SplitCreator {
+        @Override
+        DockSplit createSplit(DockDropInfo info, DockChild prev, DockChild added) {
+            return new DockSplit(JSplitPane.HORIZONTAL_SPLIT, added, prev);
+        }
+    }
+
+    public static class BottomSplitCreator extends SplitCreator {
+        @Override
+        DockSplit createSplit(DockDropInfo info, DockChild prev, DockChild added) {
+            return new DockSplit(JSplitPane.VERTICAL_SPLIT, prev, added);
+        }
+    }
+
+    public static class RightSplitCreator extends SplitCreator {
+        @Override
+        DockSplit createSplit(DockDropInfo info, DockChild prev, DockChild added) {
+            return new DockSplit(JSplitPane.HORIZONTAL_SPLIT, prev, added);
+        }
     }
     
     public static boolean isMouseOverWindow() {
